@@ -48,6 +48,7 @@ const CATEGORIES = [
       { key: "ai", label: "AI", source: "admin" },
       { key: "ai-settings", label: "AI Agents", source: "settings", settingsKey: "ai" },
       { key: "agent-config", label: "Agent Config", source: "settings" },
+      { key: "usage", label: "Usage & Compute", source: "settings" },
     ],
   },
   {
@@ -78,7 +79,6 @@ const CATEGORIES = [
       { key: "config", label: "Configuration", source: "settings" },
       { key: "tags", label: "Tags", source: "settings" },
       { key: "landing", label: "Landing Pages", source: "settings" },
-      { key: "usage", label: "Usage & Compute", source: "settings" },
       { key: "roam", label: "ro.am", source: "settings" },
     ],
   },
