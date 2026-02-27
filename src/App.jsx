@@ -17,6 +17,7 @@ import { usePermissions } from "./contexts/PermissionContext";
 import { AccessDenied } from "./components/ui/PermissionGate";
 import { useThemeMode } from "./contexts/ThemeContext";
 import { BugReportModal, BugIcon, getBugReportCount } from "./components/ui/BugReportModal";
+import { useRouting, pathToKey } from "./hooks/useRouting";
 
 const modules = [
   { key: "dashboard", label: "Dashboard", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z", branch: null },
@@ -61,7 +62,7 @@ const HISTORY_OPTIONS = [
 ];
 
 export default function App() {
-  const [active, setActive] = useState("dashboard");
+  const { active, setActive } = useRouting();
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [navProjectId, setNavProjectId] = useState(null);
@@ -105,19 +106,36 @@ export default function App() {
     }
   }, [isAuthenticated, currentUser, activeUser.id, switchUser]);
 
-  // Post-login redirect to role-based landing page
+  // Post-login redirect to role-based landing page (with deep-link restoration)
   const hasRedirected = useRef(false);
+  const intendedPath = useRef(null);
   useEffect(() => {
     if (isAuthenticated && currentUser && !hasRedirected.current) {
       hasRedirected.current = true;
-      const landingKey = getLandingPageKey(currentUser);
-      if (landingKey) setActive(landingKey);
+      if (intendedPath.current) {
+        const key = pathToKey(intendedPath.current);
+        intendedPath.current = null;
+        setActive(key, { replace: true });
+      } else {
+        // Only redirect to landing page on fresh login (not on page refresh with an existing deep URL)
+        const currentPath = window.location.pathname;
+        if (currentPath === "/" || currentPath === "/login" || currentPath === "/dashboard") {
+          const landingKey = getLandingPageKey(currentUser);
+          if (landingKey) setActive(landingKey, { replace: true });
+        }
+      }
     }
     if (!isAuthenticated) hasRedirected.current = false;
   }, [isAuthenticated, currentUser]);
 
   // Auth gate — show login if not authenticated
-  if (!isAuthenticated) return <LoginView />;
+  if (!isAuthenticated) {
+    if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
+      intendedPath.current = window.location.pathname;
+      window.history.replaceState({}, "", "/login");
+    }
+    return <LoginView />;
+  }
 
   // Filter sidebar modules by permission
   const visibleSidebar = modules.filter((m) => visibleModules.includes(m.key));
