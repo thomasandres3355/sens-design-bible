@@ -8,7 +8,6 @@ import { BugFixPortal } from "../components/ui/BugFixPortal";
 const ICONS = {
   server: "M22 12H2 M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z M6 16h.01 M10 16h.01",
   cpu: "M18 12h2 M4 12h2 M12 4v2 M12 18v2 M7 7l1.5 1.5 M15.5 15.5L17 17 M17 7l-1.5 1.5 M8.5 15.5L7 17 M9 2h6 M9 22h6 M2 9v6 M22 9v6 M12 12m-3 0a3 3 0 106 0 3 3 0 00-6 0",
-  briefcase: "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2",
   users: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 7a4 4 0 100-8 4 4 0 000 8z M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75",
   sliders: "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6",
   bug: "M8 2l1.88 1.88 M14.12 3.88L16 2 M9 7.13v-1a3.003 3.003 0 116 0v1 M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 014-4h4a4 4 0 014 4v3c0 3.3-2.7 6-6 6 M12 20v-9",
@@ -48,15 +47,6 @@ const CATEGORIES = [
       { key: "ai", label: "AI", source: "admin" },
       { key: "ai-settings", label: "AI Agents", source: "settings", settingsKey: "ai" },
       { key: "agent-config", label: "Agent Config", source: "settings" },
-    ],
-  },
-  {
-    key: "operations",
-    label: "Operations",
-    icon: ICONS.briefcase,
-    items: [
-      { key: "process", label: "Process", source: "admin" },
-      { key: "legal", label: "Legal", source: "admin" },
     ],
   },
   {
