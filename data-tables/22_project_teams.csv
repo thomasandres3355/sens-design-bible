@@ -1,0 +1,17 @@
+project_id,member_type,member_id,role
+dev-hartford,employee,emp-001,Development Lead
+dev-hartford,employee,emp-003,Process Engineering
+dev-hartford,employee,emp-005,Financial Analysis
+dev-hartford,employee,emp-002,Land Acquisition
+dev-hartford,agent,vp-engineering,Engineering Oversight
+dev-savannah,employee,emp-006,Development Lead
+dev-savannah,employee,emp-007,Permitting
+dev-savannah,employee,emp-008,Civil Engineering
+dev-alberta,employee,emp-003,Process Lead
+dev-alberta,employee,emp-004,Environmental
+dev-alberta,agent,vp-strategy,Strategy & Partnerships
+dev-india-gujarat,employee,emp-001,Development Lead
+dev-india-gujarat,employee,emp-005,Financial Analysis
+dev-india-gujarat,agent,vp-strategy,International Strategy
+dev-uzbek,employee,emp-006,Contracts Lead
+dev-uzbek,agent,vp-legal,International Legal

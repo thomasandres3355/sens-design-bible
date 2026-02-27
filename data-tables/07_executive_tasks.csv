@@ -1,0 +1,89 @@
+id,task,executive,objectiveTag,due,status,priority,cycle,source,completedDate,daysToClose
+ft-001,Call Meridian Capital re: due diligence status,CEO,obj-series-c,2026-02-25,overdue,high,24h,Exec Standup — Feb 24,,
+ft-002,Review updated investor deck with Q4 actuals,CEO,obj-series-c,2026-02-26,open,high,24h,Exec Standup — Feb 24,,
+ft-003,Approve term sheet redlines from legal,CEO,obj-series-c,2026-02-27,open,high,3d,IR Prep — Feb 21,,
+ft-004,Prep talking points for Friday board briefing,CEO,obj-series-c,2026-02-28,open,medium,3d,Exec Standup — Feb 24,,
+ft-005,Review Baton Rouge recovery plan from COO,CEO,obj-ops-excellence,2026-02-26,open,medium,24h,Exec Standup — Feb 24,,
+ft-006,Approve carbon black pricing lock-in recommendation,CEO,obj-ops-excellence,2026-02-27,open,medium,3d,Finance Committee — Feb 20,,
+ft-007,Review WSP pre-FEED milestone report,CEO,obj-growth-pipeline,2026-02-28,open,medium,1w,Engineering Sync — Feb 19,,
+ft-008,Sign off on VP People's hiring plan,CEO,,2026-02-25,overdue,low,24h,1:1 with VP People — Feb 24,,
+ft-009,Review Q1 board agenda draft,CEO,,2026-02-28,open,medium,1w,Board Prep — Feb 20,,
+ft-010,Approve data room refresh for Series C,CEO,obj-series-c,2026-02-22,done,high,24h,IR Prep — Feb 21,2026-02-22,1
+ft-011,Sign customer diversification strategy memo,CEO,obj-ops-excellence,2026-02-21,done,medium,3d,Exec Standup — Feb 18,2026-02-21,3
+ft-012,Confirm coal project board presentation date,CEO,obj-growth-pipeline,2026-02-20,done,low,24h,Engineering Sync — Feb 19,2026-02-20,1
+ft-013,Approve SENS Master v4 rollout plan,CEO,,2026-02-19,done,medium,3d,Admin Review — Feb 17,2026-02-19,2
+ft-020,Prepare operational metrics summary for investor deck,COO,obj-series-c,2026-02-26,open,high,24h,Exec Standup — Feb 24,,
+ft-021,Draft site visit agenda for March 5 investor tour,COO,obj-series-c,2026-02-28,open,medium,3d,IR Prep — Feb 21,,
+ft-022,Approve Baton Rouge turnaround scope for Mar 15,COO,obj-ops-excellence,2026-02-25,overdue,high,24h,Maintenance Review — Feb 24,,
+ft-023,Review Columbus OH feedstock alternate supplier proposal,COO,obj-ops-excellence,2026-02-26,open,high,24h,Exec Standup — Feb 24,,
+ft-024,Sign off on Tucson benchmark operating procedures,COO,obj-ops-excellence,2026-02-27,open,medium,3d,Ops Review — Feb 21,,
+ft-025,Review work order backlog reduction plan,COO,obj-ops-excellence,2026-02-28,open,medium,1w,Maintenance Review — Feb 24,,
+ft-026,Review Portland OR schedule recovery plan from Brown & Root,COO,obj-growth-pipeline,2026-02-26,open,high,24h,Portland Review — Feb 24,,
+ft-027,Approve Noble B Phase 2 commissioning checklist,COO,obj-growth-pipeline,2026-02-28,open,medium,3d,Engineering Sync — Feb 19,,
+ft-028,Confirm contractor mobilization for Noble turnaround,COO,obj-growth-pipeline,2026-03-01,open,high,1w,Maintenance Review — Feb 24,,
+ft-029,Review safety incident report from Richmond,COO,,2026-02-25,overdue,high,24h,HSE Escalation — Feb 24,,
+ft-030,Approve compressor PO for Baton Rouge,COO,obj-ops-excellence,2026-02-22,done,high,24h,Exec Standup — Feb 18,2026-02-22,1
+ft-031,Sign off on Portland reactor vessel dual-sourcing,COO,obj-growth-pipeline,2026-02-21,done,high,3d,Portland Review — Feb 17,2026-02-21,2
+ft-032,Review Veriforce compliance report,COO,,2026-02-20,done,medium,24h,Process Review — Feb 19,2026-02-20,1
+ft-033,Finalize Noble turnaround contractor headcount,COO,obj-growth-pipeline,2026-02-19,done,high,3d,Maintenance Review — Feb 17,2026-02-18,1
+ft-034,Confirm quality spec alignment with customer contracts,COO,obj-ops-excellence,2026-02-18,done,medium,3d,Ops Review — Feb 14,2026-02-17,3
+ft-060,Finalize Series C reactor design specs for investor deck,VP Engineering,obj-series-c,2026-02-26,open,high,24h,IR Prep — Feb 21,,
+ft-061,Prepare R&D roadmap slide for board presentation,VP Engineering,obj-series-c,2026-02-28,open,medium,3d,Board Prep — Feb 20,,
+ft-062,Review TiPs Series B performance data from Tucson,VP Engineering,obj-ops-excellence,2026-02-25,overdue,high,24h,Engineering Sync — Feb 24,,
+ft-063,Approve N330 grade optimization parameters for Baton Rouge,VP Engineering,obj-ops-excellence,2026-02-27,open,medium,3d,Quality Review — Feb 21,,
+ft-064,Review WSP pre-FEED engineering cost estimates,VP Engineering,obj-growth-pipeline,2026-02-26,open,high,24h,Engineering Sync — Feb 24,,
+ft-065,Sign off on Noble B reactor vessel QC report,VP Engineering,obj-growth-pipeline,2026-02-27,open,high,3d,Fabrication Review — Feb 24,,
+ft-066,Approve coal gasification pilot test protocol,VP Engineering,obj-growth-pipeline,2026-02-28,open,medium,3d,R&D Meeting — Feb 19,,
+ft-067,Review patent filing for thermal cracking improvement,VP Engineering,,2026-02-26,open,low,3d,IP Review — Feb 21,,
+ft-068,Finalize Series C reactor fabrication drawings,VP Engineering,obj-series-c,2026-02-21,done,high,3d,Engineering Sync — Feb 19,2026-02-21,2
+ft-069,Approve TiPs Series A maintenance spec update,VP Engineering,obj-ops-excellence,2026-02-20,done,medium,24h,Maintenance Review — Feb 19,2026-02-20,1
+ft-070,Complete Portland OR reactor installation checklist,VP Engineering,obj-growth-pipeline,2026-02-19,done,high,3d,Portland Review — Feb 17,2026-02-18,1
+ft-080,Compile 90-day uptime trend data for investor package,VP Operations,obj-series-c,2026-02-26,open,high,24h,IR Prep — Feb 24,,
+ft-081,Approve Baton Rouge shift rotation optimization plan,VP Operations,obj-ops-excellence,2026-02-25,overdue,high,24h,Ops Review — Feb 24,,
+ft-082,Review Columbus OH ramp-up schedule against capacity targets,VP Operations,obj-ops-excellence,2026-02-26,open,high,24h,Site Review — Feb 24,,
+ft-083,Sign off on Tucson SOP revision for pyrolysis zone 3,VP Operations,obj-ops-excellence,2026-02-27,open,medium,3d,Process Review — Feb 21,,
+ft-084,Review feedstock quality variance root cause analysis,VP Operations,obj-ops-excellence,2026-02-28,open,medium,3d,Quality Review — Feb 21,,
+ft-085,Confirm commissioning team assignments for Noble B,VP Operations,obj-growth-pipeline,2026-02-27,open,high,3d,Construction Sync — Feb 24,,
+ft-086,Approve overtime authorization for Richmond site,VP Operations,,2026-02-25,overdue,medium,24h,HR Escalation — Feb 24,,
+ft-087,Finalize Baton Rouge feed blending protocol,VP Operations,obj-ops-excellence,2026-02-21,done,high,3d,Ops Review — Feb 19,2026-02-21,2
+ft-088,Review site-level KPI dashboard accuracy,VP Operations,obj-ops-excellence,2026-02-20,done,medium,24h,Admin Review — Feb 19,2026-02-20,1
+ft-089,Approve Noble turnaround contractor safety orientation,VP Operations,obj-growth-pipeline,2026-02-19,done,high,24h,HSE Review — Feb 18,2026-02-19,1
+ft-100,Prepare data room financial model sensitivity analysis,VP Finance,obj-series-c,2026-02-26,open,high,24h,Finance Committee — Feb 24,,
+ft-101,Review investor Q&A financial talking points,VP Finance,obj-series-c,2026-02-27,open,medium,3d,IR Prep — Feb 21,,
+ft-102,Complete site-level P&L variance analysis for Feb,VP Finance,obj-ops-excellence,2026-02-26,open,high,24h,Finance Committee — Feb 24,,
+ft-103,Review carbon black offtake pricing model update,VP Finance,obj-ops-excellence,2026-02-27,open,medium,3d,Pricing Review — Feb 21,,
+ft-104,Update Noble B capex forecast with latest actuals,VP Finance,obj-growth-pipeline,2026-02-26,open,high,24h,Construction Sync — Feb 24,,
+ft-105,Review insurance renewal premium comparison,VP Finance,obj-growth-pipeline,2026-02-28,open,medium,3d,Legal Review — Feb 24,,
+ft-106,Approve monthly AP batch for vendor payments,VP Finance,,2026-02-25,overdue,high,24h,Accounts Payable — Feb 24,,
+ft-107,Finalize Q4 revenue reconciliation by site,VP Finance,obj-ops-excellence,2026-02-21,done,high,3d,Finance Committee — Feb 19,2026-02-21,2
+ft-108,Submit data room financial package v2.1,VP Finance,obj-series-c,2026-02-20,done,high,24h,IR Prep — Feb 19,2026-02-20,1
+ft-109,Review Portland capex drawdown vs budget,VP Finance,obj-growth-pipeline,2026-02-19,done,medium,3d,Construction Sync — Feb 17,2026-02-18,1
+ft-120,Update investor pipeline CRM with latest meeting notes,VP Strategy,obj-series-c,2026-02-25,overdue,high,24h,IR Standup — Feb 24,,
+ft-121,Prepare market sizing analysis for board deck,VP Strategy,obj-series-c,2026-02-27,open,high,3d,Board Prep — Feb 20,,
+ft-122,Draft competitive positioning slide for investor meetings,VP Strategy,obj-series-c,2026-02-28,open,medium,3d,IR Prep — Feb 21,,
+ft-123,Review customer diversification strategy progress,VP Strategy,obj-ops-excellence,2026-02-26,open,medium,24h,Marketing Review — Feb 24,,
+ft-124,Assess state regulatory landscape for coal GA project,VP Strategy,obj-growth-pipeline,2026-02-27,open,high,3d,Strategy Session — Feb 21,,
+ft-125,Review 5-year market forecast for carbon black demand,VP Strategy,obj-growth-pipeline,2026-02-28,open,medium,1w,Market Intelligence — Feb 19,,
+ft-126,Prepare quarterly strategy update for leadership team,VP Strategy,,2026-02-28,open,low,1w,Admin — Feb 17,,
+ft-127,Deliver competitor analysis for LD Carbon Series B,VP Strategy,obj-series-c,2026-02-21,done,high,3d,IR Prep — Feb 19,2026-02-21,2
+ft-128,Update TAM/SAM model with 2025 actuals,VP Strategy,obj-growth-pipeline,2026-02-20,done,medium,3d,Strategy Session — Feb 17,2026-02-19,2
+ft-129,Brief CEO on clean energy credit expansion in 3 states,VP Strategy,obj-growth-pipeline,2026-02-18,done,medium,24h,Market Intelligence — Feb 17,2026-02-18,1
+ft-140,Prepare org chart and leadership bios for data room,VP People,obj-series-c,2026-02-26,open,high,24h,IR Prep — Feb 24,,
+ft-141,Review staffing plan for Columbus OH ramp-up,VP People,obj-ops-excellence,2026-02-26,open,high,24h,Site Review — Feb 24,,
+ft-142,Approve operator training certification schedule for Q2,VP People,obj-ops-excellence,2026-02-27,open,medium,3d,Training Review — Feb 21,,
+ft-143,Draft hiring plan for Noble B commissioning team,VP People,obj-growth-pipeline,2026-02-27,open,high,3d,Construction Sync — Feb 24,,
+ft-144,Review Portland OR site lead candidate shortlist,VP People,obj-growth-pipeline,2026-02-28,open,high,3d,Hiring Review — Feb 21,,
+ft-145,Finalize Q1 performance review process rollout,VP People,,2026-02-25,overdue,medium,24h,HR Admin — Feb 24,,
+ft-146,Review 8 open positions priority ranking,VP People,,2026-02-26,open,low,24h,Hiring Review — Feb 24,,
+ft-147,Complete safety certification audit for 3 sites,VP People,obj-ops-excellence,2026-02-21,done,high,3d,HSE Review — Feb 19,2026-02-20,1
+ft-148,Submit Noble B construction crew onboarding plan,VP People,obj-growth-pipeline,2026-02-19,done,high,24h,Construction Sync — Feb 17,2026-02-19,2
+ft-160,Prepare ESG metrics summary for investor package,VP Risk,obj-series-c,2026-02-26,open,high,24h,IR Prep — Feb 24,,
+ft-161,Review Baton Rouge incident investigation report,VP Risk,obj-ops-excellence,2026-02-25,overdue,high,24h,HSE Escalation — Feb 24,,
+ft-162,Approve updated emergency response plan for Richmond,VP Risk,obj-ops-excellence,2026-02-26,open,high,24h,Safety Review — Feb 24,,
+ft-163,Review environmental permit renewal applications (Noble + Richmond),VP Risk,obj-ops-excellence,2026-02-27,open,medium,3d,Permitting Review — Feb 21,,
+ft-164,Complete environmental impact assessment for Coal GA,VP Risk,obj-growth-pipeline,2026-02-28,open,high,3d,Strategy Session — Feb 21,,
+ft-165,Review Noble B construction safety inspection findings,VP Risk,obj-growth-pipeline,2026-02-27,open,medium,3d,Construction Sync — Feb 24,,
+ft-166,Submit monthly OSHA compliance report,VP Risk,,2026-02-25,overdue,high,24h,Compliance Calendar — Feb 24,,
+ft-167,Close Richmond near-miss investigation #NM-2026-014,VP Risk,obj-ops-excellence,2026-02-21,done,high,3d,HSE Review — Feb 19,2026-02-21,2
+ft-168,Approve Veriforce contractor compliance update,VP Risk,,2026-02-20,done,medium,24h,Contractor Review — Feb 19,2026-02-20,1
+ft-169,Complete Portland OR environmental baseline assessment,VP Risk,obj-growth-pipeline,2026-02-19,done,high,3d,Permitting Review — Feb 17,2026-02-18,1

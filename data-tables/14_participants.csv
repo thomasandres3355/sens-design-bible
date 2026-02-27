@@ -1,0 +1,9 @@
+id,name,role,initials,online
+thomas,Thomas,CEO,TH,true
+sarah,Sarah Mitchell,COO,SM,true
+james,James Park,VP Finance,JP,true
+lena,Lena Torres,VP Engineering,LT,false
+marcus,Marcus Webb,VP Operations,MW,true
+diane,Diane Chen,VP Finance,DC,false
+omar,Omar Hassan,VP Strategy,OH,true
+rachel,Rachel Kim,VP Risk,RK,true

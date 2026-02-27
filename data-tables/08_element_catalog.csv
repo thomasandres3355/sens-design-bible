@@ -1,0 +1,17 @@
+type,label,category,capex_M_per_unit,opexFixed_M_per_yr,tph,capacityTonYr,efficiency,revPerTon,feedCostPerTon,powerMW,carbonOutputTonPerTon,diluentGalPerTon,mw,capacityFactor,durationHrs,mwh,capacityGal,capacityTon,acres,description
+tips_2,SENS TiPs 2 TPH,processing,18.75,0.534,2,14717,0.84,1663.20,200,1,0.45,120,,,,,,,Tire pyrolysis processor
+tips_20,SENS TiPs 20 TPH,processing,20,1.24,20,147168,0.84,1663.20,200,6,0.45,120,,,,,,,Large-scale tire pyrolysis processor
+coal_20,SENS Coal 20 TPH,processing,20,1.24,20,147168,0.84,192.28,20,9,0.32,0,,,,,,,Coal gasification processor
+carbon_power,Carbon Power Plant,power,3.6,0.06,,,,,,,,100,0.937,,,,,,Burns carbon byproduct to generate power
+bess,BESS (Battery),power,1.15,0.0013,,,,,,,,100,,4,400,,,,Battery energy storage 4-hour duration
+ccgt,CCGT (Natural Gas),power,1.1,0.0175,,,,,,,,100,0.873,,,,,,Combined cycle gas turbine
+solar,Solar Array,power,1.2,0.0125,,,,,,,,100,0.20,,,,,,Utility-scale solar
+hydrogen,Hydrogen Electrolyzer,power,0.3,,,,,,,,,100,,,,,,,PEM electrolyzer for green hydrogen
+diluent_tank,Diluent Tank,storage,0.15,0.005,,,,,,,,,,,,,50000,,Diluent storage tank
+carbon_silo,Carbon Silo,storage,0.12,0.004,,,,,,,,,,,,,,500,,Carbon black storage silo
+tank_farm,Tank Farm,storage,2.0,0.08,,,,,,,,,,,,,500000,,Multi-tank diluent storage farm
+carbon_storage,Carbon Storage Facility,storage,5.0,0.15,,,,,,,,,,,,,,10000,Large-scale carbon storage
+loading_bay,Loading Bay,infrastructure,0.8,0.03,,,,,,,,,,,,,,,,Truck/rail loading facility
+control_room,Control Room,infrastructure,1.5,0.05,,,,,,,,,,,,,,,,Site operations control center
+substation,Substation,infrastructure,2.0,0.04,,,,,,,,,,,,,,,Electrical substation
+site_land,Site Land (per acre),land,0.017,0.00145,,,,,,,,,,,,,,,1,Land acquisition and site prep

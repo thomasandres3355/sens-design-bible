@@ -1,0 +1,5 @@
+id,name,role,description,status
+meeting-scribe,Meeting Scribe,Note & Action Item Tracker,Automatically captures key discussion points and action items from meetings.,green
+ceo-ea,CEO EA,Chief Executive Assistant,Top-level executive assistant. Aggregates insights from every VP agent team.,green
+coo-perf,COO Performance Agent,Operational Performance Analytics,Real-time operational metrics across all sites.,green
+cfo-rev,Finance Revenue Agent,Revenue & Financial Analysis,Financial data on demand — revenue tracking and budget variances.,green

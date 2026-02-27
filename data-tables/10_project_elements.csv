@@ -1,0 +1,12 @@
+project_id,element_id,type,x,y,quantity,label,custom_mw,custom_acres,custom_capacityGal,custom_capacityTon
+dev-hartford,el-h1,tips_2,40,40,6,TiPs Battery A,,,,
+dev-hartford,el-h2,coal_20,40,200,9,Coal Processors,,,,
+dev-hartford,el-h3,carbon_power,280,40,1,Carbon Power,100,,,
+dev-hartford,el-h4,bess,280,160,1,BESS Storage,50,,,
+dev-hartford,el-h5,tank_farm,480,40,2,Diluent Tank Farm,,,,
+dev-hartford,el-h6,carbon_storage,480,160,1,Carbon Storage,,,,
+dev-hartford,el-h7,loading_bay,640,80,2,Loading Bays,,,,
+dev-hartford,el-h8,control_room,640,200,1,Control Room,,,,
+dev-hartford,el-h9,site_land,40,320,1,Hartford Land,,5600,,
+dev-hartford,el-h10,solar,640,320,1,Solar Array,70,,,
+dev-hartford,el-h11,ccgt,440,320,1,CCGT Backup,100,,,

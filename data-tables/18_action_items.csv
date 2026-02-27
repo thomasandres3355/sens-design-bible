@@ -1,0 +1,14 @@
+meeting_id,assignee,task,due,done,source_meeting,source_date
+j-past-001,Marcus Webb,Submit compressor PO by EOD Tuesday,2026-02-19,true,Weekly Executive Standup,2026-02-18
+j-past-001,James Park,Update Series C deck with Q4 actuals,2026-02-20,true,Weekly Executive Standup,2026-02-18
+j-past-001,Sarah Mitchell,Review Portland permitting package,2026-02-21,true,Weekly Executive Standup,2026-02-18
+j-past-001,Lena Torres,Provide equipment spec comparison for Portland,2026-02-21,true,Weekly Executive Standup,2026-02-18
+j-past-001,Thomas,Review board talking points draft,2026-02-22,false,Weekly Executive Standup,2026-02-18
+j-past-001,Omar Hassan,Schedule follow-up with Meridian Capital,2026-02-24,false,Weekly Executive Standup,2026-02-18
+j-past-002,Lena Torres,Finalize reactor vessel RFQ with secondary supplier,2026-02-21,true,Portland OR Project Review,2026-02-17
+j-past-002,Marcus Webb,Coordinate site prep for March 5 visit,2026-03-01,false,Portland OR Project Review,2026-02-17
+j-past-002,Sarah Mitchell,Review updated project timeline with board,2026-02-24,true,Portland OR Project Review,2026-02-17
+j-past-003,Omar Hassan,Update competitive landscape analysis,2026-02-17,true,Investor Relations Prep,2026-02-14
+j-past-003,James Park,Add Q4 financial waterfall to deck,2026-02-17,true,Investor Relations Prep,2026-02-14
+j-past-003,Thomas,Record walkthrough video for remote investors,2026-02-19,true,Investor Relations Prep,2026-02-14
+j-past-003,Omar Hassan,Draft follow-up email template,2026-02-18,false,Investor Relations Prep,2026-02-14

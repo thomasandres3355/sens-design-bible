@@ -1,0 +1,27 @@
+id,name,category,description
+tag-operations,operations,Operations,Day-to-day operational matters
+tag-noble,noble,Operations,Noble OK site
+tag-portland,portland,Operations,Portland OR site
+tag-baton-rouge,baton-rouge,Operations,Baton Rouge LA site
+tag-maintenance,maintenance,Operations,Maintenance & equipment
+tag-construction,construction,Operations,Construction projects
+tag-procurement,procurement,Operations,Procurement & supply chain
+tag-series-c,series-c,Finance,Series C fundraising
+tag-investors,investors,Finance,Investor relations
+tag-strategy,strategy,Finance,Strategic planning
+tag-budget,budget,Finance,Budget & financial planning
+tag-revenue,revenue,Finance,Revenue & sales
+tag-hiring,hiring,People,Recruiting & hiring
+tag-personnel,personnel,People,Staffing & team changes
+tag-leadership,leadership,People,Leadership & management
+tag-risk,risk,Risk & Safety,Risk items & mitigation
+tag-hse,hse,Risk & Safety,Health safety & environment
+tag-compliance,compliance,Risk & Safety,Regulatory compliance
+tag-sens,sens,Product,SENS platform items
+tag-product,product,Product,Product development
+tag-ideas,ideas,Product,Ideas & brainstorming
+tag-r-and-d,r&d,Product,Research & development
+tag-board,board,Meetings,Board-related
+tag-standup,standup,Meetings,Standups & check-ins
+tag-review,review,Meetings,Reviews & retrospectives
+tag-urgent,urgent,Meetings,Time-sensitive items

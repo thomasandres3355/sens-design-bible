@@ -1,0 +1,10 @@
+id,name,short,state,status,processors,tph,uptime,throughput,revMTD,diluentGal,carbonT,feedSupplier,feedstock,startYear,capex,actualRevenue_M,actualEBITDA_M,actualCOGS_M,actualGrossMargin_pct,actualOpEx_M,constructionPct,stage,epc,description
+noble-ok,Noble Oklahoma,Noble OK,OK,operational,1,2,84,1.7,1.4,14200,128,RTR Environmental,Tire Crumb,2024,$15M,8.2,3.3,3.1,62,1.8,,,,
+richmond-va,Richmond Virginia,Richmond VA,VA,operational,2,4,88,3.5,2.6,28800,245,Mid-Atlantic Tire Recycling,Tire Crumb,2025,$28M,5.4,2.2,2.0,63,1.2,,,,
+tucson-az,Tucson Arizona,Tucson AZ,AZ,operational,2,4,91,3.6,2.8,30100,260,Southwest Tire Processors,Tire Crumb,2025,$30M,4.1,1.7,1.5,63,0.9,,,,
+baton-la,Baton Rouge Louisiana,Baton Rouge,LA,operational,1,2,79,1.5,1.1,11800,102,Gulf Coast Rubber,Tire Crumb,2025,$16M,2.8,1.1,1.1,61,0.6,,,,
+columbus-oh,Columbus Ohio,Columbus OH,OH,operational,1,2,82,1.6,1.2,13100,115,Midwest Tire Recyclers,Tire Crumb,2026,$16M,0.6,0.1,0.3,50,0.2,,,,
+noble-b,Noble OK — Expansion,Noble B,OK,construction,6,12,,,,,,,Tire Crumb,2028,$110M,,,,,,18,Construction,Cissell Mueller,6-processor expansion of Noble OK facility
+portland-or,Portland Oregon,Portland OR,OR,construction,3,6,,,,,,,Tire Crumb,2028,$52M,,,,,,10,EPC,Brown & Root,3-processor greenfield site in Portland
+coal-fl,Coal Project — Georgia,Coal GA,GA,development,1,20,,,,,,,Coal,2029,$280M,,,,,,15,Pre-FEED,WSP Global (preliminary),20 TPH coal gasification facility targeting Georgia
+coal-tx,Coal Project — Montana,Coal MT,MT,development,1,20,,,,,,,Coal,2030,$320M,,,,,,35,FEED,Brown & Root (selected),20 TPH coal gasification facility in Montana

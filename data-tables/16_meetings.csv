@@ -1,0 +1,9 @@
+id,type,title,date,time,status,participants,room,duration,recurring,tags,pinned
+j-001,meeting,Weekly Executive Standup,2026-02-25,10:00 AM,upcoming,"thomas,sarah,james,marcus",Executive Boardroom,30 min,true,"operations,standup",false
+j-002,meeting,Portland OR Project Review,2026-02-25,1:00 PM,upcoming,"thomas,sarah,lena,marcus",Engineering Hub,60 min,false,"portland,construction",false
+j-003,meeting,Investor Relations Prep,2026-02-25,3:30 PM,upcoming,"thomas,james,omar",CEO Office,45 min,false,"investors,series-c",false
+j-004,meeting,HSE Monthly Review,2026-02-26,9:00 AM,upcoming,"sarah,marcus,rachel",Operations Center,45 min,true,"hse,compliance",false
+j-005,meeting,Finance Committee,2026-02-26,2:00 PM,upcoming,"thomas,james,diane,omar",Finance Suite,60 min,true,"budget,revenue",false
+j-past-001,meeting,Weekly Executive Standup,2026-02-18,10:00 AM,completed,"thomas,sarah,james,marcus",Executive Boardroom,28 min,true,"operations,series-c,risk",true
+j-past-002,meeting,Portland OR Project Review,2026-02-17,1:00 PM,completed,"thomas,sarah,lena,marcus",Engineering Hub,52 min,false,"portland,construction,procurement",false
+j-past-003,meeting,Investor Relations Prep,2026-02-14,3:30 PM,completed,"thomas,james,omar",CEO Office,38 min,false,"investors,series-c",false

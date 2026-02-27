@@ -1,0 +1,8 @@
+project_id,connection_id,from_element,to_element,label,color
+dev-hartford,c-1,el-h1,el-h3,Carbon Feed,textMid
+dev-hartford,c-2,el-h1,el-h5,Diluent,blue
+dev-hartford,c-3,el-h2,el-h3,Carbon Char,textMid
+dev-hartford,c-4,el-h5,el-h7,Diluent Out,blue
+dev-hartford,c-5,el-h6,el-h7,Carbon Out,textMid
+dev-hartford,c-6,el-h3,el-h4,Power,green
+dev-hartford,c-7,el-h2,el-h6,Carbon Storage,textMid

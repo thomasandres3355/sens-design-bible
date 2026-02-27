@@ -1,0 +1,11 @@
+id,projectId,action,detail,person,date
+a-1,dev-hartford,File uploaded,JV_Term_Sheet_v3.pdf,Diana Reyes,2026-02-10
+a-2,dev-hartford,Stage advanced,Pre-FEED progress → 45%,Sarah Chen,2026-02-08
+a-3,dev-alberta,Team member added,VP Strategy assigned,System,2026-02-06
+a-4,dev-savannah,Project created,Savannah Tire Facility,Ben Kowalski,2026-01-15
+a-5,dev-india-gujarat,File uploaded,Gujarat_Tata_LOI.pdf,Diana Reyes,2026-02-08
+a-6,dev-hartford,Budget updated,Committed increased to $28M,Lisa Patel,2026-02-03
+a-7,dev-hartford,File uploaded,CT_Environmental_Assessment_Draft.pdf,Jake Thornton,2026-02-01
+a-8,dev-alberta,File uploaded,Alberta_PreFEED_RFP.docx,Dr. Amara Osei,2026-01-28
+a-9,dev-uzbek,Status changed,Set to On Hold — geopolitical review,System,2026-01-20
+a-10,dev-hartford,Process config saved,"9 elements, 6 connections",Sarah Chen,2026-01-18

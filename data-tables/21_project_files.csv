@@ -1,0 +1,10 @@
+project_id,file_id,name,category,uploadDate,size,uploadedBy,notes
+dev-hartford,f-001,Foundation.SENS.JV.HartfordProjectModel.xlsx,budget,2026-01-15,2.8 MB,Lisa Patel,Master financial model — 28 sheets
+dev-hartford,f-002,Hartford_PreFEED_Scope.pdf,engineering,2026-01-20,4.1 MB,Dr. Amara Osei,Pre-FEED scope of work
+dev-hartford,f-003,CT_Environmental_Assessment_Draft.pdf,environmental,2026-02-01,8.3 MB,Jake Thornton,Phase 1 environmental site assessment
+dev-hartford,f-004,Hartford_Land_Option_Agreement.docx,land,2025-11-10,340 KB,Marcus Wright,"5,600 acre option agreement — $7K/acre"
+dev-hartford,f-005,JV_Term_Sheet_v3.pdf,legal,2026-02-10,1.2 MB,Diana Reyes,Joint venture term sheet — latest revision
+dev-savannah,f-010,Savannah_Feasibility_Study.pdf,engineering,2026-02-05,3.2 MB,Ben Kowalski,Initial feasibility and site options
+dev-alberta,f-020,Alberta_CTS_Partnership_MOU.pdf,legal,2025-12-01,890 KB,Diana Reyes,MOU with Canadian Tire Stewardship
+dev-alberta,f-021,Alberta_PreFEED_RFP.docx,engineering,2026-01-28,1.5 MB,Dr. Amara Osei,RFP for Pre-FEED engineering services
+dev-india-gujarat,f-030,Gujarat_Tata_LOI.pdf,legal,2026-02-08,520 KB,Diana Reyes,Letter of intent — Tata Recycling partnership

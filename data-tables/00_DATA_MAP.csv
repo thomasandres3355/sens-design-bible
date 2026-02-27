@@ -1,0 +1,27 @@
+file,table_name,primary_key,foreign_keys,consumed_by_views,description
+01_sites.csv,Sites,id,"feedstock→12_feedstock_presets.type, id→03_site_plan_computed.site_id, id→20_manufacturing_dependencies.siteId","DashboardView, OperationsView, FinanceView, PortfolioMapView, RiskView",Master site registry — 9 sites (5 operational / 2 construction / 2 development)
+02_plan_economics.csv,Plan Economics,type,,"DashboardView, OperationsView, AlertData (KPI computation)",Per-machine economics for Tire and Coal feedstock types
+03_site_plan_computed.csv,Site Plan (Computed),site_id,site_id→01_sites.id,"DashboardView, OperationsView, FinanceView",Plan vs actual variance analysis per site — computed from Sites + Plan Economics
+04_alerts_agent_raised.csv,Agent Alerts,id,"agentId→25_meeting_agents.id (partial), targetDepts→VP keys","DashboardView, VpDashboardView, RiskView",Hardcoded alerts raised by AI agents monitoring their domains
+05_alerts_kpi_rules.csv,KPI Alert Rules,rule_id,sites→01_sites.csv (iterated),"DashboardView, VpDashboardView",Rules that compute KPI-driven alerts dynamically from site data
+06_objectives.csv,Company Objectives,id,id→07_executive_tasks.objectiveTag,"DashboardView, FocusTrackerView",The 3 strategic company objectives that tasks align to
+07_executive_tasks.csv,Executive Tasks,id,"executive→14_participants.role, objectiveTag→06_objectives.id","FocusTrackerView, VpDashboardView, DashboardView",70 tasks across 8 executives with status/priority/cycle tracking
+08_element_catalog.csv,Element Catalog,type,type→10_project_elements.type,DevelopmentView,16 asset types with capex/opex/capacity specs for project modeling
+09_development_projects.csv,Development Projects,id,"teamLead→15_employees.id, id→10_project_elements.project_id","DevelopmentView, DeliveringView, PortfolioMapView",5 development-stage projects with budgets and stage progress
+10_project_elements.csv,Project Elements,element_id,"project_id→09_development_projects.id, type→08_element_catalog.type",DevelopmentView (Flowchart canvas),Elements placed on the development project canvas
+11_project_connections.csv,Project Connections,connection_id,"project_id→09_development_projects.id, from→10_project_elements.element_id, to→10_project_elements.element_id",DevelopmentView (Flowchart canvas),Flow connections between elements on the canvas
+12_feedstock_presets.csv,Feedstock Presets,preset_name,type→01_sites.feedstock,DevelopmentView (Dials panel),Coal and tire composition presets used in conversion calculations
+13_financial_config_defaults.csv,Financial Config,parameter,,DevelopmentView (Dials panel),Default financial assumptions for pro forma calculations
+14_participants.csv,Participants,id,"id→16_meetings.participants, role→07_executive_tasks.executive","JournalView, MeetingView, FocusTrackerView",8 executive team members (meeting participants)
+15_employees.csv,Employees,id,"id→22_project_teams.member_id, id→09_development_projects.teamLead","DevelopmentView, AdminView",8 employees assigned to development projects
+16_meetings.csv,Meetings,id,"participants→14_participants.id, id→18_action_items.meeting_id","JournalView, MeetingView",8 meetings (5 upcoming + 3 completed)
+17_journal_notes.csv,Journal Notes,id,,JournalView,6 freeform journal entries (notes/drafts)
+18_action_items.csv,Action Items,meeting_id+assignee,"meeting_id→16_meetings.id, assignee→14_participants.name","FocusTrackerView, JournalView",13 action items from completed meetings
+19_financial_model.csv,Financial Model,year,,"ModelView, FinanceView",15-year annual financial projections (2026-2040)
+20_manufacturing_dependencies.csv,Manufacturing Dependencies,machineId,siteId→01_sites.id,"DeliveringView, OperationsView",Machine-to-site installation dependencies with critical path
+21_project_files.csv,Project Files,file_id,project_id→09_development_projects.id,DevelopmentView,9 files uploaded to development projects
+22_project_teams.csv,Project Teams,project_id+member_id,"project_id→09_development_projects.id, member_id→15_employees.id",DevelopmentView,Team assignments per development project
+23_activity_log.csv,Activity Log,id,projectId→09_development_projects.id,DevelopmentView,10 recent activity entries across projects
+24_velocity_trend.csv,Velocity Trend,week_label,,"FocusTrackerView (chart data), DashboardView",Weekly task completion velocity by objective alignment
+25_meeting_agents.csv,Meeting Agents,id,,MeetingView,4 AI agents available in live meeting sessions
+26_tags.csv,Tags,id,name→16_meetings.tags / 17_journal_notes.tags,"JournalView, MeetingView",26 reusable tags organized by category

@@ -1,0 +1,7 @@
+id,type,title,date,time,status,tags,pinned,summary
+j-note-001,freeform,Noble Site Operator Debrief,2026-02-16,2:30 PM,completed,"noble,operations,maintenance",false,Reactor #3 showing intermittent pressure spikes. Likely early valve wear. Flag for predictive maintenance.
+j-note-002,freeform,Q2 Hiring Plan,2026-02-13,11:20 AM,completed,"hiring,personnel,portland",false,"Portland needs site manager + 2 process engineers by May. Finance needs senior analyst. Total 5 positions, ~$680K/yr."
+j-note-003,freeform,Series C Strategy Session Notes,2026-02-21,9:15 AM,draft,"series-c,investors,strategy",false,"12% committed. Target $150M raise at $800-900M pre-money. Considering strategic investor."
+j-note-004,freeform,Random thoughts — platform improvements,2026-02-22,7:30 PM,draft,"sens,product,ideas",false,Feature ideas: @mention agents in chat; share High Fives to Slack; resolved risk state; scribe auto-generates High Five.
+j-note-005,freeform,Coal gasification licensing thoughts,2026-02-20,4:12 PM,completed,strategy,true,IP strategy around coal gasification. PatSnap flagged 3 new filings in SE Asia. Need to loop in VP R&D and Legal.
+j-note-006,freeform,Board prep reminders,2026-02-19,8:45 AM,completed,board,false,Board meeting March 3 — need 3 slides: 90-day look-back / Series C pipeline / Portland construction photos.

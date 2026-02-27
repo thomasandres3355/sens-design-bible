@@ -1,0 +1,11 @@
+type,preset_name,fixedCarbon,volatileMatter,ash,moisture,steel
+coal,Bituminous (Default),60,25,10,5,
+coal,Sub-Bituminous,42,35,8,15,
+coal,Lignite,30,28,12,30,
+coal,Anthracite,90,5,3,2,
+coal,Pet Coke,85,10,1,4,
+coal,Hartford JV Default,24.6,29,10,29,
+tire,Passenger Car (Default),28,62,6,1,15
+tire,Truck Tires,30,58,5,1,25
+tire,Mining Truck (Ultra-Heavy),34,55,5,1,18
+tire,Mixed TDF,29,60,6,1,18

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npm run build:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 5 npx vite)",
+      "Bash(timeout 8 npx vite:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(open:*)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright:*)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:en.bioerrorlog.work)",
+      "WebFetch(domain:dotclaude.com)",
+      "Bash(git -C \"/Users/thomasandres/Claude Testing/sens-master-project\" status)"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+type,revenue_per_machine,costs_per_machine,ebitda_per_machine,uptimePlan_pct,tphPerMachine
+Tire (PLAN_PER_MACHINE),3590849,1278377,2101689,84,2
+Coal (COAL_PLAN_PER_MACHINE),7850000,1240000,4380000,82,20

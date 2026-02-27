@@ -1,0 +1,12 @@
+machineId,siteId,siteShort,criticalPath,readinessTarget,status
+TiPs-011,noble-b,Noble B,"site-permitting,civil-foundation,electrical-rough-in",2027-Q3,green
+TiPs-012,noble-b,Noble B,"site-permitting,civil-foundation,electrical-rough-in",2027-Q4,green
+TiPs-013,noble-b,Noble B,"civil-foundation,electrical-rough-in,utilities-connect",2028-Q1,green
+TiPs-014,noble-b,Noble B,"civil-foundation,utilities-connect,pad-complete",2028-Q1,yellow
+TiPs-015,noble-b,Noble B,"utilities-connect,pad-complete,fire-suppression",2028-Q2,yellow
+TiPs-016,noble-b,Noble B,"pad-complete,fire-suppression,final-inspection",2028-Q2,green
+TiPs-017,portland-or,Portland OR,"site-permitting,geotech-complete,civil-foundation",2028-Q1,green
+TiPs-018,portland-or,Portland OR,"civil-foundation,electrical-rough-in,utilities-connect",2028-Q2,yellow
+TiPs-019,portland-or,Portland OR,"utilities-connect,pad-complete,final-inspection",2028-Q2,green
+Coal-001,coal-fl,Coal GA,"pre-feed-complete,feed-complete,epc-award,site-permitting,foundation-complete",2029-Q3,green
+Coal-002,coal-tx,Coal MT,"feed-complete,epc-award,site-permitting,civil-works,utilities-connect",2030-Q1,yellow

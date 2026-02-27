@@ -1,0 +1,16 @@
+parameter,value,unit,description
+ppaPrice,60,$/MWh,Power Purchase Agreement price
+gridPrice,75,$/MWh,Grid power purchase price
+revenueEscalator,2.0,%/yr,Annual revenue escalation
+omEscalator,2.0,%/yr,Annual O&M cost escalation
+inflation,3.0,%/yr,General inflation rate
+federalTax,21,%,Federal corporate tax rate
+stateTax,4,%,State tax rate
+localTax,1,%,Local/municipal tax rate
+equity,100,%,Equity financing share (vs debt)
+interestRate,8,%,Debt interest rate (if applicable)
+costOfEquity,12,%,Required return on equity
+insurance,1.0,% of capex,Annual insurance cost
+salvageValue,5,%,End-of-life asset salvage value
+foundationShare,27,%,JV Foundation revenue split
+tireOfftakePerMachine,7.5,$M/machine,Tire offtake revenue per machine from Hartford JV

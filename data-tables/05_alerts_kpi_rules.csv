@@ -1,0 +1,4 @@
+rule_id,metric,trigger_condition,severity_logic,agentId,agentName,department,targetDepts,crossDept,description
+kpi-uptime,Uptime,actual < plan,gap >= 10 → critical; else warning,coo-perf,Site Performance Agent,COO,"vp-ops,vp-maint",true,Per-site uptime miss vs plan target
+kpi-revenue,Revenue,actual < plan * 0.9,actual < plan * 0.75 → critical; else warning,fin-rev,Finance Agent,VP Finance,"vp-finance,vp-ops,vp-marketing",true,Per-site revenue tracking below 90% of plan
+kpi-throughput,Throughput,actual < plan * 0.84,always warning,ops-sched,Scheduling Agent,VP Operations,"vp-ops,vp-maint",false,Per-site throughput below 84% efficiency threshold
