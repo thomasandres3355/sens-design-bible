@@ -78,8 +78,6 @@ const DEFAULT_MODULE_PERMISSIONS = {
     configure: { level: 5, roles: ["CEO", "COO"] },
     it:        { level: 3, roles: ["CEO", "COO"] },
     ai:        { level: 3, roles: ["CEO", "COO"] },
-    process:   { level: 3, roles: ["CEO", "COO"] },
-    legal:     { level: 3, roles: ["CEO", "COO"] },
   },
   workforce: {
     view:      { level: 2, roles: ["CEO", "COO", "VP People", "VP Operations", "VP Risk", "Manager"] },
@@ -246,7 +244,6 @@ export const MODULE_LABELS = {
   "risk-supply-chain": "Supply Chain Risk",
   "admin-it-infra": "IT & Infrastructure",
   "admin-ai-agents": "AI & Agents",
-  "admin-operations": "Operations",
   "admin-users-security": "Users & Security",
   "admin-platform-config": "Platform Config",
   "admin-bug-fixes": "Bug Fixes",
