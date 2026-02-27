@@ -17,7 +17,12 @@
       "Bash(mkdir:*)",
       "WebFetch(domain:en.bioerrorlog.work)",
       "WebFetch(domain:dotclaude.com)",
-      "Bash(git -C \"/Users/thomasandres/Claude Testing/sens-master-project\" status)"
+      "Bash(git -C \"/Users/thomasandres/Claude Testing/sens-master-project\" status)",
+      "Bash(gh auth:*)",
+      "Bash(brew:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

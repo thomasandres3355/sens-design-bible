@@ -39,7 +39,7 @@ const DEFAULT_DATA_CLASSIFICATIONS = [
 // ═══ DEFAULT ROLE → CLEARANCE MAPPING ════════════════════════════════════
 const DEFAULT_ROLE_CLEARANCE = [
   { role: "CEO", level: 5, scope: "all", departments: ["all"], label: "Full Access — All Departments" },
-  { role: "COO", level: 4, scope: "all-operational", departments: ["operations", "engineering", "maintenance", "logistics", "project", "risk", "people"], label: "Operational Access — All Branches" },
+  { role: "COO", level: 5, scope: "all", departments: ["all"], label: "Master Admin — Full Access" },
   { role: "VP Engineering", level: 3, scope: "department", departments: ["engineering"], crossDeptLevel: 2, label: "Engineering + Cross-Dept Read" },
   { role: "VP Operations", level: 3, scope: "department", departments: ["operations", "maintenance"], crossDeptLevel: 2, label: "Operations + Cross-Dept Read" },
   { role: "VP Finance", level: 3, scope: "department+financial", departments: ["finance"], crossDeptLevel: 2, financialAccess: true, label: "Finance + Financial Data Across" },
@@ -121,7 +121,8 @@ export const getRoleClearance = (role) => ROLE_CLEARANCE.find((r) => r.role === 
 
 // ═══ USERS (for pilot testing) ═══════════════════════════════════════════
 export const BADGE_USERS = [
-  { id: "thomas", name: "Thomas", role: "CEO", department: "Executive", email: "thomas@systemicenvs.com", overrides: [] },
+  { id: "david", name: "David Meunier", role: "CEO", department: "Executive", email: "David@SystemicENVS.com", overrides: [] },
+  { id: "thomas", name: "Deadelus", role: "COO", department: "Executive", email: "thomas@systemicenvs.com", overrides: [] },
   { id: "sarah", name: "Sarah Mitchell", role: "COO", department: "Executive", email: "sarah@systemicenvs.com", overrides: [] },
   { id: "james", name: "James Park", role: "VP Finance", department: "Finance", email: "james@systemicenvs.com", overrides: [] },
   { id: "lena", name: "Lena Torres", role: "VP Engineering", department: "Engineering", email: "lena@systemicenvs.com", overrides: [] },

@@ -348,7 +348,9 @@ export const BugReportModal = ({ open, onClose, activeModule }) => {
   const handleApprove = (id) => updateReport(id, { status: "approved" });
   const handleReject = (id) => updateReport(id, { status: "rejected" });
 
-  const openCount = reports.filter(r => !["approved", "rejected"].includes(r.status)).length;
+  // Only show the current user's reports in the tracker
+  const userReports = reports.filter(r => r.reporterId === activeUser.id);
+  const openCount = userReports.filter(r => !["approved", "rejected"].includes(r.status)).length;
 
   return (
     <div style={{
@@ -370,7 +372,7 @@ export const BugReportModal = ({ open, onClose, activeModule }) => {
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Bug Report</div>
             <div style={{ fontSize: 10, color: T.textMid, marginTop: 1 }}>
-              {view === "form" ? `Reporting on ${moduleName}` : `${reports.length} report${reports.length !== 1 ? "s" : ""}`}
+              {view === "form" ? `Reporting on ${moduleName}` : `${userReports.length} report${userReports.length !== 1 ? "s" : ""}`}
             </div>
           </div>
         </div>
@@ -478,13 +480,13 @@ export const BugReportModal = ({ open, onClose, activeModule }) => {
       {/* TRACKER VIEW */}
       {view === "tracker" && (
         <div style={{ flex: 1, overflow: "auto", padding: "8px 12px", maxHeight: 440 }}>
-          {reports.length === 0 ? (
+          {userReports.length === 0 ? (
             <div style={{ padding: 30, textAlign: "center", color: T.textDim, fontSize: 12 }}>
               No bug reports yet. Submit one to get started.
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "4px 0" }}>
-              {reports.map(r => (
+              {userReports.map(r => (
                 <ReportCard
                   key={r.id}
                   report={r}

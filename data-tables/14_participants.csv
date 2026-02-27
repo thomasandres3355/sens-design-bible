@@ -1,5 +1,6 @@
 id,name,role,initials,online
-thomas,Thomas,CEO,TH,true
+david,David Meunier,CEO,DM,true
+thomas,Deadelus,COO,DL,true
 sarah,Sarah Mitchell,COO,SM,true
 james,James Park,VP Finance,JP,true
 lena,Lena Torres,VP Engineering,LT,false

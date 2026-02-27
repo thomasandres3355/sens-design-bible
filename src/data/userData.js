@@ -18,7 +18,7 @@ export const DEFAULT_USERS = BADGE_USERS.map((u) => ({
   createdBy: "system",
   modifiedAt: now,
   modifiedBy: "system",
-  mfaEnabled: ["thomas", "sarah", "james", "lena", "marcus"].includes(u.id),
+  mfaEnabled: ["david", "thomas", "sarah", "james", "lena", "marcus"].includes(u.id),
   ssoProvider: null,
   notes: "",
   landingPage: null,
