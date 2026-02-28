@@ -8,8 +8,8 @@ import { SiteGridView } from "./PortfolioMapView";
 const fmt = (v, d = 1) => v == null ? "—" : "$" + (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(d) + "M" : v >= 1e3 ? (v / 1e3).toFixed(d) + "K" : v.toFixed(d));
 const pctLabel = (a, b) => b > 0 ? ((a / b - 1) * 100).toFixed(0) + "%" : "—";
 
-export const DeliveringView = ({ initialProject, onNavigate }) => {
-  const [tab, setTab] = useState(initialProject ? "projects" : "projects");
+export const DeliveringView = ({ initialProject, onNavigate, defaultTab }) => {
+  const [tab, setTab] = useState(defaultTab || "projects");
   const [selUnit, setSelUnit] = useState(null);
   const [expandedDiv, setExpandedDiv] = useState(null);
   const [selectedProject, setSelectedProject] = useState(initialProject || null);

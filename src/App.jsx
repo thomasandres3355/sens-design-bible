@@ -23,22 +23,17 @@ const modules = [
   { key: "focus", label: "Executive Focus", icon: "M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3", branch: null },
   { key: "sitemap", label: "Site Map", icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-.61.08-1.21.21-1.78L8.99 15v1c0 1.1.9 2 2 2v1.93C7.06 19.43 4 16.07 4 12zm13.89 5.4c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41C18.92 5.77 20 8.65 20 12c0 2.08-.67 4-1.11 5.4z", branch: null },
   { key: "technology", label: "Technology", icon: "M4 4h16v16H4z M9 9h6v6H9z M9 1v3 M15 1v3 M9 20v3 M15 20v3 M20 9h3 M20 15h3 M1 9h3 M1 15h3", branch: "TECHNOLOGY", children: [
-    { key: "operations", label: "Plant Operations", icon: "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" },
+    { key: "manufacturing", label: "Manufacturing", icon: "M2 20h20 M5 20V8l5-6 5 6v12 M19 20V12l-2-2-2 2v8 M9 12h2 M9 16h2" },
+    { key: "rnd-engineering", label: "R&D & Engineering", icon: "M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" },
   ]},
   { key: "ops", label: "Operations", icon: "M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5", branch: "OPERATIONS", children: [
-    { key: "delivering", label: "Engineering & Projects", icon: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" },
+    { key: "operations", label: "Plant Operations", icon: "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" },
+    { key: "projects", label: "Projects", icon: "M22 3H2l4 6h12l4-6z M6 9l3 4.5h6L18 9 M9 13.5l2 3h2l2-3 M11 16.5V21 M13 16.5V21" },
+    { key: "engineering", label: "Engineering", icon: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" },
   ]},
   { key: "growth", label: "Growth", icon: "M18 20V10 M12 20V4 M6 20v-6", branch: "GROWTH", children: [
     { key: "finance", label: "Finance & Strategy", icon: "M3 3v18h18 M7 16l4-4 4 4 5-5 M18 7h4v4" },
     { key: "development", label: "Development", icon: "M22 3H2l4 6h12l4-6z M6 9l3 4.5h6L18 9 M9 13.5l2 3h2l2-3 M11 16.5V21 M13 16.5V21" },
-  ]},
-  { key: "admin", label: "Platform", icon: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", branch: "ADMINISTRATION", children: [
-    { key: "admin-it-infra", label: "IT & Infrastructure", icon: "M22 12H2 M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z M6 16h.01 M10 16h.01" },
-    { key: "admin-ai-agents", label: "AI & Agents", icon: "M18 12h2 M4 12h2 M12 4v2 M12 18v2 M7 7l1.5 1.5 M15.5 15.5L17 17 M17 7l-1.5 1.5 M8.5 15.5L7 17 M9 2h6 M9 22h6 M2 9v6 M22 9v6 M12 12m-3 0a3 3 0 106 0 3 3 0 00-6 0" },
-    { key: "admin-operations", label: "Operations", icon: "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" },
-    { key: "admin-users-security", label: "Users & Security", icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 7a4 4 0 100-8 4 4 0 000 8z M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75" },
-    { key: "admin-platform-config", label: "Platform Config", icon: "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6" },
-    { key: "admin-bug-fixes", label: "Bug Fixes", icon: "M8 2l1.88 1.88 M14.12 3.88L16 2 M9 7.13v-1a3.003 3.003 0 116 0v1 M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 014-4h4a4 4 0 014 4v3c0 3.3-2.7 6-6 6 M12 20v-9" },
   ]},
   { key: "risk", label: "Risk", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", branch: "CROSS-CUTTING", children: [
     { key: "risk-workforce", label: "Workforce", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" },
@@ -49,6 +44,14 @@ const modules = [
     { key: "risk-it-data", label: "IT & Data", icon: "M18 12h2 M4 12h2 M12 4v2 M12 18v2 M12 12m-3 0a3 3 0 106 0 3 3 0 00-6 0" },
     { key: "risk-regulatory", label: "Regulatory", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" },
     { key: "risk-supply-chain", label: "Supply Chain", icon: "M1 3h15v13H1z M16 8h4l3 3v5h-7V8z M5.5 21a2.5 2.5 0 100-5 2.5 2.5 0 000 5z M18.5 21a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" },
+  ]},
+  { key: "admin", label: "Platform", icon: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", branch: "ADMINISTRATION", children: [
+    { key: "admin-it-infra", label: "IT & Infrastructure", icon: "M22 12H2 M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z M6 16h.01 M10 16h.01" },
+    { key: "admin-ai-agents", label: "AI & Agents", icon: "M18 12h2 M4 12h2 M12 4v2 M12 18v2 M7 7l1.5 1.5 M15.5 15.5L17 17 M17 7l-1.5 1.5 M8.5 15.5L7 17 M9 2h6 M9 22h6 M2 9v6 M22 9v6 M12 12m-3 0a3 3 0 106 0 3 3 0 00-6 0" },
+    { key: "admin-operations", label: "Operations", icon: "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" },
+    { key: "admin-users-security", label: "Users & Security", icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 7a4 4 0 100-8 4 4 0 000 8z M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75" },
+    { key: "admin-platform-config", label: "Platform Config", icon: "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6" },
+    { key: "admin-bug-fixes", label: "Bug Fixes", icon: "M8 2l1.88 1.88 M14.12 3.88L16 2 M9 7.13v-1a3.003 3.003 0 116 0v1 M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 014-4h4a4 4 0 014 4v3c0 3.3-2.7 6-6 6 M12 20v-9" },
   ]},
   { key: "org", label: "Org Chart", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", branch: "CROSS-CUTTING" },
 ];
@@ -176,12 +179,19 @@ export default function App() {
     // Standard module views
     const standardViews = {
       dashboard: <DashboardView onNavigate={setActive} />,
-      technology: <OperationsView />,
-      ops: <DeliveringView initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "delivering"} />,
+      technology: <DeliveringView defaultTab="manufacturing" onNavigate={setActive} key="tech-manufacturing" />,
+      ops: <OperationsView />,
       growth: <FinanceView />,
       development: <DevelopmentView onNavigate={setActive} />,
-      delivering: <DeliveringView initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "delivering"} />,
+      // Technology children
+      manufacturing: <DeliveringView defaultTab="manufacturing" onNavigate={setActive} key="manufacturing" />,
+      "rnd-engineering": <DeliveringView defaultTab="engineering" onNavigate={setActive} key="rnd-engineering" />,
+      // Operations children
       operations: <OperationsView />,
+      projects: <DeliveringView defaultTab="projects" initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "projects"} />,
+      engineering: <DeliveringView defaultTab="engineering" onNavigate={setActive} key="engineering" />,
+      // Legacy route for sitemap navigation
+      delivering: <DeliveringView defaultTab="projects" initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "delivering"} />,
       finance: <FinanceView />,
       admin: <PlatformAdminView />,
       workforce: <WorkforceView />,
@@ -207,7 +217,7 @@ export default function App() {
       "admin-bug-fixes": <PlatformAdminView defaultCategory="bug-fixes" key="admin-bug-fixes" />,
       org: <OrgChartView onNavigate={setActive} />,
       focus: <FocusTrackerView />,
-      sitemap: <PortfolioMapView onNavigateToProject={(siteId) => { setNavProjectId(siteId); setActive("delivering"); }} />,
+      sitemap: <PortfolioMapView onNavigateToProject={(siteId) => { setNavProjectId(siteId); setActive("projects"); }} />,
       settings: <PlatformAdminView />,  /* legacy route — redirects to combined view */
     };
     return standardViews[active] || standardViews.dashboard;

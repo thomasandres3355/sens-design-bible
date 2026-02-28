@@ -13,6 +13,7 @@ import {
 } from "../data/pulseData";
 import { allActionItems, participants, pastMeetings, tagRegistry } from "../data/meetingData";
 import { useSimDate } from "../contexts/SimDateContext";
+import { useAuth } from "../contexts/AuthContext";
 
 // ═══════════════════════════════════════════════════════════════════
 //  EXECUTIVE FOCUS TRACKER
@@ -1265,14 +1266,15 @@ const ActionItemPicker = ({ execKey, onSelect, onClose, excludeIds = [] }) => {
 // ═══════════════════════════════════════════════════════════════════
 
 const CreateWeeklyPlanForm = ({ onSave, onCancel, existingPlans, weekOf, simDate }) => {
-  const [selectedExec, setSelectedExec] = useState("");
+  const { currentUser } = useAuth();
+  const userRole = currentUser?.role || "";
+  const [selectedExec] = useState(userRole);
   const [tasks, setTasks] = useState([]);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskObj, setNewTaskObj] = useState("");
   const [showPicker, setShowPicker] = useState(false);
 
-  const alreadyPlannedExecs = new Set(existingPlans.map(p => p.executive));
-  const availableExecs = PULSE_EXECS.filter(e => !alreadyPlannedExecs.has(e.key));
+  const alreadyPlanned = existingPlans.some(p => p.executive === userRole);
   const importedActionItemIds = tasks.filter(t => t.actionItemId).map(t => t.actionItemId);
 
   const addManualTask = () => {
@@ -1325,28 +1327,15 @@ const CreateWeeklyPlanForm = ({ onSave, onCancel, existingPlans, weekOf, simDate
         <button onClick={onCancel} style={{ background: "none", border: "none", color: T.textDim, cursor: "pointer", fontSize: 12, padding: "4px 8px" }}>Cancel</button>
       </div>
 
-      {/* Exec selector */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: T.textDim, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: .5 }}>Executive</div>
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {availableExecs.map(e => (
-            <button key={e.key} onClick={() => setSelectedExec(e.key)} style={{
-              padding: "6px 12px", borderRadius: 6, border: `1px solid ${selectedExec === e.key ? e.color : T.border}`,
-              background: selectedExec === e.key ? e.color + "18" : T.bg0,
-              color: selectedExec === e.key ? e.color : T.textDim,
-              cursor: "pointer", fontSize: 11, fontWeight: 600,
-            }}>
-              {e.key}
-            </button>
-          ))}
-          {availableExecs.length === 0 && (
-            <div style={{ fontSize: 11, color: T.textDim, fontStyle: "italic", padding: 4 }}>All executives have plans for this week.</div>
-          )}
+      {/* Already planned message */}
+      {alreadyPlanned && (
+        <div style={{ fontSize: 12, color: T.warn, fontStyle: "italic", padding: "8px 0", marginBottom: 8 }}>
+          You already have a plan for this week.
         </div>
-      </div>
+      )}
 
       {/* Task list */}
-      {tasks.length > 0 && (
+      {!alreadyPlanned && tasks.length > 0 && (
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: T.textDim, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: .5 }}>Tasks ({tasks.length})</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1369,30 +1358,32 @@ const CreateWeeklyPlanForm = ({ onSave, onCancel, existingPlans, weekOf, simDate
       )}
 
       {/* Add task row */}
-      <div style={{ display: "flex", gap: 8, alignItems: "flex-end", marginBottom: 12 }}>
-        <div style={{ flex: 1 }}>
-          <input
-            value={newTaskText}
-            onChange={e => setNewTaskText(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") addManualTask(); }}
-            placeholder="Type a task..."
-            style={{
-              width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.border}`,
-              background: T.bg0, color: T.text, fontSize: 12, outline: "none",
-              fontFamily: "inherit",
-            }}
-          />
+      {!alreadyPlanned && (
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end", marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            <input
+              value={newTaskText}
+              onChange={e => setNewTaskText(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") addManualTask(); }}
+              placeholder="Type a task..."
+              style={{
+                width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.border}`,
+                background: T.bg0, color: T.text, fontSize: 12, outline: "none",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
+          <ObjectiveTagPicker value={newTaskObj} onChange={setNewTaskObj} />
+          <button onClick={addManualTask} style={{
+            padding: "8px 14px", borderRadius: 6, border: "none",
+            background: T.teal, color: "#1A1A1A", fontSize: 11, fontWeight: 700,
+            cursor: "pointer", whiteSpace: "nowrap",
+          }}>+ Add</button>
         </div>
-        <ObjectiveTagPicker value={newTaskObj} onChange={setNewTaskObj} />
-        <button onClick={addManualTask} style={{
-          padding: "8px 14px", borderRadius: 6, border: "none",
-          background: T.teal, color: "#1A1A1A", fontSize: 11, fontWeight: 700,
-          cursor: "pointer", whiteSpace: "nowrap",
-        }}>+ Add</button>
-      </div>
+      )}
 
       {/* Import from action items */}
-      {selectedExec && (
+      {!alreadyPlanned && selectedExec && (
         <button onClick={() => setShowPicker(true)} style={{
           padding: "8px 14px", borderRadius: 6, border: `1px dashed ${T.blue}`,
           background: T.blue + "08", color: T.blue, fontSize: 11, fontWeight: 600,
@@ -1403,18 +1394,20 @@ const CreateWeeklyPlanForm = ({ onSave, onCancel, existingPlans, weekOf, simDate
       )}
 
       {/* Save button */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-        <button onClick={onCancel} style={{
-          padding: "8px 18px", borderRadius: 6, border: `1px solid ${T.border}`,
-          background: "transparent", color: T.textDim, fontSize: 12, cursor: "pointer",
-        }}>Cancel</button>
-        <button onClick={handleSave} disabled={!selectedExec || tasks.length === 0} style={{
-          padding: "8px 20px", borderRadius: 6, border: "none",
-          background: (!selectedExec || tasks.length === 0) ? T.textDim + "30" : T.teal,
-          color: (!selectedExec || tasks.length === 0) ? T.textDim : "#1A1A1A",
-          fontSize: 12, fontWeight: 700, cursor: (!selectedExec || tasks.length === 0) ? "default" : "pointer",
-        }}>Post Weekly Plan</button>
-      </div>
+      {!alreadyPlanned && (
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button onClick={onCancel} style={{
+            padding: "8px 18px", borderRadius: 6, border: `1px solid ${T.border}`,
+            background: "transparent", color: T.textDim, fontSize: 12, cursor: "pointer",
+          }}>Cancel</button>
+          <button onClick={handleSave} disabled={!selectedExec || tasks.length === 0} style={{
+            padding: "8px 20px", borderRadius: 6, border: "none",
+            background: (!selectedExec || tasks.length === 0) ? T.textDim + "30" : T.teal,
+            color: (!selectedExec || tasks.length === 0) ? T.textDim : "#1A1A1A",
+            fontSize: 12, fontWeight: 700, cursor: (!selectedExec || tasks.length === 0) ? "default" : "pointer",
+          }}>Post Weekly Plan</button>
+        </div>
+      )}
 
       {/* Action item picker modal */}
       {showPicker && selectedExec && (
@@ -1435,35 +1428,32 @@ const CreateWeeklyPlanForm = ({ onSave, onCancel, existingPlans, weekOf, simDate
 // ═══════════════════════════════════════════════════════════════════
 
 const PostDailyStandupForm = ({ onSave, onCancel, existingPlans, existingPosts, simDate, weekOf }) => {
-  const [selectedExec, setSelectedExec] = useState("");
+  const { currentUser } = useAuth();
+  const userRole = currentUser?.role || "";
+  const [selectedExec] = useState(userRole);
   const [yesterdayTasks, setYesterdayTasks] = useState([]);
   const [todayTasks, setTodayTasks] = useState([]);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskObj, setNewTaskObj] = useState("");
   const [showPicker, setShowPicker] = useState(false);
 
-  const alreadyPostedExecs = new Set(existingPosts.filter(p => p.date === simDate).map(p => p.executive));
-  const availableExecs = PULSE_EXECS.filter(e => !alreadyPostedExecs.has(e.key));
+  const alreadyPosted = existingPosts.some(p => p.date === simDate && p.executive === userRole);
   const importedActionItemIds = todayTasks.filter(t => t.actionItemId).map(t => t.actionItemId);
 
-  // When exec changes, load their yesterday tasks from weekly plan
-  const handleExecSelect = (key) => {
-    setSelectedExec(key);
-    setTodayTasks([]);
-    setYesterdayTasks([]);
-    // Find their weekly plan for current week
-    const plan = existingPlans.find(p => p.executive === key && p.weekOf === weekOf);
+  // Load yesterday tasks from weekly plan on mount
+  useEffect(() => {
+    if (!userRole) return;
+    const plan = existingPlans.find(p => p.executive === userRole && p.weekOf === weekOf);
     if (plan) {
-      // Pull planned tasks as yesterday's items (user will mark status)
       const yesterdayItems = plan.tasks.filter(t => t.status === "planned" || t.status === "partial").slice(0, 5).map((t, i) => ({
         task: t.task,
         objectiveTag: t.objectiveTag,
-        status: "planned", // user will toggle
+        status: "planned",
         id: `yt-${i}`,
       }));
       setYesterdayTasks(yesterdayItems);
     }
-  };
+  }, [userRole, existingPlans, weekOf]);
 
   const toggleYesterdayStatus = (idx) => {
     setYesterdayTasks(prev => prev.map((t, i) => {
@@ -1521,32 +1511,19 @@ const PostDailyStandupForm = ({ onSave, onCancel, existingPlans, existingPosts, 
       borderLeft: `3px solid ${T.accent}`, padding: 20,
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Post Daily Standup</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>Post Daily Focus</div>
         <button onClick={onCancel} style={{ background: "none", border: "none", color: T.textDim, cursor: "pointer", fontSize: 12, padding: "4px 8px" }}>Cancel</button>
       </div>
 
-      {/* Exec selector */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: T.textDim, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: .5 }}>Executive</div>
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {availableExecs.map(e => (
-            <button key={e.key} onClick={() => handleExecSelect(e.key)} style={{
-              padding: "6px 12px", borderRadius: 6, border: `1px solid ${selectedExec === e.key ? e.color : T.border}`,
-              background: selectedExec === e.key ? e.color + "18" : T.bg0,
-              color: selectedExec === e.key ? e.color : T.textDim,
-              cursor: "pointer", fontSize: 11, fontWeight: 600,
-            }}>
-              {e.key}
-            </button>
-          ))}
-          {availableExecs.length === 0 && (
-            <div style={{ fontSize: 11, color: T.textDim, fontStyle: "italic", padding: 4 }}>All executives have posted today.</div>
-          )}
+      {/* Already posted message */}
+      {alreadyPosted && (
+        <div style={{ fontSize: 12, color: T.warn, fontStyle: "italic", padding: "8px 0", marginBottom: 8 }}>
+          You've already posted your daily focus for today.
         </div>
-      </div>
+      )}
 
       {/* Yesterday update */}
-      {selectedExec && yesterdayTasks.length > 0 && (
+      {!alreadyPosted && selectedExec && yesterdayTasks.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 11, color: T.textDim, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: .5 }}>
             Yesterday's Tasks <span style={{ fontWeight: 400, textTransform: "none", fontStyle: "italic" }}>(click to toggle status)</span>
@@ -1589,7 +1566,7 @@ const PostDailyStandupForm = ({ onSave, onCancel, existingPlans, existingPosts, 
       )}
 
       {/* Today's plan */}
-      {selectedExec && (
+      {!alreadyPosted && selectedExec && (
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: T.teal, fontWeight: 600, marginBottom: 6, textTransform: "uppercase", letterSpacing: .5 }}>Today's Plan</div>
 
@@ -1648,18 +1625,20 @@ const PostDailyStandupForm = ({ onSave, onCancel, existingPlans, existingPosts, 
       )}
 
       {/* Save */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
-        <button onClick={onCancel} style={{
-          padding: "8px 18px", borderRadius: 6, border: `1px solid ${T.border}`,
-          background: "transparent", color: T.textDim, fontSize: 12, cursor: "pointer",
-        }}>Cancel</button>
-        <button onClick={handleSave} disabled={!selectedExec || todayTasks.length === 0} style={{
-          padding: "8px 20px", borderRadius: 6, border: "none",
-          background: (!selectedExec || todayTasks.length === 0) ? T.textDim + "30" : T.accent,
-          color: (!selectedExec || todayTasks.length === 0) ? T.textDim : "#1A1A1A",
-          fontSize: 12, fontWeight: 700, cursor: (!selectedExec || todayTasks.length === 0) ? "default" : "pointer",
-        }}>Post Standup</button>
-      </div>
+      {!alreadyPosted && (
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
+          <button onClick={onCancel} style={{
+            padding: "8px 18px", borderRadius: 6, border: `1px solid ${T.border}`,
+            background: "transparent", color: T.textDim, fontSize: 12, cursor: "pointer",
+          }}>Cancel</button>
+          <button onClick={handleSave} disabled={!selectedExec || todayTasks.length === 0} style={{
+            padding: "8px 20px", borderRadius: 6, border: "none",
+            background: (!selectedExec || todayTasks.length === 0) ? T.textDim + "30" : T.accent,
+            color: (!selectedExec || todayTasks.length === 0) ? T.textDim : "#1A1A1A",
+            fontSize: 12, fontWeight: 700, cursor: (!selectedExec || todayTasks.length === 0) ? "default" : "pointer",
+          }}>Post Focus</button>
+        </div>
+      )}
 
       {/* Action item picker modal */}
       {showPicker && selectedExec && (
@@ -1677,6 +1656,8 @@ const PostDailyStandupForm = ({ onSave, onCancel, existingPlans, existingPosts, 
 
 const WeeklyPulseView = () => {
   const { simDate } = useSimDate();
+  const { currentUser } = useAuth();
+  const userRole = currentUser?.role || "";
   const [weekView, setWeekView] = useState("current"); // "current" | "last"
   const [execFilter, setExecFilter] = useState("all");
   const [feedView, setFeedView] = useState("daily"); // "daily" | "weekly"
@@ -1946,7 +1927,7 @@ const WeeklyPulseView = () => {
           onMouseEnter={e => { if (!showCreatePost) e.currentTarget.style.borderColor = T.accent; }}
           onMouseLeave={e => { if (!showCreatePost) e.currentTarget.style.borderColor = T.border; }}
         >
-          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Post Daily Standup
+          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Post Daily Focus
         </button>
       </div>
 
@@ -1991,7 +1972,7 @@ const WeeklyPulseView = () => {
       {feedView === "daily" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <SectionHeader sub="What executives worked on yesterday and plan for today">
-            Daily Standup Feed
+            Daily Focus Feed
           </SectionHeader>
 
           {postsByDate.map(([date, posts]) => (
@@ -2063,17 +2044,21 @@ const WeeklyPulseView = () => {
                       <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                           <div style={{ fontSize: 9, color: T.teal, textTransform: "uppercase", letterSpacing: .8, fontWeight: 600 }}>Today's Plan</div>
-                          <span style={{ fontSize: 9, color: T.textDim, fontStyle: "italic" }}>(click to check off)</span>
-                          <button
-                            onClick={() => { setEditingPostId(editingPostId === post.id ? null : post.id); setEditingTaskId(null); setInlineTaskText(""); setInlineTaskObj(""); }}
-                            style={{
-                              marginLeft: "auto", background: "none", border: `1px solid ${editingPostId === post.id ? T.accent : T.border}`,
-                              borderRadius: 4, padding: "2px 8px", cursor: "pointer",
-                              fontSize: 9, fontWeight: 600, color: editingPostId === post.id ? T.accent : T.textDim,
-                            }}
-                          >
-                            {editingPostId === post.id ? "Done Editing" : "Edit"}
-                          </button>
+                          {post.executive === userRole && (
+                            <span style={{ fontSize: 9, color: T.textDim, fontStyle: "italic" }}>(click to check off)</span>
+                          )}
+                          {post.executive === userRole && (
+                            <button
+                              onClick={() => { setEditingPostId(editingPostId === post.id ? null : post.id); setEditingTaskId(null); setInlineTaskText(""); setInlineTaskObj(""); }}
+                              style={{
+                                marginLeft: "auto", background: "none", border: `1px solid ${editingPostId === post.id ? T.accent : T.border}`,
+                                borderRadius: 4, padding: "2px 8px", cursor: "pointer",
+                                fontSize: 9, fontWeight: 600, color: editingPostId === post.id ? T.accent : T.textDim,
+                              }}
+                            >
+                              {editingPostId === post.id ? "Done Editing" : "Edit"}
+                            </button>
+                          )}
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                           {post.todayPlan.map((t, i) => {
@@ -2085,10 +2070,10 @@ const WeeklyPulseView = () => {
                                 background: tStatus === "done" ? T.green + "06" : T.bg0,
                                 borderRadius: 5,
                                 border: `1px solid ${tStatus === "done" ? T.green + "20" : T.border}`,
-                                cursor: editingPostId === post.id ? "default" : "pointer",
+                                cursor: (editingPostId === post.id || post.executive !== userRole) ? "default" : "pointer",
                                 transition: "all .15s",
                               }}
-                                onClick={() => { if (editingPostId !== post.id) togglePostTodayTask(post.id, i); }}
+                                onClick={() => { if (editingPostId !== post.id && post.executive === userRole) togglePostTodayTask(post.id, i); }}
                               >
                                 <span style={{
                                   fontSize: 12, flexShrink: 0,
@@ -2215,17 +2200,19 @@ const WeeklyPulseView = () => {
                       <div style={{ fontSize: 18, fontWeight: 800, color: focusColor(alignPct) }}>{alignPct}%</div>
                       <div style={{ fontSize: 9, color: T.textDim }}>ALIGNED</div>
                     </div>
-                    <button
-                      onClick={() => { setEditingPlanId(editingPlanId === plan.id ? null : plan.id); setEditingTaskId(null); setInlineTaskText(""); setInlineTaskObj(""); }}
-                      style={{
-                        background: "none", border: `1px solid ${editingPlanId === plan.id ? T.teal : T.border}`,
-                        borderRadius: 5, padding: "4px 10px", cursor: "pointer",
-                        fontSize: 10, fontWeight: 600, color: editingPlanId === plan.id ? T.teal : T.textDim,
-                        marginLeft: 4, transition: "all .15s",
-                      }}
-                    >
-                      {editingPlanId === plan.id ? "Done" : "Edit"}
-                    </button>
+                    {plan.executive === userRole && (
+                      <button
+                        onClick={() => { setEditingPlanId(editingPlanId === plan.id ? null : plan.id); setEditingTaskId(null); setInlineTaskText(""); setInlineTaskObj(""); }}
+                        style={{
+                          background: "none", border: `1px solid ${editingPlanId === plan.id ? T.teal : T.border}`,
+                          borderRadius: 5, padding: "4px 10px", cursor: "pointer",
+                          fontSize: 10, fontWeight: 600, color: editingPlanId === plan.id ? T.teal : T.textDim,
+                          marginLeft: 4, transition: "all .15s",
+                        }}
+                      >
+                        {editingPlanId === plan.id ? "Done" : "Edit"}
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -2236,7 +2223,7 @@ const WeeklyPulseView = () => {
 
                 {/* Task list — clickable to toggle status */}
                 <div style={{ padding: "10px 18px 14px" }}>
-                  {editingPlanId !== plan.id && (
+                  {editingPlanId !== plan.id && plan.executive === userRole && (
                     <div style={{ fontSize: 9, color: T.textDim, fontStyle: "italic", marginBottom: 6 }}>Click tasks to check off</div>
                   )}
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -2248,10 +2235,10 @@ const WeeklyPulseView = () => {
                           background: t.status === "done" ? T.green + "06" : T.bg0,
                           border: `1px solid ${t.status === "done" ? T.green + "20" : T.border}`,
                           borderRadius: 6,
-                          cursor: editingPlanId === plan.id ? "default" : "pointer",
+                          cursor: (editingPlanId === plan.id || plan.executive !== userRole) ? "default" : "pointer",
                           transition: "all .15s",
                         }}
-                          onClick={() => { if (editingPlanId !== plan.id) togglePlanTaskStatus(plan.id, t.id); }}
+                          onClick={() => { if (editingPlanId !== plan.id && plan.executive === userRole) togglePlanTaskStatus(plan.id, t.id); }}
                         >
                           <span style={{
                             fontSize: 12, flexShrink: 0,
