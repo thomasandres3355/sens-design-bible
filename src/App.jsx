@@ -6,6 +6,7 @@ import { WorkforceView } from "./views/WorkforceView";
 import { GenericLandingView } from "./views/GenericLandingView";
 import { vpRegistry, isVpKey, isExecKey, getExecData, isAgentKey, agentIndex, ceoAgentTeam, cooAgentTeam, getAgentDirectory } from "./data/vpData";
 import { getLandingPageKey } from "./data/landingPageData";
+import { Card } from "./components/ui";
 import { GlobalAgentFab } from "./components/ui/AgentChat";
 import sensLogo from "./assets/SENS Logo-White copy.png";
 import { useSimDate } from "./contexts/SimDateContext";
@@ -17,19 +18,25 @@ import { usePermissions } from "./contexts/PermissionContext";
 import { AccessDenied } from "./components/ui/PermissionGate";
 import { useThemeMode } from "./contexts/ThemeContext";
 import { BugReportModal, BugIcon, getBugReportCount } from "./components/ui/BugReportModal";
+import { useRouting, pathToKey } from "./hooks/useRouting";
 
 const modules = [
   { key: "dashboard", label: "Dashboard", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z", branch: null },
   { key: "focus", label: "Executive Focus", icon: "M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3", branch: null },
   { key: "sitemap", label: "Site Map", icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-.61.08-1.21.21-1.78L8.99 15v1c0 1.1.9 2 2 2v1.93C7.06 19.43 4 16.07 4 12zm13.89 5.4c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41C18.92 5.77 20 8.65 20 12c0 2.08-.67 4-1.11 5.4z", branch: null },
   { key: "technology", label: "Technology", icon: "M4 4h16v16H4z M9 9h6v6H9z M9 1v3 M15 1v3 M9 20v3 M15 20v3 M20 9h3 M20 15h3 M1 9h3 M1 15h3", branch: "TECHNOLOGY", children: [
-    { key: "manufacturing", label: "Manufacturing", icon: "M2 20h20 M5 20V8l5-6 5 6v12 M19 20V12l-2-2-2 2v8 M9 12h2 M9 16h2" },
-    { key: "rnd-engineering", label: "R&D & Engineering", icon: "M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" },
+    { key: "tech-manufacturing", label: "Manufacturing", icon: "M2 20h20 M5 20V8l5-6 5 6v12 M19 20V12l-2-2-2 2v8 M9 12h2 M9 16h2" },
+    { key: "tech-maintenance", label: "Maintenance", icon: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" },
+    { key: "tech-engineering", label: "Engineering", icon: "M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" },
+    { key: "tech-ip-risk", label: "IP Risk", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4" },
   ]},
   { key: "ops", label: "Operations", icon: "M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5", branch: "OPERATIONS", children: [
-    { key: "operations", label: "Plant Operations", icon: "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" },
-    { key: "projects", label: "Projects", icon: "M22 3H2l4 6h12l4-6z M6 9l3 4.5h6L18 9 M9 13.5l2 3h2l2-3 M11 16.5V21 M13 16.5V21" },
-    { key: "engineering", label: "Engineering", icon: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" },
+    { key: "ops-projects", label: "Projects", icon: "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" },
+    { key: "ops-engineering", label: "Engineering", icon: "M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" },
+    { key: "ops-maintenance", label: "Maintenance", icon: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" },
+    { key: "ops-risk", label: "Risk", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M12 8v4 M12 16h.01" },
+    { key: "ops-logistics", label: "Logistics", icon: "M1 3h15v13H1z M16 8h4l3 3v5h-7V8z M5.5 21a2.5 2.5 0 100-5 2.5 2.5 0 000 5z M18.5 21a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" },
+    { key: "ops-plant", label: "Plant Operations", icon: "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" },
   ]},
   { key: "growth", label: "Growth", icon: "M18 20V10 M12 20V4 M6 20v-6", branch: "GROWTH", children: [
     { key: "finance", label: "Finance & Strategy", icon: "M3 3v18h18 M7 16l4-4 4 4 5-5 M18 7h4v4" },
@@ -64,7 +71,7 @@ const HISTORY_OPTIONS = [
 ];
 
 export default function App() {
-  const [active, setActive] = useState("dashboard");
+  const { active, setActive } = useRouting();
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [navProjectId, setNavProjectId] = useState(null);
@@ -108,19 +115,36 @@ export default function App() {
     }
   }, [isAuthenticated, currentUser, activeUser.id, switchUser]);
 
-  // Post-login redirect to role-based landing page
+  // Post-login redirect to role-based landing page (with deep-link restoration)
   const hasRedirected = useRef(false);
+  const intendedPath = useRef(null);
   useEffect(() => {
     if (isAuthenticated && currentUser && !hasRedirected.current) {
       hasRedirected.current = true;
-      const landingKey = getLandingPageKey(currentUser);
-      if (landingKey) setActive(landingKey);
+      if (intendedPath.current) {
+        const key = pathToKey(intendedPath.current);
+        intendedPath.current = null;
+        setActive(key, { replace: true });
+      } else {
+        // Only redirect to landing page on fresh login (not on page refresh with an existing deep URL)
+        const currentPath = window.location.pathname;
+        if (currentPath === "/" || currentPath === "/login" || currentPath === "/dashboard") {
+          const landingKey = getLandingPageKey(currentUser);
+          if (landingKey) setActive(landingKey, { replace: true });
+        }
+      }
     }
     if (!isAuthenticated) hasRedirected.current = false;
   }, [isAuthenticated, currentUser]);
 
   // Auth gate — show login if not authenticated
-  if (!isAuthenticated) return <LoginView />;
+  if (!isAuthenticated) {
+    if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
+      intendedPath.current = window.location.pathname;
+      window.history.replaceState({}, "", "/login");
+    }
+    return <LoginView />;
+  }
 
   // Filter sidebar modules by permission
   const visibleSidebar = modules.filter((m) => visibleModules.includes(m.key));
@@ -170,7 +194,7 @@ export default function App() {
     }
 
     // Permission check for standard modules (including risk children — check parent "risk" permission)
-    const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active;
+    const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active.startsWith("tech-") ? "technology" : active.startsWith("ops-") ? "ops" : active;
     const isStandardModule = modules.find((m) => m.key === active) || modules.some(m => m.children?.some(c => c.key === active));
     if (!can(permKey, "view") && isStandardModule) {
       return <AccessDenied module={permKey} action="view" />;
@@ -179,19 +203,20 @@ export default function App() {
     // Standard module views
     const standardViews = {
       dashboard: <DashboardView onNavigate={setActive} />,
-      technology: <DeliveringView defaultTab="manufacturing" onNavigate={setActive} key="tech-manufacturing" />,
-      ops: <OperationsView />,
+      technology: <DeliveringView fixedTab="manufacturing" key="technology" />,
+      "tech-manufacturing": <DeliveringView fixedTab="manufacturing" key="tech-manufacturing" />,
+      "tech-maintenance": <OperationsView fixedTab="maintenance" maintenanceScope="machines" key="tech-maintenance" />,
+      "tech-engineering": <DeliveringView fixedTab="engineering" engineeringScope="technology" key="tech-engineering" />,
+      "tech-ip-risk": <Card title="IP Risk" titleColor={T.accent}><div style={{ padding: 20, textAlign: "center" }}><div style={{ fontSize: 40, marginBottom: 12 }}>&#128737;</div><div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 8 }}>Intellectual Property Risk Management</div><div style={{ fontSize: 12, color: T.textDim, lineHeight: 1.6 }}>Patent portfolio tracking, trade secret protection, licensing compliance, and IP risk assessment. This module is under development.</div></div></Card>,
+      ops: <DeliveringView fixedTab="projects" initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "ops"} />,
+      "ops-projects": <DeliveringView fixedTab="projects" initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "ops-projects"} />,
+      "ops-engineering": <DeliveringView fixedTab="engineering" engineeringScope="operations" key="ops-engineering" />,
+      "ops-maintenance": <OperationsView fixedTab="maintenance" maintenanceScope="facilities" key="ops-maintenance" />,
+      "ops-risk": <OperationsView fixedTab="hse" key="ops-risk" />,
+      "ops-logistics": <OperationsView fixedTab="logistics" key="ops-logistics" />,
+      "ops-plant": <OperationsView fixedTab="plant" key="ops-plant" />,
       growth: <FinanceView />,
       development: <DevelopmentView onNavigate={setActive} />,
-      // Technology children
-      manufacturing: <DeliveringView defaultTab="manufacturing" onNavigate={setActive} key="manufacturing" />,
-      "rnd-engineering": <DeliveringView defaultTab="engineering" onNavigate={setActive} key="rnd-engineering" />,
-      // Operations children
-      operations: <OperationsView />,
-      projects: <DeliveringView defaultTab="projects" initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "projects"} />,
-      engineering: <DeliveringView defaultTab="engineering" onNavigate={setActive} key="engineering" />,
-      // Legacy route for sitemap navigation
-      delivering: <DeliveringView defaultTab="projects" initialProject={navProjectId} onNavigate={setActive} key={navProjectId || "delivering"} />,
       finance: <FinanceView />,
       admin: <PlatformAdminView />,
       workforce: <WorkforceView />,
@@ -217,7 +242,7 @@ export default function App() {
       "admin-bug-fixes": <PlatformAdminView defaultCategory="bug-fixes" key="admin-bug-fixes" />,
       org: <OrgChartView onNavigate={setActive} />,
       focus: <FocusTrackerView />,
-      sitemap: <PortfolioMapView onNavigateToProject={(siteId) => { setNavProjectId(siteId); setActive("projects"); }} />,
+      sitemap: <PortfolioMapView onNavigateToProject={(siteId) => { setNavProjectId(siteId); setActive("ops-projects"); }} />,
       settings: <PlatformAdminView />,  /* legacy route — redirects to combined view */
     };
     return standardViews[active] || standardViews.dashboard;
