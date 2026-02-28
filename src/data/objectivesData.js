@@ -39,7 +39,7 @@ export function buildObjectives(liveActiveSites, portfolio) {
       { dept: "Projects", agent: "Construction Agent", text: "Noble B 18% complete and on schedule — positive milestone for investor confidence in expansion playbook", severity: "green" },
       { dept: "Maintenance", agent: "Maintenance Agent", text: "Predictive maintenance system caught 2 failures before downtime — demonstrable technology advantage for investor deck", severity: "green" },
     ],
-    nav: "operations",
+    nav: "ops-plant",
   };
 
   const obj2 = {
@@ -57,7 +57,7 @@ export function buildObjectives(liveActiveSites, portfolio) {
       { dept: "Logistics", agent: "Supply Chain Agent", text: "Columbus OH feedstock buffer at 4 days vs 10-day target — Midwest Tire Recyclers delayed, alternate supplier contacted", severity: "warning" },
       { dept: "Operations", agent: "Scheduling Agent", text: `Processor optimization yielding +0.5 TPH week-over-week. Tucson leading at 91% uptime — benchmark for other sites`, severity: "green" },
     ],
-    nav: "operations",
+    nav: "ops-plant",
   };
 
   const obj3 = {
@@ -75,7 +75,7 @@ export function buildObjectives(liveActiveSites, portfolio) {
       { dept: "Risk", agent: "Permitting Agent", text: "2 environmental permits due for renewal within 60 days — Noble OK and Richmond. Filing initiated, awaiting agency response", severity: "yellow" },
       { dept: "Process", agent: "Contractor Agent", text: "148 contractors, 100% Veriforce compliant. 24 confirmed for Noble turnaround Mar 15 — no gaps in construction workforce", severity: "green" },
     ],
-    nav: "delivering",
+    nav: "ops-projects",
   };
 
   return COMPANY_OBJECTIVES.map((base, i) => {

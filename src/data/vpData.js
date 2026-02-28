@@ -152,8 +152,8 @@ export const cooAgentTeam = {
   ],
   quickLinks: [
     { label: "Dashboard", target: "dashboard" },
-    { label: "Plant Operations", target: "operations" },
-    { label: "Engineering & Projects", target: "delivering" },
+    { label: "Plant Operations", target: "ops-plant" },
+    { label: "Engineering & Projects", target: "ops-projects" },
     { label: "Risk & Workforce", target: "risk" },
   ],
   agentTeam: {
@@ -264,7 +264,7 @@ export const vpRegistry = {
     key: "vp-engineering",
     title: "VP Engineering",
     branch: "Delivering",
-    branchKey: "delivering",
+    branchKey: "ops-projects",
     color: T.green,
     focusAreas: ["Concept & IP", "TiPs Design", "Grade R&D"],
     kpis: [
@@ -274,7 +274,7 @@ export const vpRegistry = {
       { label: "R&D Spend MTD", value: "$420K", sub: "vs $450K budget" },
     ],
     quickLinks: [
-      { label: "Engineering & Projects", target: "delivering" },
+      { label: "Engineering & Projects", target: "ops-projects" },
       { label: "Risk Register", target: "risk" },
     ],
     agentTeam: {
@@ -350,7 +350,7 @@ export const vpRegistry = {
     key: "vp-project",
     title: "VP Project",
     branch: "Delivering",
-    branchKey: "delivering",
+    branchKey: "ops-projects",
     color: T.green,
     focusAreas: ["Build / Install", "PM / Fab", "Commissioning"],
     kpis: [
@@ -360,7 +360,7 @@ export const vpRegistry = {
       { label: "EPC Partners", value: "2", sub: "Cissell Mueller · B&R" },
     ],
     quickLinks: [
-      { label: "Engineering & Projects", target: "delivering" },
+      { label: "Engineering & Projects", target: "ops-projects" },
       { label: "Risk Register", target: "risk" },
     ],
     agentTeam: {
@@ -425,7 +425,7 @@ export const vpRegistry = {
     key: "vp-maint",
     title: "VP Maintenance",
     branch: "Operations",
-    branchKey: "operations",
+    branchKey: "ops-plant",
     color: T.purple,
     focusAreas: ["Preventive", "IoT/Predictive", "Turnarounds"],
     kpis: [
@@ -434,7 +434,7 @@ export const vpRegistry = {
       { label: "IoT Sensors", value: "48", sub: "all reporting" },
       { label: "Next Turnaround", value: "Mar 15", sub: "Noble OK" },
     ],
-    quickLinks: [{ label: "Plant Operations", target: "operations" }],
+    quickLinks: [{ label: "Plant Operations", target: "ops-plant" }],
     agentTeam: {
       lead: {
         id: "maint-ea", name: "Maintenance EA", role: "Executive Assistant",
@@ -498,7 +498,7 @@ export const vpRegistry = {
     key: "vp-ops",
     title: "VP Operations",
     branch: "Operations",
-    branchKey: "operations",
+    branchKey: "ops-plant",
     color: T.purple,
     focusAreas: ["Plant Ops", "Process Ctrl", "Quality"],
     kpis: [
@@ -507,7 +507,7 @@ export const vpRegistry = {
       { label: "Quality Score", value: "96%", sub: "N330 grade" },
       { label: "Process Alerts", value: "3", sub: "2 resolved today" },
     ],
-    quickLinks: [{ label: "Plant Operations", target: "operations" }, { label: "Risk Register", target: "risk" }],
+    quickLinks: [{ label: "Plant Operations", target: "ops-plant" }, { label: "Risk Register", target: "risk" }],
     agentTeam: {
       lead: {
         id: "ops-ea", name: "Operations EA", role: "Executive Assistant",
@@ -568,7 +568,7 @@ export const vpRegistry = {
     key: "vp-hse",
     title: "VP Risk",
     branch: "Operations",
-    branchKey: "operations",
+    branchKey: "ops-plant",
     color: T.purple,
     focusAreas: ["Safety", "Environmental", "Permitting"],
     kpis: [
@@ -639,7 +639,7 @@ export const vpRegistry = {
     key: "vp-logistics",
     title: "VP Logistics",
     branch: "Operations",
-    branchKey: "operations",
+    branchKey: "ops-plant",
     color: T.purple,
     focusAreas: ["Inbound", "Outbound", "Inventory"],
     kpis: [
@@ -648,7 +648,7 @@ export const vpRegistry = {
       { label: "Inventory Days", value: "12", sub: "target 10" },
       { label: "Freight Cost", value: "$1.2M", sub: "MTD" },
     ],
-    quickLinks: [{ label: "Plant Operations", target: "operations" }, { label: "Finance & Strategy", target: "finance" }],
+    quickLinks: [{ label: "Plant Operations", target: "ops-plant" }, { label: "Finance & Strategy", target: "finance" }],
     agentTeam: {
       lead: {
         id: "log-ea", name: "Logistics EA", role: "Executive Assistant",
@@ -847,7 +847,7 @@ export const vpRegistry = {
       { label: "Carbon Price", value: "$680/T", sub: "N330 grade" },
       { label: "New Contracts", value: "3", sub: "this quarter" },
     ],
-    quickLinks: [{ label: "Finance & Strategy", target: "finance" }, { label: "Plant Operations", target: "operations" }],
+    quickLinks: [{ label: "Finance & Strategy", target: "finance" }, { label: "Plant Operations", target: "ops-plant" }],
     agentTeam: {
       lead: {
         id: "mktg-ea", name: "Marketing EA", role: "Executive Assistant",
