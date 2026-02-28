@@ -8,8 +8,8 @@ import { SiteGridView } from "./PortfolioMapView";
 const fmt = (v, d = 1) => v == null ? "—" : "$" + (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(d) + "M" : v >= 1e3 ? (v / 1e3).toFixed(d) + "K" : v.toFixed(d));
 const pctLabel = (a, b) => b > 0 ? ((a / b - 1) * 100).toFixed(0) + "%" : "—";
 
-export const DeliveringView = ({ initialProject, onNavigate }) => {
-  const [tab, setTab] = useState(initialProject ? "projects" : "projects");
+export const DeliveringView = ({ initialProject, onNavigate, fixedTab, engineeringScope }) => {
+  const [tab, setTab] = useState(fixedTab || (initialProject ? "projects" : "projects"));
   const [selUnit, setSelUnit] = useState(null);
   const [expandedDiv, setExpandedDiv] = useState(null);
   const [selectedProject, setSelectedProject] = useState(initialProject || null);
@@ -102,7 +102,7 @@ export const DeliveringView = ({ initialProject, onNavigate }) => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <TabBar tabs={[{ key: "projects", label: "Projects" }, { key: "manufacturing", label: "Manufacturing" }, { key: "engineering", label: "Engineering" }]} active={tab} onChange={k => { setTab(k); setSelUnit(null); setSelectedProject(null); }} />
+      {!fixedTab && <TabBar tabs={[{ key: "projects", label: "Projects" }, { key: "manufacturing", label: "Manufacturing" }, { key: "engineering", label: "Engineering" }]} active={tab} onChange={k => { setTab(k); setSelUnit(null); setSelectedProject(null); }} />}
 
       {/* ════════════════ PROJECTS TAB ════════════════ */}
       {tab === "projects" && <>
@@ -888,7 +888,7 @@ export const DeliveringView = ({ initialProject, onNavigate }) => {
       {tab === "engineering" && <>
         <DraggableGrid
           widgets={[
-            {
+            ...(engineeringScope === "operations" ? [] : [{
               id: "del-eng-kpis",
               label: "Engineering KPIs",
               render: () => (
@@ -937,8 +937,8 @@ export const DeliveringView = ({ initialProject, onNavigate }) => {
           );})}
         </div>
               )
-            },
-            {
+            }]),
+            ...(engineeringScope === "technology" ? [] : [{
               id: "del-eng-coal",
               label: "Coal Program",
               render: () => (
@@ -1053,9 +1053,9 @@ export const DeliveringView = ({ initialProject, onNavigate }) => {
             );})}
           </div>
           </>)
-            },
+            }]),
           ]}
-          storageKey="sens-delivering-eng-layout"
+          storageKey={`sens-delivering-eng-layout${engineeringScope ? `-${engineeringScope}` : ""}`}
           locked={layoutLocked}
           onLockedChange={setLayoutLocked}
         />

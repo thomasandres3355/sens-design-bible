@@ -211,8 +211,16 @@ function LandingPageEditModal({ pageKey, onClose, onSave }) {
               <select value={newLinkTarget} onChange={e => setNewLinkTarget(e.target.value)}
                 style={{ ...inputStyle, minWidth: 140 }}>
                 <option value="dashboard">Dashboard</option>
-                <option value="operations">Plant Operations</option>
-                <option value="delivering">Engineering & Projects</option>
+                <option value="tech-manufacturing">Manufacturing (Tech)</option>
+                <option value="tech-maintenance">Maintenance - Machines (Tech)</option>
+                <option value="tech-engineering">Engineering - R&D (Tech)</option>
+                <option value="tech-ip-risk">IP Risk (Tech)</option>
+                <option value="ops-projects">Projects (Ops)</option>
+                <option value="ops-engineering">Engineering - Projects (Ops)</option>
+                <option value="ops-maintenance">Maintenance - Facilities (Ops)</option>
+                <option value="ops-risk">Risk (Ops)</option>
+                <option value="ops-logistics">Logistics (Ops)</option>
+                <option value="ops-plant">Plant Operations (Ops)</option>
                 <option value="finance">Finance & Strategy</option>
                 <option value="risk">Risk</option>
                 <option value="admin">Platform & Admin</option>

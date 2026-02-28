@@ -704,8 +704,8 @@ export const INITIAL_ACTIVITY = [
 
 // ─── Downstream Module Connections ─────────────────────────────────
 export const DOWNSTREAM_MODULES = [
-  { key: "delivering", label: "Engineering & Projects", trigger: "Stage = EPC Ready", icon: "⚙" },
-  { key: "operations", label: "Plant Operations", trigger: "Commissioned", icon: "▶" },
+  { key: "ops-projects", label: "Projects", trigger: "Stage = EPC Ready", icon: "⚙" },
+  { key: "ops-plant", label: "Plant Operations", trigger: "Commissioned", icon: "▶" },
   { key: "finance", label: "Finance & Strategy", trigger: "Budget linked", icon: "$" },
   { key: "sitemap", label: "Site Map", trigger: "Location set", icon: "◉" },
   { key: "risk", label: "Risk & Workforce", trigger: "Team assigned", icon: "⛨" },

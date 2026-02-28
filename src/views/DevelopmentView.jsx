@@ -1076,8 +1076,8 @@ function DownstreamBar({ selectedProject, onNavigate }) {
   const p = selectedProject;
   const getStatus = (mod) => {
     if (!p) return false;
-    if (mod.key === "delivering") return p.stage === "epc" || p.stage === "construction";
-    if (mod.key === "operations") return p.stage === "commissioning";
+    if (mod.key === "ops-projects") return p.stage === "epc" || p.stage === "construction";
+    if (mod.key === "ops-plant") return p.stage === "commissioning";
     if (mod.key === "finance") return (p.budget?.estimated || 0) > 0;
     if (mod.key === "sitemap") return !!p.location?.name;
     if (mod.key === "risk") return (p.team?.length || 0) > 0;

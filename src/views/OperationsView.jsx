@@ -41,8 +41,8 @@ const filterByFeedstock = (sites, feedstockKey) => {
   return sites.filter(s => s.feedstock === match);
 };
 
-export const OperationsView = () => {
-  const [tab, setTab] = useState("plant");
+export const OperationsView = ({ fixedTab, maintenanceScope }) => {
+  const [tab, setTab] = useState(fixedTab || "plant");
   const [sel, setSel] = useState(null);
   const [feedstock, setFeedstock] = useState("all");
   const [selSite, setSelSite] = useState(activeSites[0]?.id);
@@ -70,11 +70,11 @@ export const OperationsView = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-        <TabBar
+        {!fixedTab && <TabBar
           tabs={tabsConfig}
           active={tab}
           onChange={k => { setTab(k); setSel(null); }}
-        />
+        />}
         <FeedstockFilter value={feedstock} onChange={setFeedstock} />
       </div>
 
@@ -407,7 +407,149 @@ export const OperationsView = () => {
       )}
 
       {/* MAINTENANCE TAB */}
-      {tab === "maintenance" && (
+      {tab === "maintenance" && maintenanceScope === "facilities" && (
+        <DraggableGrid
+          widgets={[
+            {
+              id: "fac-maint-engine",
+              label: "Facilities Status",
+              render: () => (
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <EngineLight on={false} color="green" label="HVAC Operational" />
+                  <EngineLight on={false} color="green" label="Fire Suppression OK" />
+                  <EngineLight on={true} color="warn" label="Backup Gen Service Due" />
+                  <EngineLight on={false} color="green" label="Building Inspection Current" />
+                </div>
+              ),
+            },
+            {
+              id: "fac-maint-kpis",
+              label: "Facilities KPIs",
+              render: () => (
+                <DraggableCardRow
+                  items={[
+                    { id: "fac-kpi-1", label: "Open Facilities WOs", value: "5", color: T.warn, target: 0, threshold: 8, invert: true },
+                    { id: "fac-kpi-2", label: "Overdue", value: "1", color: T.warn, target: 0, threshold: 2, invert: true },
+                    { id: "fac-kpi-3", label: "Building Compliance", value: "94%", color: T.green, target: 100, threshold: 90 },
+                    { id: "fac-kpi-4", label: "Avg Response Time", value: "2.4 hrs", color: T.blue, target: "2 hrs", threshold: "4 hrs" },
+                    { id: "fac-kpi-5", label: "Scheduled Inspections", value: "3", sub: "This month", color: T.textMid },
+                  ]}
+                  locked={layoutLocked}
+                  storageKey="sens-fac-maint-cards-kpis"
+                  renderItem={(item) => <KpiCard label={item.label} value={item.value} sub={item.sub} color={item.color} target={item.target} threshold={item.threshold} invert={item.invert} />}
+                />
+              ),
+            },
+            {
+              id: "fac-maint-workorders",
+              label: "Facilities Work Orders",
+              render: () => (
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: T.textMid, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 16 }}>Facilities Work Orders</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+                    {[
+                      { wo: "FWO-101", asset: "HVAC Compressor Unit 2", type: "Preventive", priority: "Medium", assigned: "T. Garcia", hours: 6, due: "3/1", status: "green", priorityColor: T.blue },
+                      { wo: "FWO-102", asset: "Fire Alarm Panel — Bldg A", type: "Corrective", priority: "High", assigned: "K. Patel", hours: 3, due: "Today", status: "yellow", priorityColor: T.warn },
+                      { wo: "FWO-103", asset: "Roof Drainage — Warehouse", type: "Corrective", priority: "Low", assigned: "D. Chen", hours: 4, due: "3/5", status: "blue", priorityColor: T.textDim },
+                    ].map((w, i) => (
+                      <Card key={i} title={`${w.wo} — ${w.asset}`} titleColor={w.priorityColor}>
+                        <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+                          <StatusPill status={w.status} />
+                          <span style={{ fontSize: 11, color: T.textDim, background: T.bg0, padding: "3px 8px", borderRadius: 4 }}>{w.type}</span>
+                          <span style={{ fontSize: 11, color: w.priorityColor, background: T.bg0, padding: "3px 8px", borderRadius: 4, fontWeight: 600 }}>{w.priority}</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                          <div style={{ padding: "8px 10px", background: T.bg0, borderRadius: 6 }}>
+                            <div style={{ fontSize: 10, color: T.textDim }}>Assigned</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{w.assigned}</div>
+                          </div>
+                          <div style={{ padding: "8px 10px", background: T.bg0, borderRadius: 6 }}>
+                            <div style={{ fontSize: 10, color: T.textDim }}>Hours Est.</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{w.hours} hrs</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 11, color: T.textDim, marginTop: 8, borderTop: `1px solid ${T.border}`, paddingTop: 6 }}>
+                          Due: <span style={{ color: w.due === "Today" ? T.warn : T.text, fontWeight: 600 }}>{w.due}</span>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              id: "fac-maint-systems",
+              label: "Building Systems",
+              render: () => (
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: T.textMid, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 16 }}>Building Systems Monitoring</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+                    {[
+                      { system: "HVAC", status: "Operational", health: 92, trend: "→", color: T.green, detail: "3 units active, 1 standby" },
+                      { system: "Electrical", status: "Operational", health: 98, trend: "→", color: T.green, detail: "All panels normal, backup gen tested" },
+                      { system: "Water / Sewer", status: "Monitor", health: 85, trend: "↘", color: T.warn, detail: "Drainage flow reduced — inspection scheduled" },
+                      { system: "Security", status: "Operational", health: 100, trend: "→", color: T.green, detail: "All cameras online, access control active" },
+                    ].map((sys, i) => (
+                      <Card key={i} title={sys.system} titleColor={sys.color}>
+                        <div style={{ display: "flex", justifyContent: "center", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
+                          <div style={{ fontSize: 28, fontWeight: 700, color: T.text }}>{sys.health}%</div>
+                          <div style={{ fontSize: 16, color: sys.trend === "↘" ? T.warn : T.textDim, fontWeight: 600 }}>{sys.trend}</div>
+                        </div>
+                        <Progress pct={sys.health} color={sys.color} h={6} target={100} threshold={90} />
+                        <div style={{ fontSize: 11, color: T.textMid, marginTop: 10 }}>{sys.detail}</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, marginTop: 8, borderTop: `1px solid ${T.border}`, paddingTop: 6 }}>
+                          <span style={{ color: T.textDim }}>{sys.status}</span>
+                          <StatusPill status={sys.health >= 95 ? "green" : sys.health >= 85 ? "yellow" : "red"} />
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              id: "fac-maint-infrastructure",
+              label: "Site Infrastructure",
+              render: () => (
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: T.textMid, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 16 }}>Site Infrastructure Summary</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+                    {filteredActive.map(s => (
+                      <Card key={s.id} title={s.short} titleColor={T.accent}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+                          <div style={{ padding: "8px 10px", background: T.bg0, borderRadius: 6 }}>
+                            <div style={{ fontSize: 10, color: T.textDim }}>Buildings</div>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{Math.max(2, s.processors + 1)}</div>
+                          </div>
+                          <div style={{ padding: "8px 10px", background: T.bg0, borderRadius: 6 }}>
+                            <div style={{ fontSize: 10, color: T.textDim }}>Open WOs</div>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{s.processors % 2 + 1}</div>
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4 }}>
+                            <span style={{ color: T.textDim }}>Facilities Compliance</span>
+                            <span style={{ color: T.green, fontWeight: 600 }}>94%</span>
+                          </div>
+                          <Progress pct={94} color={T.green} h={6} />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginTop: 8, borderTop: `1px solid ${T.border}`, paddingTop: 6 }}>
+                          <span style={{ color: T.textDim }}>Last Inspection: <span style={{ color: T.text, fontWeight: 600 }}>Feb 15</span></span>
+                          <span style={{ color: T.textDim }}>Next: <span style={{ color: T.text, fontWeight: 600 }}>Mar 15</span></span>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ),
+            },
+          ]}
+          storageKey="sens-fac-maint-layout"
+          locked={layoutLocked}
+          onLockedChange={setLayoutLocked}
+        />
+      )}
+      {tab === "maintenance" && maintenanceScope !== "facilities" && (
         <DraggableGrid
           widgets={[
             {

@@ -46,7 +46,7 @@ export const DEFAULT_LANDING_CONFIGS = {
     showCompanyObjectives: true,
     focusAreas: ["Team Performance & Safety", "Shift Operations", "Work Order Management", "Quality Compliance"],
     quickLinks: [
-      { label: "Plant Operations", target: "operations" },
+      { label: "Plant Operations", target: "ops-plant" },
       { label: "Risk Dashboard", target: "risk" },
       { label: "Site Map", target: "sitemap" },
     ],
@@ -58,7 +58,7 @@ export const DEFAULT_LANDING_CONFIGS = {
     showCompanyObjectives: false,
     focusAreas: ["Process Monitoring", "Safety Protocols", "Equipment Status", "Shift Handover"],
     quickLinks: [
-      { label: "Plant Operations", target: "operations" },
+      { label: "Plant Operations", target: "ops-plant" },
       { label: "Site Map", target: "sitemap" },
     ],
   },
