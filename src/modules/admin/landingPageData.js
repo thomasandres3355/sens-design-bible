@@ -159,6 +159,9 @@ export function getGenericLandingConfig(pageKey) {
     showCompanyObjectives: overrides.showCompanyObjectives ?? defaults.showCompanyObjectives,
     focusAreas: overrides.customFocusAreas || defaults.focusAreas,
     quickLinks: overrides.customQuickLinks || defaults.quickLinks,
+    showWorldNews: overrides.showWorldNews || false,
+    newsPosition: overrides.newsPosition || "bottom",
+    newsDeptKey: overrides.newsDeptKey || "company",
   };
 }
 

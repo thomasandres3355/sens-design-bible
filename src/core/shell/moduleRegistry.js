@@ -42,6 +42,10 @@ const DashboardTemplateC  = lazy(() => import("@modules/templates/TemplatesView"
 const DeptHomeA           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeA })));
 const DeptHomeB           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeB })));
 const DeptHomeC           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeC })));
+const DashboardTemplateD  = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DashboardTemplateD })));
+const DashboardTemplateE  = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DashboardTemplateE })));
+const DeptHomeD           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeD })));
+const DeptHomeE           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeE })));
 
 // ─── Module Definitions ──────────────────────────────────────────────
 
@@ -270,6 +274,10 @@ const modules = [
         { key: "tpl-dept-1", label: "Dept Home A", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
         { key: "tpl-dept-2", label: "Dept Home B", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
         { key: "tpl-dept-3", label: "Dept Home C", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+        { key: "tpl-dash-4", label: "Dashboard D", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+        { key: "tpl-dash-5", label: "Dashboard E", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+        { key: "tpl-dept-4", label: "Dept Home D", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+        { key: "tpl-dept-5", label: "Dept Home E", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
       ],
     },
     routes: {
@@ -285,6 +293,10 @@ const modules = [
       "tpl-dept-1": (props) => ({ component: DeptHomeA, props: { onNavigate: props.setActive } }),
       "tpl-dept-2": (props) => ({ component: DeptHomeB, props: { onNavigate: props.setActive } }),
       "tpl-dept-3": (props) => ({ component: DeptHomeC, props: { onNavigate: props.setActive } }),
+      "tpl-dash-4": (props) => ({ component: DashboardTemplateD, props: { onNavigate: props.setActive } }),
+      "tpl-dash-5": (props) => ({ component: DashboardTemplateE, props: { onNavigate: props.setActive } }),
+      "tpl-dept-4": (props) => ({ component: DeptHomeD, props: { onNavigate: props.setActive } }),
+      "tpl-dept-5": (props) => ({ component: DeptHomeE, props: { onNavigate: props.setActive } }),
     },
   },
 ];
@@ -355,4 +367,6 @@ export {
   Template1, Template2, Template3, Template4, Template5,
   DashboardTemplateA, DashboardTemplateB, DashboardTemplateC,
   DeptHomeA, DeptHomeB, DeptHomeC,
+  DashboardTemplateD, DashboardTemplateE,
+  DeptHomeD, DeptHomeE,
 };

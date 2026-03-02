@@ -7,7 +7,7 @@ import {
 import {
   Card, SectionHeader, StatusPill, DataTable, TabBar, Progress, KpiCard, DraggableGrid, DraggableCardRow,
 } from "@core/ui";
-import { JournalView } from "./JournalView";
+import { JournalView } from "@modules/ai-agents/JournalView";
 import {
   weeklyPlans, dailyPosts, getPulseMetrics, getExecInfo, PULSE_EXECS,
 } from "./pulseData";

@@ -9,7 +9,7 @@ import { useBadge } from "@core/users/BadgeContext";
 import { getApiKey, setApiKey, isLiveMode, setLiveMode, testConnection } from "@modules/ai-agents/services/claudeService";
 import { getUsageSummary, getUsageByUser, getUsageByAgent, getDailyUsage, clearUsageData } from "@modules/ai-agents/services/usageTracker";
 import { isAgentContribEnabled, setAgentContribEnabled, getAgentContribInterval, setAgentContribInterval, getAgentContribSensitivity, setAgentContribSensitivity } from "@modules/ai-agents/services/factCheckService";
-import UserManagementPanel from "./UserManagementPanel";
+import UserManagementPanel from "@core/users/UserManagementPanel";
 import LandingPageEditorPanel from "./LandingPageEditorPanel";
 import { usePermissions } from "@core/permissions/PermissionContext";
 import { MODULE_PERMISSIONS, MODULE_LABELS, VP_DASHBOARD_ACCESS, checkModulePermission, checkVpAccess, savePermissionConfig, resetPermissionConfig, isPermissionConfigDirty } from "@core/permissions/permissionData";
@@ -17,6 +17,9 @@ import { PermissionGate } from "@core/permissions/PermissionGate";
 import { useAgentConfig } from "@modules/ai-agents/AgentConfigContext";
 import { ceoAgentTeam, cooAgentTeam, vpRegistry, agentIndex } from "@modules/ai-agents/vpData";
 import { DEFAULT_ACCESS_CONTROL_RULES, DEFAULT_RESPONSE_GUIDELINES } from "@modules/ai-agents/agentConfigStore";
+import { getNewsConfig, saveNewsConfig, isNewsEnabled, setNewsEnabled, isWebSearchEnabled, setWebSearchEnabled, getRefreshInterval, setRefreshInterval, getDepartmentConfig, setDepartmentPrompt, setDepartmentEnabled, resetDepartmentPrompt, getDepartmentKeys, getDefaultPrompts } from "@core/data/newsConfigStore";
+import { WorldNews } from "@core/ui/WorldNews";
+import { useSimDate } from "@core/simulation/SimDateContext";
 
 /* ─────────────────────────────────────────────
    Settings View — User Config · Access · Integrations · API · IoT
@@ -2050,6 +2053,7 @@ export const SettingsView = ({ initialTab, hideChrome } = {}) => {
     { key: "badges", label: "Badges & Clearance" },
     { key: "ai", label: "AI Agents" },
     { key: "agent-config", label: "Agent Config" },
+    { key: "world-news", label: "World News" },
     { key: "usage", label: "Usage & Compute" },
     { key: "tags", label: "Tags" },
     { key: "integrations", label: "Integrations", gate: () => can("settings", "integrations") },
@@ -2150,6 +2154,9 @@ export const SettingsView = ({ initialTab, hideChrome } = {}) => {
 
       {/* ─── AGENT CONFIG TAB ─── */}
       {activeTab === "agent-config" && <AgentConfigPanel />}
+
+      {/* ─── WORLD NEWS TAB ─── */}
+      {activeTab === "world-news" && <WorldNewsConfigPanel />}
 
       {/* ─── USAGE & COMPUTE TAB ─── */}
       {activeTab === "usage" && <UsageComputePanel locked={layoutLocked} onLockedChange={setLayoutLocked} />}
@@ -2410,6 +2417,252 @@ export const SettingsView = ({ initialTab, hideChrome } = {}) => {
           onLockedChange={setLayoutLocked}
         />
       )}
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════
+//  World News Config Panel
+// ═══════════════════════════════════════════════
+const WorldNewsConfigPanel = () => {
+  const { simDate } = useSimDate();
+  const [, forceRender] = useState(0);
+  const refresh = () => forceRender(v => v + 1);
+
+  const enabled = isNewsEnabled();
+  const webSearch = isWebSearchEnabled();
+  const interval = getRefreshInterval();
+  const deptKeys = getDepartmentKeys();
+  const defaults = getDefaultPrompts();
+  const [expandedDept, setExpandedDept] = useState(null);
+  const [editingPrompts, setEditingPrompts] = useState({});
+
+  const handleToggleEnabled = () => { setNewsEnabled(!enabled); refresh(); };
+  const handleToggleWebSearch = () => { setWebSearchEnabled(!webSearch); refresh(); };
+  const handleIntervalChange = (val) => { setRefreshInterval(val); refresh(); };
+
+  const handleDeptToggle = (key) => {
+    const cfg = getDepartmentConfig(key);
+    setDepartmentEnabled(key, !cfg.enabled);
+    refresh();
+  };
+
+  const handlePromptChange = (key, val) => {
+    setEditingPrompts(prev => ({ ...prev, [key]: val }));
+  };
+
+  const handlePromptSave = (key) => {
+    if (editingPrompts[key] !== undefined) {
+      setDepartmentPrompt(key, editingPrompts[key]);
+      setEditingPrompts(prev => { const n = { ...prev }; delete n[key]; return n; });
+      refresh();
+    }
+  };
+
+  const handlePromptReset = (key) => {
+    resetDepartmentPrompt(key);
+    setEditingPrompts(prev => { const n = { ...prev }; delete n[key]; return n; });
+    refresh();
+  };
+
+  const enabledCount = deptKeys.filter(k => getDepartmentConfig(k)?.enabled).length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* ─── Global Controls ─── */}
+      <Card title="WORLD NEWS CONTROLS" titleColor={T.accent}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Master toggle */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: T.bg3, borderRadius: 8, border: `1px solid ${enabled ? T.green + "40" : T.border}` }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>World News Module</div>
+              <div style={{ fontSize: 11, color: T.textDim, marginTop: 2 }}>
+                {enabled ? `Active — ${enabledCount} departments enabled` : "Disabled — no API calls will be made"}
+              </div>
+            </div>
+            <button onClick={handleToggleEnabled} style={{
+              width: 48, height: 26, borderRadius: 13, border: "none", cursor: "pointer",
+              background: enabled ? T.green : T.bg1, transition: "background 0.2s",
+              position: "relative",
+            }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: "50%", background: "#fff",
+                position: "absolute", top: 3,
+                left: enabled ? 25 : 3, transition: "left 0.2s",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+              }} />
+            </button>
+          </div>
+
+          {/* Web search toggle */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: T.bg3, borderRadius: 8, border: `1px solid ${T.border}`, opacity: 0.6 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>
+                Web Search
+                <span style={{ fontSize: 10, fontWeight: 500, color: T.warn, marginLeft: 8, padding: "1px 6px", background: T.warnDim, borderRadius: 3 }}>Coming Soon</span>
+              </div>
+              <div style={{ fontSize: 11, color: T.textDim, marginTop: 2 }}>
+                Use a news API for real-time headlines instead of AI-only generation
+              </div>
+            </div>
+            <button disabled style={{
+              width: 48, height: 26, borderRadius: 13, border: "none", cursor: "not-allowed",
+              background: T.bg1, position: "relative",
+            }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: "50%", background: T.textDim,
+                position: "absolute", top: 3, left: 3,
+              }} />
+            </button>
+          </div>
+
+          {/* Refresh interval */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: T.bg3, borderRadius: 8, border: `1px solid ${T.border}` }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>Refresh Schedule</div>
+              <div style={{ fontSize: 11, color: T.textDim, marginTop: 2 }}>
+                How often to regenerate news (when module is enabled)
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[
+                { key: "manual", label: "Manual" },
+                { key: "6h", label: "6h" },
+                { key: "12h", label: "12h" },
+                { key: "daily", label: "Daily" },
+              ].map(opt => (
+                <button key={opt.key} onClick={() => handleIntervalChange(opt.key)} style={{
+                  padding: "5px 12px", borderRadius: 6, border: "none", cursor: "pointer",
+                  fontSize: 11, fontWeight: 600, fontFamily: "inherit",
+                  background: interval === opt.key ? T.accent : T.bg1,
+                  color: interval === opt.key ? "#1A1A1A" : T.textMid,
+                }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* ─── Department Prompts ─── */}
+      <Card title="DEPARTMENT PROMPTS" titleColor={T.blue}>
+        <div style={{ fontSize: 11, color: T.textDim, marginBottom: 14 }}>
+          Customize the news generation prompt for each department. Each prompt tells Claude what kind of news to focus on.
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {deptKeys.map(key => {
+            const cfg = getDepartmentConfig(key);
+            if (!cfg) return null;
+            const isExpanded = expandedDept === key;
+            const editVal = editingPrompts[key];
+            const currentPrompt = editVal !== undefined ? editVal : cfg.prompt;
+            const isDefault = cfg.prompt === defaults[key]?.prompt;
+            const isDirty = editVal !== undefined && editVal !== cfg.prompt;
+
+            return (
+              <div key={key} style={{
+                background: T.bg3, borderRadius: 8, overflow: "hidden",
+                border: `1px solid ${isExpanded ? T.accent + "44" : T.border}`,
+                transition: "border-color 0.2s",
+              }}>
+                {/* Header row */}
+                <div style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "10px 14px", cursor: "pointer",
+                }}
+                  onClick={() => setExpandedDept(isExpanded ? null : key)}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    {/* Enable/disable toggle */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeptToggle(key); }}
+                      style={{
+                        width: 32, height: 18, borderRadius: 9, border: "none", cursor: "pointer",
+                        background: cfg.enabled ? T.green : T.bg1, transition: "background 0.2s",
+                        position: "relative", flexShrink: 0,
+                      }}
+                    >
+                      <div style={{
+                        width: 14, height: 14, borderRadius: "50%", background: "#fff",
+                        position: "absolute", top: 2,
+                        left: cfg.enabled ? 16 : 2, transition: "left 0.2s",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                      }} />
+                    </button>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: cfg.enabled ? T.text : T.textDim }}>
+                      {cfg.label}
+                    </span>
+                    {!isDefault && (
+                      <span style={{ fontSize: 9, fontWeight: 600, color: T.warn, padding: "1px 5px", background: T.warnDim, borderRadius: 3 }}>
+                        MODIFIED
+                      </span>
+                    )}
+                  </div>
+                  <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transition: "transform .2s", transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+
+                {/* Expanded: prompt editor */}
+                {isExpanded && (
+                  <div style={{ padding: "0 14px 14px", borderTop: `1px solid ${T.border}` }}>
+                    <div style={{ paddingTop: 12 }}>
+                      <textarea
+                        value={currentPrompt}
+                        onChange={(e) => handlePromptChange(key, e.target.value)}
+                        rows={5}
+                        style={{
+                          width: "100%", padding: "10px 12px", borderRadius: 6,
+                          background: T.bg1, border: `1px solid ${isDirty ? T.accent + "60" : T.border}`,
+                          color: T.text, fontSize: 12, fontFamily: "inherit",
+                          lineHeight: 1.5, resize: "vertical", outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+                        <span style={{ fontSize: 10, color: T.textDim }}>
+                          {currentPrompt.length} chars
+                        </span>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          {!isDefault && (
+                            <button onClick={() => handlePromptReset(key)} style={{
+                              padding: "4px 10px", borderRadius: 5, border: `1px solid ${T.warn}40`,
+                              background: T.warnDim, color: T.warn, fontSize: 10, fontWeight: 600,
+                              cursor: "pointer", fontFamily: "inherit",
+                            }}>
+                              Reset Default
+                            </button>
+                          )}
+                          {isDirty && (
+                            <button onClick={() => handlePromptSave(key)} style={{
+                              padding: "4px 10px", borderRadius: 5, border: "none",
+                              background: T.accent, color: "#1A1A1A", fontSize: 10, fontWeight: 600,
+                              cursor: "pointer", fontFamily: "inherit",
+                            }}>
+                              Save
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* ─── News Preview ─── */}
+      <Card title="NEWS PREVIEW" titleColor={T.green}>
+        <div style={{ fontSize: 11, color: T.textDim, marginBottom: 14 }}>
+          Preview generated news for any department. Select a department and click Refresh to generate.
+        </div>
+        <WorldNews deptKey="company" simDate={simDate} showDeptSelector />
+      </Card>
     </div>
   );
 };

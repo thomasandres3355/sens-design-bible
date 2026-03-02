@@ -71,6 +71,10 @@ const KEY_TO_PATH = {
   "tpl-dept-1":            "/templates/dept/a",
   "tpl-dept-2":            "/templates/dept/b",
   "tpl-dept-3":            "/templates/dept/c",
+  "tpl-dash-4":            "/templates/dashboard/d",
+  "tpl-dash-5":            "/templates/dashboard/e",
+  "tpl-dept-4":            "/templates/dept/d",
+  "tpl-dept-5":            "/templates/dept/e",
 
   // Exec / VP under /org
   ceo:              "/org/ceo",
