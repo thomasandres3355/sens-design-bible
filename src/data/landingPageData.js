@@ -75,6 +75,70 @@ export const DEFAULT_LANDING_CONFIGS = {
   },
 };
 
+// ── Template Presets ──
+// Pre-configured override sets that admins can apply to any landing page.
+// "dashboard" templates target GenericLandingView (manager/operator/viewer).
+// "dept-home" templates target VpDashboardView (VP/exec roles).
+
+export const TEMPLATE_PRESETS = {
+  "dashboard-news-briefing": {
+    label: "Dashboard: News Briefing",
+    description: "Company news at top, strategic objectives, and quick links. Best for leadership-oriented non-VP roles.",
+    target: "generic", // applies to generic landing pages
+    overrides: {
+      showCompanyObjectives: true,
+      showWorldNews: true,
+      newsPosition: "top",
+      newsDeptKey: "company",
+      customFocusAreas: ["Industry News & Trends", "Company Strategic Objectives", "Cross-Team Collaboration", "Safety & Compliance"],
+      customQuickLinks: [
+        { label: "Company Dashboard", target: "dashboard" },
+        { label: "Org Chart", target: "org" },
+        { label: "Risk Dashboard", target: "risk" },
+        { label: "Site Map", target: "sitemap" },
+      ],
+    },
+  },
+  "dashboard-ops-news": {
+    label: "Dashboard: Operations + News",
+    description: "Operations-focused with news feed at bottom. Best for shift managers and plant supervisors.",
+    target: "generic",
+    overrides: {
+      showCompanyObjectives: false,
+      showWorldNews: true,
+      newsPosition: "bottom",
+      newsDeptKey: "company",
+      customFocusAreas: ["Plant Operations Monitoring", "Safety & Incident Tracking", "Work Order Management", "Shift Handover Protocols"],
+      customQuickLinks: [
+        { label: "Plant Operations", target: "ops-plant" },
+        { label: "Risk Dashboard", target: "risk" },
+        { label: "Maintenance", target: "ops-maintenance" },
+        { label: "Site Map", target: "sitemap" },
+      ],
+    },
+  },
+  "dept-home-news-first": {
+    label: "Dept Home: News First",
+    description: "Department news prominently at top, then objectives and team. Best for VPs who want industry intelligence upfront.",
+    target: "vp", // applies to VP/exec landing pages
+    overrides: {
+      showCompanyObjectives: true,
+      showWorldNews: true,
+      newsPosition: "top",
+    },
+  },
+  "dept-home-full-intel": {
+    label: "Dept Home: Full Intelligence",
+    description: "All features enabled with news at bottom. Complete VP dashboard with KPIs, alerts, objectives, team, and news.",
+    target: "vp",
+    overrides: {
+      showCompanyObjectives: true,
+      showWorldNews: true,
+      newsPosition: "bottom",
+    },
+  },
+};
+
 // ── Mutable landing overrides (loaded from localStorage) ──
 let landingOverrides = {};
 
@@ -159,6 +223,9 @@ export function getGenericLandingConfig(pageKey) {
     showCompanyObjectives: overrides.showCompanyObjectives ?? defaults.showCompanyObjectives,
     focusAreas: overrides.customFocusAreas || defaults.focusAreas,
     quickLinks: overrides.customQuickLinks || defaults.quickLinks,
+    showWorldNews: overrides.showWorldNews || false,
+    newsPosition: overrides.newsPosition || "bottom",
+    newsDeptKey: overrides.newsDeptKey || "company",
   };
 }
 
