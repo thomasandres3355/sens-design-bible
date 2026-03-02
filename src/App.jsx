@@ -5,6 +5,7 @@ import { DashboardView, DeliveringView, OperationsView, FinanceView, RiskView, R
 import { WorkforceView } from "./views/WorkforceView";
 import { GenericLandingView } from "./views/GenericLandingView";
 import { vpRegistry, isVpKey, isExecKey, getExecData, isAgentKey, agentIndex, ceoAgentTeam, cooAgentTeam, getAgentDirectory } from "./data/vpData";
+import { getAgentEntry, getCustomLeadDirectory } from "./data/agentConfigStore";
 import { getLandingPageKey } from "./data/landingPageData";
 import { Card } from "./components/ui";
 import { GlobalAgentFab } from "./components/ui/AgentChat";
@@ -97,7 +98,7 @@ export default function App() {
     }
     if (isAgentKey(active)) {
       const agentId = active.replace("agent-", "");
-      const entry = agentIndex[agentId];
+      const entry = getAgentEntry(agentId);
       if (entry) {
         const parentTeam = entry.parentKey === "ceo" ? ceoAgentTeam
           : entry.parentKey === "coo" ? cooAgentTeam
@@ -168,7 +169,7 @@ export default function App() {
     if (isAgentKey(active)) {
       if (!can("org", "agentDetail")) return <AccessDenied module="org" action="view agent details" />;
       const agentId = active.replace("agent-", "");
-      const entry = agentIndex[agentId];
+      const entry = getAgentEntry(agentId);
       if (entry) {
         const parentTeam = entry.parentKey === "ceo"
           ? ceoAgentTeam.agentTeam
@@ -287,7 +288,7 @@ export default function App() {
     // Agent detail header
     if (isAgentKey(active)) {
       const agentId = active.replace("agent-", "");
-      const entry = agentIndex[agentId];
+      const entry = getAgentEntry(agentId);
       if (entry) {
         return (
           <>

@@ -6,6 +6,8 @@ import { agentIndex } from "./vpData";
 
 const AGENT_OVERRIDES_KEY = "sens_agent_overrides";
 const GLOBAL_RULES_KEY = "sens_global_rules";
+const CUSTOM_AGENTS_KEY = "sens_custom_agents";
+const CUSTOM_TEAMS_KEY = "sens_custom_teams";
 
 // ─── Default Global Rules (extracted from claudeService.js hardcoded text) ────
 export const DEFAULT_ACCESS_CONTROL_RULES = `- Only discuss data that has been provided to you below. If the user asks about data not in your context, explain that you don't have access to that information or that it requires higher clearance.
@@ -63,14 +65,134 @@ export function isAgentOverridden(agentId) {
   return agentId in all;
 }
 
-/** Get the effective agent object — base merged with override */
+/** Get the effective agent object — base merged with override, or custom agent */
 export function getEffectiveAgent(agentId) {
+  // Check custom agents first
+  const custom = getCustomAgents()[agentId];
+  if (custom) {
+    const override = getAgentOverrides()[agentId];
+    return override ? { ...custom, ...override } : custom;
+  }
+  // Fall back to base agents
   const entry = agentIndex[agentId];
   if (!entry) return null;
   const base = entry.agent;
   const override = getAgentOverrides()[agentId];
   if (!override) return base;
   return { ...base, ...override };
+}
+
+// ─── Custom Agents ───────────────────────────────────────────────────────────
+
+/** Get all custom agents: { [agentId]: { id, name, role, ... } } */
+export function getCustomAgents() {
+  return readJSON(CUSTOM_AGENTS_KEY) || {};
+}
+
+/** Create a new custom agent */
+export function createCustomAgent(agent) {
+  const all = getCustomAgents();
+  if (all[agent.id] || agentIndex[agent.id]) {
+    throw new Error(`Agent ID "${agent.id}" already exists`);
+  }
+  all[agent.id] = { ...agent, _custom: true, createdAt: new Date().toISOString() };
+  writeJSON(CUSTOM_AGENTS_KEY, all);
+}
+
+/** Update a custom agent */
+export function updateCustomAgent(agentId, patch) {
+  const all = getCustomAgents();
+  if (!all[agentId]) return; // not a custom agent, use overrides instead
+  all[agentId] = { ...all[agentId], ...patch };
+  writeJSON(CUSTOM_AGENTS_KEY, all);
+}
+
+/** Delete a custom agent */
+export function deleteCustomAgent(agentId) {
+  const all = getCustomAgents();
+  delete all[agentId];
+  writeJSON(CUSTOM_AGENTS_KEY, all);
+  // Also remove any overrides
+  clearAgentOverride(agentId);
+  // Also remove from any custom teams
+  const teams = getCustomTeams();
+  Object.values(teams).forEach(t => {
+    if (t.leadAgentId === agentId) t.leadAgentId = null;
+    if (t.specialistIds) t.specialistIds = t.specialistIds.filter(id => id !== agentId);
+  });
+  writeJSON(CUSTOM_TEAMS_KEY, teams);
+}
+
+/** Check if an agent is custom (not from vpData) */
+export function isCustomAgent(agentId) {
+  return agentId in (getCustomAgents());
+}
+
+/** Get an agent entry — checks both base index and custom agents */
+export function getAgentEntry(agentId) {
+  if (agentIndex[agentId]) return agentIndex[agentId];
+  const custom = getCustomAgents()[agentId];
+  if (custom) {
+    return {
+      agent: custom,
+      parentKey: custom.teamKey || "custom",
+      parentTitle: custom.teamTitle || "Custom",
+      color: custom.color || "#888",
+      _custom: true,
+    };
+  }
+  return null;
+}
+
+// ─── Custom Teams ────────────────────────────────────────────────────────────
+
+/** Get all custom teams: { [teamKey]: { key, title, branch, color, leadAgentId, specialistIds, ... } } */
+export function getCustomTeams() {
+  return readJSON(CUSTOM_TEAMS_KEY) || {};
+}
+
+/** Create a new custom team */
+export function createCustomTeam(team) {
+  const all = getCustomTeams();
+  if (all[team.key]) throw new Error(`Team key "${team.key}" already exists`);
+  all[team.key] = { ...team, createdAt: new Date().toISOString() };
+  writeJSON(CUSTOM_TEAMS_KEY, all);
+}
+
+/** Update a custom team */
+export function updateCustomTeam(teamKey, patch) {
+  const all = getCustomTeams();
+  if (!all[teamKey]) return;
+  all[teamKey] = { ...all[teamKey], ...patch };
+  writeJSON(CUSTOM_TEAMS_KEY, all);
+}
+
+/** Delete a custom team */
+export function deleteCustomTeam(teamKey) {
+  const all = getCustomTeams();
+  delete all[teamKey];
+  writeJSON(CUSTOM_TEAMS_KEY, all);
+}
+
+/** Get directory of custom team leads for global agent picker */
+export function getCustomLeadDirectory() {
+  const customAgents = getCustomAgents();
+  const customTeams = getCustomTeams();
+  return Object.values(customTeams)
+    .filter(t => t.leadAgentId && customAgents[t.leadAgentId])
+    .map(t => {
+      const lead = customAgents[t.leadAgentId];
+      return {
+        id: lead.id,
+        name: lead.name,
+        role: lead.role,
+        department: t.title,
+        branch: t.branch || "Custom",
+        color: t.color || "#888",
+        parentKey: t.key,
+        teamSize: (t.specialistIds || []).length + 1,
+      };
+    });
 }
 
 // ─── Global Rules ─────────────────────────────────────────────────────────────
@@ -107,15 +229,15 @@ export function exportConfig() {
   return {
     agentOverrides: getAgentOverrides(),
     globalRules: readJSON(GLOBAL_RULES_KEY) || null,
+    customAgents: getCustomAgents(),
+    customTeams: getCustomTeams(),
   };
 }
 
 /** Import config from JSON object */
 export function importConfig(data) {
-  if (data.agentOverrides) {
-    writeJSON(AGENT_OVERRIDES_KEY, data.agentOverrides);
-  }
-  if (data.globalRules) {
-    writeJSON(GLOBAL_RULES_KEY, data.globalRules);
-  }
+  if (data.agentOverrides) writeJSON(AGENT_OVERRIDES_KEY, data.agentOverrides);
+  if (data.globalRules) writeJSON(GLOBAL_RULES_KEY, data.globalRules);
+  if (data.customAgents) writeJSON(CUSTOM_AGENTS_KEY, data.customAgents);
+  if (data.customTeams) writeJSON(CUSTOM_TEAMS_KEY, data.customTeams);
 }

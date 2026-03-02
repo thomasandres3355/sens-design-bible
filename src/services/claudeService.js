@@ -60,31 +60,8 @@ export async function testConnection() {
 }
 
 // ─── Data Context Builder ────────────────────────────────────────────
-// Maps agent dataSources to actual data, filtered by user clearance
-
-const DATA_SOURCE_MAP = {
-  "All VP dashboards": ["site_kpis", "alerts", "financial_summary"],
-  "Portfolio KPIs": ["site_kpis"],
-  "Site KPIs": ["site_kpis"],
-  "Board deck archive": ["board_materials"],
-  "Investor pipeline": ["investor_pipeline"],
-  "Risk register": ["risk_register"],
-  "CEO calendar": ["executive_tasks"],
-  "Initiative tracker": ["executive_tasks"],
-  "Decision log": ["meeting_notes"],
-  "Meeting notes archive": ["meeting_notes"],
-  "Economic models (all sites)": ["financial_detail", "project_budgets"],
-  "Construction budgets": ["project_budgets"],
-  "Market sizing data": ["financial_summary"],
-  "Feedstock pricing": ["site_operations"],
-  "Offtake contracts": ["legal_contracts"],
-  "All site performance data": ["site_operations", "site_kpis"],
-  "SCADA real-time feeds": ["site_operations"],
-  "Oracle P6 schedules": ["project_budgets"],
-  "Construction trackers": ["project_budgets"],
-  "Workforce data": ["hr_records"],
-  "Financial summaries": ["financial_summary"],
-};
+// Agent dataSources now use internal domain names directly (e.g. "site_kpis", "alerts").
+// Data sections are filtered by user clearance via getAccessibleDomains().
 
 export function buildDataContext(agent, simDate, user, historyDepth = "1y") {
   const accessibleDomains = getAccessibleDomains(user);
