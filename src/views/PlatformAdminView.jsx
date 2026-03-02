@@ -47,6 +47,7 @@ const CATEGORIES = [
       { key: "ai", label: "AI", source: "admin" },
       { key: "ai-settings", label: "AI Agents", source: "settings", settingsKey: "ai" },
       { key: "agent-config", label: "Agent Config", source: "settings" },
+      { key: "world-news", label: "World News", source: "settings", settingsKey: "world-news" },
       { key: "usage", label: "Usage & Compute", source: "settings" },
     ],
   },

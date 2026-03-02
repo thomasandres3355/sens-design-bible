@@ -10,6 +10,7 @@ import { useSimDate } from "../contexts/SimDateContext";
 import { getSiteMetrics, getPortfolioMetrics } from "../data/timeEngine";
 import { buildObjectives } from "../data/objectivesData";
 import { getLandingOverrides } from "../data/landingPageData";
+import { WorldNews } from "../components/ui/WorldNews";
 import { useTasks } from "../contexts/TaskContext";
 import { OBJECTIVE_TAGS } from "../data/focusData";
 
@@ -43,6 +44,9 @@ export const VpDashboardView = ({ vp, onNavigate }) => {
   // Landing page overrides
   const overrides = getLandingOverrides(vp.key);
   const showObjectives = overrides?.showCompanyObjectives !== false; // default true
+  const showWorldNews = overrides?.showWorldNews || false;
+  const newsPosition = overrides?.newsPosition || "bottom";
+  const newsDeptKey = overrides?.newsDeptKey || vp.key;
 
   // Company objectives (from live metrics)
   const allSites = useMemo(() => getSiteMetrics(simDate), [simDate]);
@@ -201,6 +205,11 @@ export const VpDashboardView = ({ vp, onNavigate }) => {
         ) : null;
       })()}
 
+      {/* ─── World News (top position) ─── */}
+      {showWorldNews && newsPosition === "top" && (
+        <WorldNews deptKey={newsDeptKey} simDate={simDate} compact />
+      )}
+
       {/* ─── Company Strategic Objectives ─── */}
       {showObjectives && objectives.length > 0 && (
         <Card title="COMPANY OBJECTIVES" titleColor={vp.color}>
@@ -307,6 +316,11 @@ export const VpDashboardView = ({ vp, onNavigate }) => {
           })}
         </div>
       </Card>
+
+      {/* ─── World News (bottom position, default) ─── */}
+      {showWorldNews && newsPosition !== "top" && (
+        <WorldNews deptKey={newsDeptKey} simDate={simDate} compact />
+      )}
 
     </div>
   );

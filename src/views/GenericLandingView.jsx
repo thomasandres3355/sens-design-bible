@@ -10,6 +10,7 @@ import { getSiteMetrics, getPortfolioMetrics } from "../data/timeEngine";
 import { buildObjectives } from "../data/objectivesData";
 import { getGenericLandingConfig } from "../data/landingPageData";
 import { useBadge } from "../contexts/BadgeContext";
+import { WorldNews } from "../components/ui/WorldNews";
 
 /**
  * GenericLandingView — Landing page for Manager / Operator / Viewer roles.
@@ -24,7 +25,7 @@ export const GenericLandingView = ({ pageKey, onNavigate }) => {
   const config = getGenericLandingConfig(pageKey);
   if (!config) return <div style={{ color: T.textDim, padding: 40 }}>Landing page not configured.</div>;
 
-  const { title, color, branch, showCompanyObjectives, focusAreas, quickLinks } = config;
+  const { title, color, branch, showCompanyObjectives, focusAreas, quickLinks, showWorldNews, newsPosition, newsDeptKey } = config;
 
   // Company objectives
   const allSites = useMemo(() => getSiteMetrics(simDate), [simDate]);
@@ -62,6 +63,11 @@ export const GenericLandingView = ({ pageKey, onNavigate }) => {
           color={color}
           compact
         />
+      )}
+
+      {/* ─── World News (top position) ─── */}
+      {showWorldNews && newsPosition === "top" && (
+        <WorldNews deptKey={newsDeptKey || "company"} simDate={simDate} compact />
       )}
 
       {/* ─── Company Strategic Objectives ─── */}
@@ -109,6 +115,11 @@ export const GenericLandingView = ({ pageKey, onNavigate }) => {
           </div>
         </Card>
       </div>
+
+      {/* ─── World News (bottom position, default) ─── */}
+      {showWorldNews && newsPosition !== "top" && (
+        <WorldNews deptKey={newsDeptKey || "company"} simDate={simDate} compact />
+      )}
 
     </div>
   );
