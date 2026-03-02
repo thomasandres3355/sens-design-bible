@@ -121,18 +121,57 @@ export const getRoleClearance = (role) => ROLE_CLEARANCE.find((r) => r.role === 
 
 // ═══ USERS (for pilot testing) ═══════════════════════════════════════════
 export const BADGE_USERS = [
-  { id: "david", name: "David Meunier", role: "CEO", department: "Executive", email: "David@SystemicENVS.com", overrides: [] },
-  { id: "thomas", name: "Deadelus", role: "COO", department: "Executive", email: "thomas@systemicenvs.com", overrides: [] },
-  { id: "sarah", name: "Sarah Mitchell", role: "COO", department: "Executive", email: "sarah@systemicenvs.com", overrides: [] },
-  { id: "james", name: "James Park", role: "VP Finance", department: "Finance", email: "james@systemicenvs.com", overrides: [] },
-  { id: "lena", name: "Lena Torres", role: "VP Engineering", department: "Engineering", email: "lena@systemicenvs.com", overrides: [] },
-  { id: "marcus", name: "Marcus Webb", role: "VP Operations", department: "Operations", email: "marcus@systemicenvs.com", overrides: [] },
-  { id: "diane", name: "Diane Chen", role: "VP Finance", department: "Finance", email: "diane@systemicenvs.com", overrides: [] },
-  { id: "omar", name: "Omar Hassan", role: "VP Strategy", department: "Strategy", email: "omar@systemicenvs.com", overrides: [] },
-  { id: "rachel", name: "Rachel Kim", role: "VP Risk", department: "Risk", email: "rachel@systemicenvs.com", overrides: [] },
-  { id: "demo-mgr", name: "Demo Manager", role: "Manager", department: "Operations", email: "demo.mgr@systemicenvs.com", overrides: [] },
-  { id: "demo-op", name: "Demo Operator", role: "Operator", department: "Operations", email: "demo.op@systemicenvs.com", overrides: [] },
+  { id: "david", name: "David Meunier", role: "CEO", department: "Executive", email: "David@SystemicENVS.com", reportsTo: null, overrides: [] },
+  { id: "thomas", name: "Deadelus", role: "COO", department: "Executive", email: "thomas@systemicenvs.com", reportsTo: "david", overrides: [] },
+  { id: "sarah", name: "Sarah Mitchell", role: "COO", department: "Executive", email: "sarah@systemicenvs.com", reportsTo: "david", overrides: [] },
+  { id: "james", name: "James Park", role: "VP Finance", department: "Finance", email: "james@systemicenvs.com", reportsTo: "thomas", overrides: [] },
+  { id: "lena", name: "Lena Torres", role: "VP Engineering", department: "Engineering", email: "lena@systemicenvs.com", reportsTo: "thomas", overrides: [] },
+  { id: "marcus", name: "Marcus Webb", role: "VP Operations", department: "Operations", email: "marcus@systemicenvs.com", reportsTo: "thomas", overrides: [] },
+  { id: "diane", name: "Diane Chen", role: "VP Finance", department: "Finance", email: "diane@systemicenvs.com", reportsTo: "thomas", overrides: [] },
+  { id: "omar", name: "Omar Hassan", role: "VP Strategy", department: "Strategy", email: "omar@systemicenvs.com", reportsTo: "thomas", overrides: [] },
+  { id: "rachel", name: "Rachel Kim", role: "VP Risk", department: "Risk", email: "rachel@systemicenvs.com", reportsTo: "thomas", overrides: [] },
+  { id: "demo-mgr", name: "Demo Manager", role: "Manager", department: "Operations", email: "demo.mgr@systemicenvs.com", reportsTo: "marcus", overrides: [] },
+  { id: "demo-op", name: "Demo Operator", role: "Operator", department: "Operations", email: "demo.op@systemicenvs.com", reportsTo: "demo-mgr", overrides: [] },
 ];
+
+// ═══ ORG HIERARCHY HELPERS ═══════════════════════════════════════════════
+
+/** Get users who directly report to the given userId */
+export function getDirectReports(userId) {
+  return BADGE_USERS.filter(u => u.reportsTo === userId);
+}
+
+/** Get all reports (recursive) for the given userId */
+export function getAllReports(userId) {
+  const result = [];
+  const queue = [userId];
+  while (queue.length) {
+    const current = queue.shift();
+    const reports = BADGE_USERS.filter(u => u.reportsTo === current);
+    for (const r of reports) {
+      result.push(r);
+      queue.push(r.id);
+    }
+  }
+  return result;
+}
+
+/** Get the management chain from userId up to root (CEO) */
+export function getManagementChain(userId) {
+  const chain = [];
+  let current = BADGE_USERS.find(u => u.id === userId);
+  while (current && current.reportsTo) {
+    const manager = BADGE_USERS.find(u => u.id === current.reportsTo);
+    if (manager) chain.push(manager);
+    current = manager;
+  }
+  return chain;
+}
+
+/** Get all users in a given department */
+export function getDepartmentUsers(department) {
+  return BADGE_USERS.filter(u => u.department === department);
+}
 
 // ═══ ACCESS CHECK ENGINE ═════════════════════════════════════════════════
 

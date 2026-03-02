@@ -76,6 +76,14 @@ const KEY_TO_PATH = {
   "tpl-dept-4":            "/templates/dept/d",
   "tpl-dept-5":            "/templates/dept/e",
 
+  // Learning
+  learning:                "/learning",
+  "learning-my":           "/learning/my-learning",
+  "learning-compliance":   "/learning/compliance",
+  "learning-catalog":      "/learning/catalog",
+  "learning-assessments":  "/learning/assessments",
+  "learning-admin":        "/learning/admin",
+
   // Exec / VP under /org
   ceo:              "/org/ceo",
   coo:              "/org/coo",

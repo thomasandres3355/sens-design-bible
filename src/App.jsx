@@ -36,7 +36,7 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
   const [navProjectId, setNavProjectId] = useState(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true, templates: true });
+  const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true, learning: true, templates: true });
   useEffect(() => { setMounted(true); }, []);
 
   const { simDate, advanceDay, retreatDay, historyDepth, setHistoryDepth, maxDate } = useSimDate();
@@ -157,7 +157,7 @@ export default function App() {
 
     // Permission check for standard modules — skip for templates (always accessible)
     if (!(active === "templates" || active.startsWith("template-") || active.startsWith("tpl-"))) {
-      const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active.startsWith("tech-") ? "technology" : active.startsWith("ops-") ? "ops" : active;
+      const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active.startsWith("tech-") ? "technology" : active.startsWith("ops-") ? "ops" : active.startsWith("learning-") ? "learning" : active;
       const isStandardModule = navItems.find((m) => m.key === active) || navItems.some(m => m.children?.some(c => c.key === active));
       if (!can(permKey, "view") && isStandardModule) {
         return <AccessDenied module={permKey} action="view" />;

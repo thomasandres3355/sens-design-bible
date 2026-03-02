@@ -132,6 +132,12 @@ const DEFAULT_MODULE_PERMISSIONS = {
     permissions: { level: 4, roles: ["CEO", "COO"] },
     landingPages: { level: 4, roles: ["CEO", "COO"] },
   },
+  learning: {
+    view:      { level: 1, roles: [] },
+    manage:    { level: 3, roles: [] },
+    admin:     { level: 4, roles: [] },
+    configure: { level: 5, roles: ["CEO", "COO"] },
+  },
 };
 
 // ── Default VP/Exec Dashboard Access ──
@@ -285,6 +291,12 @@ export const MODULE_LABELS = {
   "admin-bug-fixes": "Bug Fixes",
   org: "Org Chart",
   settings: "Settings",
+  learning: "Learning",
+  "learning-my": "My Learning",
+  "learning-compliance": "Compliance",
+  "learning-catalog": "Course Catalog",
+  "learning-assessments": "Assessments",
+  "learning-admin": "LMS Admin",
 };
 
 // ── Action labels ──
