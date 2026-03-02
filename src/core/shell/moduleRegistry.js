@@ -30,6 +30,9 @@ const VpDashboardView     = lazy(() => import("@modules/organization/VpDashboard
 const AgentDetailView     = lazy(() => import("@modules/ai-agents/AgentDetailView").then(m => ({ default: m.AgentDetailView })));
 const ModelView           = lazy(() => import("@modules/growth/ModelView").then(m => ({ default: m.ModelView })));
 
+// Learning
+const LearningView        = lazy(() => import("@modules/learning/LearningView").then(m => ({ default: m.LearningView })));
+
 // Templates
 const Template1           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.Template1 })));
 const Template2           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.Template2 })));
@@ -209,6 +212,33 @@ const modules = [
     },
   },
 
+  // ─── Learning ───
+  {
+    id: "learning",
+    phase: 4,
+    enabled: true,
+    nav: {
+      key: "learning", label: "Learning",
+      icon: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z",
+      branch: "LEARNING",
+      children: [
+        { key: "learning-my", label: "My Learning", icon: "M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.42a12.08 12.08 0 01.01 6.86L12 21l-6.16-3.56a12.08 12.08 0 01.01-6.86L12 14z" },
+        { key: "learning-compliance", label: "Compliance", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" },
+        { key: "learning-catalog", label: "Course Catalog", icon: "M4 19.5A2.5 2.5 0 016.5 17H20 M4 19.5A2.5 2.5 0 004 17V5a2 2 0 012-2h14v14H6.5" },
+        { key: "learning-assessments", label: "Assessments", icon: "M9 11l3 3L22 4 M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" },
+        { key: "learning-admin", label: "LMS Admin", icon: "M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z M12 15a3 3 0 100-6 3 3 0 000 6z" },
+      ],
+    },
+    routes: {
+      learning:                () => ({ component: LearningView, props: {} }),
+      "learning-my":           () => ({ component: LearningView, props: {} }),
+      "learning-compliance":   () => ({ component: LearningView, props: {} }),
+      "learning-catalog":      () => ({ component: LearningView, props: {} }),
+      "learning-assessments":  () => ({ component: LearningView, props: {} }),
+      "learning-admin":        () => ({ component: LearningView, props: {} }),
+    },
+  },
+
   // ─── Platform (admin) ───
   {
     id: "platform",
@@ -364,6 +394,7 @@ export {
   VpDashboardView,
   AgentDetailView,
   ModelView,
+  LearningView,
   Template1, Template2, Template3, Template4, Template5,
   DashboardTemplateA, DashboardTemplateB, DashboardTemplateC,
   DeptHomeA, DeptHomeB, DeptHomeC,
