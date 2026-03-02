@@ -3,7 +3,7 @@ import { T } from "../../data/theme";
 import { useSimDate } from "../../contexts/SimDateContext";
 import { useBadge } from "../../contexts/BadgeContext";
 import { useAgentConfig } from "../../contexts/AgentConfigContext";
-import { isLiveMode, askAgent } from "../../services/claudeService";
+import { isLiveMode, askAgent, askTeam } from "../../services/claudeService";
 
 // ═══════════════════════════════════════════════════════════════════
 //  ICONS
@@ -58,7 +58,7 @@ const TeamIcon = () => (
 //  CHECKBOX
 // ═══════════════════════════════════════════════════════════════════
 const Checkbox = ({ checked, color, onChange, partial }) => (
-  <button onClick={onChange} style={{
+  <button onClick={(e) => { e.stopPropagation(); onChange(); }} style={{
     width: 18, height: 18, borderRadius: 4, flexShrink: 0,
     background: checked ? color : "transparent",
     border: `2px solid ${checked ? color : T.borderLight}`,
@@ -368,10 +368,10 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
 
     if (liveMode) {
       setLoading(true);
-      setStreamText("");
+      setStreamText("Consulting specialists...");
       try {
-        const response = await askAgent({
-          agent: getAgent(agentTeam.lead.id) || agentTeam.lead,
+        delegation = await askTeam({
+          agentTeam,
           question: msg,
           history: conversation.flatMap(r => [
             { role: "user", content: r.question },
@@ -379,13 +379,19 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
           ]).slice(-10),
           simDate,
           user: activeUser,
-          onChunk: (_chunk, full) => setStreamText(full),
+          eaId: fakeEa.id,
+          department: fakeEa.department,
+          color,
+          getAgent,
           historyDepth,
+          onProgress: (phase, detail) => {
+            if (phase === "specialists") {
+              setStreamText(`Consulting specialists... (${detail.completed}/${detail.total})`);
+            } else if (phase === "lead") {
+              setStreamText("Lead synthesizing team input...");
+            }
+          },
         });
-        delegation = {
-          lead: agentTeam.lead, color, eaId: fakeEa.id, department: fakeEa.department,
-          specialists: [], recommendation: response, isLive: true,
-        };
       } catch (err) {
         delegation = {
           lead: agentTeam.lead, color, eaId: fakeEa.id, department: fakeEa.department,
@@ -589,28 +595,37 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
 
     if (liveMode) {
       setLoading(true);
-      setStreamText("");
+      setStreamText("Consulting agent teams...");
       try {
-        // Call Claude for each selected EA's lead agent in parallel
         const results = await Promise.all(
           selectedAgents.map(async (ea) => {
             try {
-              const response = await askAgent({
-                agent: getAgent(ea.agentTeam.lead.id) || ea.agentTeam.lead,
+              return await askTeam({
+                agentTeam: ea.agentTeam,
                 question: msg,
                 history: conversation.flatMap(r => [
                   { role: "user", content: r.question },
-                  ...r.delegations.filter(d => d.eaId === ea.id).map(d => ({ role: "assistant", content: d.recommendation })),
+                  ...r.delegations.filter(d => d.eaId === ea.id).map(d => ({
+                    role: "assistant", content: d.recommendation,
+                  })),
                 ]).slice(-10),
                 simDate,
                 user: activeUser,
-                onChunk: selectedAgents.length === 1 ? (_chunk, full) => setStreamText(full) : undefined,
+                eaId: ea.id,
+                department: ea.department,
+                color: ea.color,
+                getAgent,
                 historyDepth,
+                onProgress: selectedAgents.length === 1
+                  ? (phase, detail) => {
+                      if (phase === "specialists") {
+                        setStreamText(`Consulting specialists... (${detail.completed}/${detail.total})`);
+                      } else {
+                        setStreamText("Lead synthesizing...");
+                      }
+                    }
+                  : undefined,
               });
-              return {
-                lead: ea.agentTeam.lead, color: ea.color, eaId: ea.id, department: ea.department,
-                specialists: [], recommendation: response, isLive: true,
-              };
             } catch (err) {
               return {
                 lead: ea.agentTeam.lead, color: ea.color, eaId: ea.id, department: ea.department,
