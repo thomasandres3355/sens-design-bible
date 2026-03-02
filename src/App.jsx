@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { T } from "./data/theme";
 import { activeSites, constructionSites, totalProcessors } from "./data/sites";
 import { DashboardView, DeliveringView, OperationsView, FinanceView, RiskView, RiskLandingView, RiskDomainDetailView, OrgChartView, VpDashboardView, AgentDetailView, PortfolioMapView, SettingsView, FocusTrackerView, DevelopmentView, PlatformAdminView } from "./views";
-import { Template1, Template2, Template3, Template4, Template5, DashboardTemplateA, DashboardTemplateB, DashboardTemplateC, DeptHomeA, DeptHomeB, DeptHomeC } from "./views/TemplatesView";
+import { Template1, Template2, Template3, Template4, Template5, DashboardTemplateA, DashboardTemplateB, DashboardTemplateC, DashboardTemplateD, DashboardTemplateE, DeptHomeA, DeptHomeB, DeptHomeC, DeptHomeD, DeptHomeE } from "./views/TemplatesView";
 import { WorkforceView } from "./views/WorkforceView";
 import { GenericLandingView } from "./views/GenericLandingView";
 import { vpRegistry, isVpKey, isExecKey, getExecData, isAgentKey, agentIndex, ceoAgentTeam, cooAgentTeam, getAgentDirectory } from "./data/vpData";
@@ -74,6 +74,10 @@ const modules = [
     { key: "tpl-dept-1", label: "Dept Home A", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
     { key: "tpl-dept-2", label: "Dept Home B", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
     { key: "tpl-dept-3", label: "Dept Home C", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+    { key: "tpl-dash-4", label: "Dash + News", icon: "M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z M4 10h16 M10 4v16" },
+    { key: "tpl-dash-5", label: "Dash + Split", icon: "M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z M14 4v16 M4 10h10" },
+    { key: "tpl-dept-4", label: "Dept + News", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 14h6 M9 18h6" },
+    { key: "tpl-dept-5", label: "Dept + Intel", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M7 13h10 M7 17h10" },
   ]},
   { key: "org", label: "Org Chart", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", branch: "CROSS-CUTTING" },
 ];
@@ -274,6 +278,10 @@ export default function App() {
       "tpl-dept-1": <DeptHomeA onNavigate={setActive} />,
       "tpl-dept-2": <DeptHomeB onNavigate={setActive} />,
       "tpl-dept-3": <DeptHomeC onNavigate={setActive} />,
+      "tpl-dash-4": <DashboardTemplateD onNavigate={setActive} />,
+      "tpl-dash-5": <DashboardTemplateE onNavigate={setActive} />,
+      "tpl-dept-4": <DeptHomeD onNavigate={setActive} />,
+      "tpl-dept-5": <DeptHomeE onNavigate={setActive} />,
     };
     return standardViews[active] || standardViews.dashboard;
   };

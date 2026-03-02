@@ -3,6 +3,7 @@ import { T } from "../data/theme";
 import { Card, TabBar, DataTable, MetricGrid, Progress, StatusPill, KpiCard, SectionHeader, CheckEngineLightPanel } from "../components/ui";
 import { getAlertsForDept, getAllAlerts, severityColor, severityIcon } from "../data/alertData";
 import { useSimDate } from "../contexts/SimDateContext";
+import { WorldNews } from "../components/ui/WorldNews";
 
 // ═══════════════════════════════════════════════════════════════════
 //  SAMPLE DATA — shared across templates for demonstration
@@ -1389,6 +1390,447 @@ export const DeptHomeC = ({ onNavigate }) => {
           ))}
         </div>
       </Card>
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  DASHBOARD TEMPLATE D — News Briefing Dashboard
+//  Pattern: World News (top) → KPI strip → Alerts → Sub-view nav
+//  Best for: Leadership dashboards wanting industry intelligence first
+// ═══════════════════════════════════════════════════════════════════
+
+export const DashboardTemplateD = ({ onNavigate }) => {
+  const { simDate } = useSimDate();
+  const [activeDept, setActiveDept] = useState("operations");
+  const dept = DEPT_CONFIG[activeDept];
+  const alerts = useMemo(() => getAlertsForDept(dept.key, simDate), [dept.key, simDate]);
+  const summary = deptAlertSummary(alerts);
+
+  const NEWS_DEPT_MAP = { operations: "vp-ops", technology: "vp-engineering", growth: "vp-finance" };
+
+  const tabs = [
+    { key: "operations", label: "Operations" },
+    { key: "technology", label: "Technology" },
+    { key: "growth", label: "Growth" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "12px 16px", background: T.accentDim, border: `1px solid ${T.accent}33`, borderRadius: 8, fontSize: 12, color: T.textMid }}>
+        <strong style={{ color: T.accent }}>Dashboard Template D — News Briefing</strong> &middot; Industry news feed prominent at top, followed by department KPIs, alerts, and quick navigation. Ideal for executives who want intelligence-first dashboards.
+      </div>
+
+      <TabBar tabs={tabs} active={activeDept} onChange={setActiveDept} />
+
+      {/* World News — Prominent at top */}
+      <WorldNews deptKey={NEWS_DEPT_MAP[activeDept] || "company"} simDate={simDate} compact />
+
+      {/* KPI Strip */}
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${dept.kpis.length}, 1fr)`, gap: 12 }}>
+        {dept.kpis.map((k, i) => (
+          <div key={i} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "16px 18px", borderTop: `3px solid ${dept.color}` }}>
+            <div style={{ fontSize: 10, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>{k.label}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: T.text, marginTop: 4 }}>{k.value}</div>
+            <div style={{ fontSize: 11, color: T.textMid, marginTop: 2 }}>{k.sub}</div>
+            {k.target && (
+              <div style={{ marginTop: 6 }}>
+                <Progress pct={parseFloat(k.value) / k.target * 100} color={parseFloat(k.value) / k.target >= 0.9 ? T.green : T.warn} h={4} target={100} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Alert Banner */}
+      {alerts.length > 0 && (
+        <CheckEngineLightPanel alerts={alerts} onNavigate={onNavigate} title={`${dept.label} Alerts`} color={dept.color} compact />
+      )}
+      {alerts.length === 0 && (
+        <div style={{ padding: "14px 18px", background: T.green + "10", border: `1px solid ${T.green}33`, borderRadius: 8, display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: T.green, boxShadow: `0 0 8px ${T.green}40` }} />
+          <span style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>All clear — no active alerts for {dept.label}</span>
+        </div>
+      )}
+
+      {/* Sub-view Navigation Cards */}
+      <SectionHeader sub={`Quick access to ${dept.label.toLowerCase()} modules`}>{dept.label} Modules</SectionHeader>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+        {dept.subViews.map(sv => (
+          <button key={sv.key} onClick={() => onNavigate?.(sv.key)} style={{
+            background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "16px 18px",
+            cursor: "pointer", textAlign: "left", fontFamily: "inherit", transition: "all .15s",
+            display: "flex", flexDirection: "column", gap: 6,
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = dept.color + "66"; e.currentTarget.style.background = T.bg3; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.bg2; }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{sv.label}</div>
+            <div style={{ fontSize: 11, color: T.textDim }}>{sv.desc}</div>
+            <div style={{ fontSize: 10, color: dept.color, fontWeight: 600, marginTop: 4 }}>Open &rarr;</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Alert Summary Footer */}
+      <Card title="Alert Summary" titleColor={T.textDim}>
+        <div style={{ display: "flex", gap: 20 }}>
+          {[{ label: "Critical", count: summary.crit, color: T.danger }, { label: "Warning", count: summary.warn, color: T.warn }, { label: "Info", count: summary.info, color: T.blue }].map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.color }} />
+              <span style={{ fontSize: 12, color: T.textMid }}>{s.label}: <strong style={{ color: T.text }}>{s.count}</strong></span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  DASHBOARD TEMPLATE E — News + Alerts Split Dashboard
+//  Pattern: Two-column (News + KPIs left, Alert feed right) → Focus areas
+//  Best for: Managers needing both news and alerts visible simultaneously
+// ═══════════════════════════════════════════════════════════════════
+
+export const DashboardTemplateE = ({ onNavigate }) => {
+  const { simDate } = useSimDate();
+  const [activeDept, setActiveDept] = useState("operations");
+  const dept = DEPT_CONFIG[activeDept];
+  const alerts = useMemo(() => getAlertsForDept(dept.key, simDate), [dept.key, simDate]);
+
+  const NEWS_DEPT_MAP = { operations: "vp-ops", technology: "vp-engineering", growth: "vp-finance" };
+
+  const tabs = [
+    { key: "operations", label: "Operations" },
+    { key: "technology", label: "Technology" },
+    { key: "growth", label: "Growth" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "12px 16px", background: T.accentDim, border: `1px solid ${T.accent}33`, borderRadius: 8, fontSize: 12, color: T.textMid }}>
+        <strong style={{ color: T.accent }}>Dashboard Template E — News + Alerts Split</strong> &middot; Two-column layout with world news and KPIs on the left, live alert feed on the right. Best for managers needing both intelligence and alerts visible.
+      </div>
+
+      <TabBar tabs={tabs} active={activeDept} onChange={setActiveDept} />
+
+      {/* Two-column: News+KPIs + Alerts */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20 }}>
+        {/* Left: News + KPIs + Focus */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* World News */}
+          <WorldNews deptKey={NEWS_DEPT_MAP[activeDept] || "company"} simDate={simDate} compact />
+
+          {/* KPI Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {dept.kpis.map((k, i) => (
+              <div key={i} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "14px 16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: T.textDim, textTransform: "uppercase", letterSpacing: .8, fontWeight: 600 }}>{k.label}</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: T.text, marginTop: 4 }}>{k.value}</div>
+                  </div>
+                  {k.target && <div style={{ fontSize: 10, color: T.textDim }}>Target: {k.target}</div>}
+                </div>
+                <div style={{ fontSize: 11, color: T.textMid, marginTop: 2 }}>{k.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Navigation */}
+          <Card title="Quick Navigation" titleColor={T.textDim}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {dept.subViews.map(sv => (
+                <button key={sv.key} onClick={() => onNavigate?.(sv.key)} style={{
+                  padding: "8px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: T.bg0,
+                  color: T.textMid, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = dept.color; e.currentTarget.style.color = dept.color; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textMid; }}
+                >{sv.label} &rarr;</button>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* Right: Alert Feed */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h4 style={{ margin: 0, fontSize: 13, color: dept.color, letterSpacing: .5 }}>SYSTEM ALERTS</h4>
+            <span style={{ fontSize: 10, color: T.textDim }}>{alerts.length} active</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 700, overflowY: "auto" }}>
+            {alerts.length === 0 && (
+              <div style={{ padding: 20, textAlign: "center", background: T.bg2, borderRadius: 8, color: T.green, fontSize: 12 }}>No active alerts</div>
+            )}
+            {alerts.map(alert => {
+              const sevColor = alert.severity === "critical" ? T.danger : alert.severity === "warning" ? T.warn : T.blue;
+              return (
+                <div key={alert.id} style={{ background: T.bg2, border: `1px solid ${sevColor}22`, borderRadius: 8, padding: "10px 14px", borderLeft: `3px solid ${sevColor}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: "50%", background: sevColor, boxShadow: alert.severity === "critical" ? `0 0 6px ${sevColor}60` : "none" }} />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: T.text, flex: 1 }}>{alert.label}</span>
+                    <span style={{ fontSize: 9, color: sevColor, fontWeight: 700, textTransform: "uppercase" }}>{alert.severity}</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: T.textDim, lineHeight: 1.4 }}>{alert.detail}</div>
+                  {alert.kpi && (
+                    <div style={{ marginTop: 6 }}>
+                      <Progress pct={Math.min(100, (alert.kpi.actual / alert.kpi.target) * 100)} color={sevColor} h={4} target={100} />
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: T.textDim, marginTop: 2 }}>
+                        <span>Actual: {alert.kpi.actual}{alert.kpi.unit}</span>
+                        <span>Target: {alert.kpi.target}{alert.kpi.unit}</span>
+                      </div>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6, fontSize: 9, color: T.textDim }}>
+                    <span>Via {alert.raisedBy.agentName}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  DEPT HOME TEMPLATE D — News-First Department Home
+//  Pattern: Dept banner → World News (top) → Alerts → Module nav → Focus
+//  Best for: VPs wanting industry intelligence upfront on their dept home
+// ═══════════════════════════════════════════════════════════════════
+
+export const DeptHomeD = ({ onNavigate }) => {
+  const { simDate } = useSimDate();
+  const [activeDept, setActiveDept] = useState("operations");
+  const dept = DEPT_CONFIG[activeDept];
+  const alerts = useMemo(() => getAlertsForDept(dept.key, simDate), [dept.key, simDate]);
+
+  const NEWS_DEPT_MAP = { operations: "vp-ops", technology: "vp-engineering", growth: "vp-finance" };
+
+  const deptTabs = [
+    { key: "operations", label: "Operations" },
+    { key: "technology", label: "Technology" },
+    { key: "growth", label: "Growth" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "12px 16px", background: T.accentDim, border: `1px solid ${T.accent}33`, borderRadius: 8, fontSize: 12, color: T.textMid }}>
+        <strong style={{ color: T.accent }}>Dept Home Template D — News-First</strong> &middot; Department header with world news prominently at top, followed by alerts, KPIs, and module navigation. Best for VPs wanting industry intelligence upfront.
+      </div>
+
+      <TabBar tabs={deptTabs} active={activeDept} onChange={setActiveDept} />
+
+      {/* Department Header Banner */}
+      <div style={{ background: `linear-gradient(135deg, ${dept.color}10, ${dept.color}04)`, border: `1px solid ${dept.color}33`, borderRadius: 12, padding: "20px 24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 11, color: dept.color, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{dept.branch}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: T.text }}>{dept.label} Home</div>
+            <div style={{ fontSize: 12, color: T.textDim, marginTop: 4 }}>{dept.subViews.length} modules &middot; {alerts.length} active alert{alerts.length !== 1 ? "s" : ""}</div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {dept.kpis.slice(0, 2).map((k, i) => (
+              <div key={i} style={{ background: T.bg2, borderRadius: 8, padding: "10px 14px", textAlign: "center", minWidth: 80 }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: T.text }}>{k.value}</div>
+                <div style={{ fontSize: 9, color: T.textDim, textTransform: "uppercase" }}>{k.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* World News — Prominent position */}
+      <WorldNews deptKey={NEWS_DEPT_MAP[activeDept] || "company"} simDate={simDate} compact />
+
+      {/* Department Alerts */}
+      {alerts.length > 0 && (
+        <CheckEngineLightPanel alerts={alerts} onNavigate={onNavigate} title={`${dept.label} Alerts`} color={dept.color} compact />
+      )}
+      {alerts.length === 0 && (
+        <div style={{ padding: "12px 16px", background: T.green + "08", border: `1px solid ${T.green}22`, borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: T.green }} />
+          <span style={{ fontSize: 12, color: T.green, fontWeight: 500 }}>No active alerts for {dept.label}</span>
+        </div>
+      )}
+
+      {/* Module Navigation Grid */}
+      <SectionHeader sub={`Navigate to ${dept.label.toLowerCase()} sub-modules`}>{dept.label} Modules</SectionHeader>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
+        {dept.subViews.map((sv, i) => {
+          const svAlerts = alerts.filter(a => (a.targetDepts || []).some(d => d.includes(sv.key.split("-")[1] || "")));
+          return (
+            <button key={sv.key} onClick={() => onNavigate?.(sv.key)} style={{
+              background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "18px 20px",
+              cursor: "pointer", textAlign: "left", fontFamily: "inherit", transition: "all .15s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = dept.color; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: dept.color + "15", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={dept.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={dept.icon} /></svg>
+                </div>
+                {svAlerts.length > 0 && (
+                  <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: T.warn + "18", color: T.warn, fontWeight: 700 }}>{svAlerts.length}</span>
+                )}
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 4 }}>{sv.label}</div>
+              <div style={{ fontSize: 11, color: T.textDim }}>{sv.desc}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Focus Areas */}
+      <Card title="Department Focus Areas" titleColor={dept.color}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {dept.focusAreas.map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "8px 12px", background: T.bg0, borderRadius: 6 }}>
+              <div style={{ width: 4, height: 4, borderRadius: "50%", background: dept.color, marginTop: 5, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: T.text, lineHeight: 1.4 }}>{f}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  DEPT HOME TEMPLATE E — Full Intelligence Department Home
+//  Pattern: Dept header → KPIs → Alerts → Modules → Focus → World News (bottom)
+//  Best for: Complete dept home page with all features + news at bottom
+// ═══════════════════════════════════════════════════════════════════
+
+export const DeptHomeE = ({ onNavigate }) => {
+  const { simDate } = useSimDate();
+  const [activeDept, setActiveDept] = useState("growth");
+  const dept = DEPT_CONFIG[activeDept];
+  const alerts = useMemo(() => getAlertsForDept(dept.key, simDate), [dept.key, simDate]);
+  const summary = deptAlertSummary(alerts);
+
+  const NEWS_DEPT_MAP = { operations: "vp-ops", technology: "vp-engineering", growth: "vp-finance" };
+
+  const deptTabs = [
+    { key: "operations", label: "Operations" },
+    { key: "technology", label: "Technology" },
+    { key: "growth", label: "Growth" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "12px 16px", background: T.accentDim, border: `1px solid ${T.accent}33`, borderRadius: 8, fontSize: 12, color: T.textMid }}>
+        <strong style={{ color: T.accent }}>Dept Home Template E — Full Intelligence</strong> &middot; Complete department home with header, KPIs, alerts, module navigation, focus areas, and world news at bottom. All features enabled for comprehensive department view.
+      </div>
+
+      <TabBar tabs={deptTabs} active={activeDept} onChange={setActiveDept} />
+
+      {/* Department Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, borderLeft: `4px solid ${dept.color}` }}>
+        <div>
+          <div style={{ fontSize: 10, color: dept.color, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>{dept.branch}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.text, marginTop: 2 }}>{dept.label} Department Home</div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ padding: "6px 12px", borderRadius: 6, background: summary.crit > 0 ? T.danger + "18" : T.green + "15", border: `1px solid ${summary.crit > 0 ? T.danger : T.green}33`, fontSize: 11, fontWeight: 600, color: summary.crit > 0 ? T.danger : T.green }}>
+            {summary.crit > 0 ? `${summary.crit} Critical` : "No Critical"}
+          </div>
+          <div style={{ padding: "6px 12px", borderRadius: 6, background: T.bg3, fontSize: 11, fontWeight: 500, color: T.textMid }}>
+            {summary.total} Total Alerts
+          </div>
+        </div>
+      </div>
+
+      {/* KPI Section */}
+      <SectionHeader sub="Key performance indicators">Department Metrics</SectionHeader>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${dept.kpis.length}, 1fr)`, gap: 12 }}>
+        {dept.kpis.map((k, i) => (
+          <div key={i} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: "16px 18px" }}>
+            <div style={{ fontSize: 10, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>{k.label}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: T.text, marginTop: 4 }}>{k.value}</div>
+            <div style={{ fontSize: 11, color: T.textMid, marginTop: 2 }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Alert Summary Cards */}
+      {alerts.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <SectionHeader sub={`${alerts.length} alert${alerts.length !== 1 ? "s" : ""} requiring attention`}>System Alerts — {dept.label}</SectionHeader>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+            {alerts.slice(0, 6).map(alert => {
+              const sevColor = alert.severity === "critical" ? T.danger : alert.severity === "warning" ? T.warn : T.blue;
+              return (
+                <div key={alert.id} style={{ background: sevColor + "08", border: `1px solid ${sevColor}22`, borderRadius: 8, padding: "12px 14px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: sevColor, boxShadow: alert.severity === "critical" ? `0 0 6px ${sevColor}50` : "none" }} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T.text, flex: 1 }}>{alert.label}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: sevColor, textTransform: "uppercase" }}>{alert.severity}</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: T.textDim, lineHeight: 1.4, marginBottom: 6 }}>{alert.detail}</div>
+                  {alert.kpi && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ flex: 1 }}><Progress pct={Math.min(100, (alert.kpi.actual / alert.kpi.target) * 100)} color={sevColor} h={4} /></div>
+                      <span style={{ fontSize: 9, color: T.textDim }}>{alert.kpi.actual}{alert.kpi.unit} / {alert.kpi.target}{alert.kpi.unit}</span>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 9, color: T.textDim, marginTop: 4 }}>Via {alert.raisedBy.agentName} &middot; {alert.raisedBy.department}</div>
+                </div>
+              );
+            })}
+          </div>
+          {alerts.length > 6 && <div style={{ fontSize: 11, color: T.textDim, textAlign: "center" }}>+ {alerts.length - 6} more alert{alerts.length - 6 !== 1 ? "s" : ""}</div>}
+        </div>
+      )}
+
+      {/* Module Navigation */}
+      <SectionHeader sub={`Access ${dept.label.toLowerCase()} sub-modules`}>Modules</SectionHeader>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 12 }}>
+        {dept.subViews.map(sv => (
+          <button key={sv.key} onClick={() => onNavigate?.(sv.key)} style={{
+            display: "flex", alignItems: "center", gap: 14, padding: "14px 18px",
+            background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10,
+            cursor: "pointer", fontFamily: "inherit", textAlign: "left", transition: "all .15s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = dept.color; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; }}
+          >
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: dept.color + "12", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={dept.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={dept.icon} /></svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{sv.label}</div>
+              <div style={{ fontSize: 10, color: T.textDim }}>{sv.desc}</div>
+            </div>
+            <span style={{ fontSize: 14, color: dept.color }}>&#8250;</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Focus Areas */}
+      <Card title="Department Focus" titleColor={dept.color}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {dept.focusAreas.map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", background: T.bg0, borderRadius: 8 }}>
+              <div style={{ width: 20, height: 20, borderRadius: "50%", background: dept.color + "15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: dept.color }}>{i + 1}</span>
+              </div>
+              <span style={{ fontSize: 12, color: T.text, lineHeight: 1.4 }}>{f}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* World News — Bottom position for full intel view */}
+      <WorldNews deptKey={NEWS_DEPT_MAP[activeDept] || "company"} simDate={simDate} showDeptSelector />
     </div>
   );
 };
