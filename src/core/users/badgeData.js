@@ -136,17 +136,23 @@ const DEMO_USERS = [
   { id: "demo-op", name: "Demo Operator", role: "Operator", department: "Operations", email: "demo.op@systemicenvs.com", reportsTo: "demo-mgr", overrides: [] },
 ];
 
-// In production, start with an empty user registry (users added via admin panel or SSO bootstrap)
-// In development, use demo users for the full playground experience
+// Production default: Thomas Andres as COO with full access
+// Additional users managed via Platform Admin or SSO bootstrap
+const PROD_DEFAULT_USERS = [
+  { id: "thomas", name: "Thomas Andres", role: "COO", department: "Executive", email: "thomas@systemicenvs.com", reportsTo: null, overrides: [] },
+];
+
 const USERS_STORAGE_KEY = "sens-prod-users";
 
 function loadProdUsers() {
   try {
     const raw = localStorage.getItem(USERS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+    if (raw) {
+      const stored = JSON.parse(raw);
+      if (stored.length > 0) return stored;
+    }
+  } catch { /* fall through to defaults */ }
+  return [...PROD_DEFAULT_USERS];
 }
 
 export const BADGE_USERS = isProd ? loadProdUsers() : [...DEMO_USERS];
