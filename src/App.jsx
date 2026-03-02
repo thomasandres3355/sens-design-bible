@@ -76,8 +76,17 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
   const [navProjectId, setNavProjectId] = useState(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
+  const [bugCount, setBugCount] = useState(getBugReportCount);
   const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true });
   useEffect(() => { setMounted(true); }, []);
+
+  // Keep bug badge count in sync with localStorage (updates from BugFixPortal deletions)
+  useEffect(() => {
+    const sync = () => setBugCount(getBugReportCount());
+    window.addEventListener("storage", sync);
+    const interval = setInterval(sync, 2000);
+    return () => { window.removeEventListener("storage", sync); clearInterval(interval); };
+  }, []);
 
   const { simDate, advanceDay, retreatDay, historyDepth, setHistoryDepth, maxDate } = useSimDate();
   const { activeUser, badge, switchUser, allUsers } = useBadge();
@@ -452,9 +461,9 @@ export default function App() {
           onMouseLeave={e => { if (!bugReportOpen) { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}}>
           <BugIcon size={16} />
           {!collapsed && <span style={{ fontWeight: bugReportOpen ? 600 : 400, whiteSpace: "nowrap" }}>Report Bug</span>}
-          {getBugReportCount() > 0 && (
+          {bugCount > 0 && (
             <span style={{ position: collapsed ? "absolute" : "static", top: collapsed ? 6 : undefined, right: collapsed ? 8 : undefined, marginLeft: collapsed ? 0 : "auto", fontSize: 9, fontWeight: 800, background: T.danger, color: "#fff", minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>
-              {getBugReportCount()}
+              {bugCount}
             </span>
           )}
         </button>
