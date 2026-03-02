@@ -10,6 +10,20 @@ import { useSimDate } from "../contexts/SimDateContext";
 import { getSiteMetrics, getPortfolioMetrics } from "../data/timeEngine";
 import { buildObjectives } from "../data/objectivesData";
 import { getLandingOverrides } from "../data/landingPageData";
+import { useTasks } from "../contexts/TaskContext";
+import { OBJECTIVE_TAGS } from "../data/focusData";
+
+// VP key → executive role mapping
+const VP_KEY_TO_ROLE = {
+  ceo: "CEO", coo: "COO",
+  "vp-engineering": "VP Engineering", engineering: "VP Engineering",
+  "vp-operations": "VP Operations", operations: "VP Operations",
+  "vp-finance": "VP Finance", finance: "VP Finance",
+  "vp-strategy": "VP Strategy", strategy: "VP Strategy",
+  "vp-people": "VP People", people: "VP People",
+  "vp-risk": "VP Risk", risk: "VP Risk",
+};
+const vpKeyToExecRole = (key) => VP_KEY_TO_ROLE[key] || key;
 
 /**
  * VpDashboardView — Dedicated dashboard / landing page for any VP or Exec.
@@ -22,6 +36,7 @@ export const VpDashboardView = ({ vp, onNavigate }) => {
   const { simDate } = useSimDate();
   const [hoveredLink, setHoveredLink] = useState(null);
   const [hoveredAgent, setHoveredAgent] = useState(null);
+  const { getOpenTasksForExec } = useTasks();
 
   if (!vp) return <div style={{ color: T.textDim, padding: 40 }}>VP data not found.</div>;
 
@@ -78,6 +93,98 @@ export const VpDashboardView = ({ vp, onNavigate }) => {
           <KpiCard key={i} label={kpi.label} value={kpi.value} sub={kpi.sub} color={vp.color} />
         ))}
       </div>
+
+      {/* ─── My Tasks — compact task list for this executive ─── */}
+      {(() => {
+        const execRole = vpKeyToExecRole(vp.key);
+        const openTasks = getOpenTasksForExec(execRole);
+        const overdueCount = openTasks.filter(t => t.status === "overdue").length;
+        const displayTasks = [...openTasks]
+          .sort((a, b) => {
+            const pOrder = { high: 0, medium: 1, low: 2 };
+            if ((pOrder[a.priority] ?? 1) !== (pOrder[b.priority] ?? 1)) return (pOrder[a.priority] ?? 1) - (pOrder[b.priority] ?? 1);
+            return a.due.localeCompare(b.due);
+          })
+          .slice(0, 5);
+
+        return (
+          <Card title="MY TASKS" titleColor={vp.color}
+            action={
+              <button onClick={() => onNavigate("focus-tasks")} style={{
+                background: "none", border: `1px solid ${vp.color}30`, borderRadius: 6,
+                padding: "4px 12px", cursor: "pointer", fontSize: 10, fontWeight: 600,
+                color: vp.color, fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4,
+                transition: "all .15s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = vp.color + "10"; e.currentTarget.style.borderColor = vp.color; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = vp.color + "30"; }}
+              >
+                View All
+                <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>
+              </button>
+            }
+          >
+            {/* Summary */}
+            <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
+              <div style={{ fontSize: 12, color: T.text }}>
+                <span style={{ fontWeight: 700, fontSize: 16, color: vp.color }}>{openTasks.length}</span> open task{openTasks.length !== 1 ? "s" : ""}
+              </div>
+              {overdueCount > 0 && (
+                <div style={{ fontSize: 12, color: T.danger }}>
+                  <span style={{ fontWeight: 700, fontSize: 16 }}>{overdueCount}</span> overdue
+                </div>
+              )}
+            </div>
+
+            {/* Task rows */}
+            {displayTasks.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {displayTasks.map(t => {
+                  const objTag = OBJECTIVE_TAGS.find(o => o.id === t.objectiveTag);
+                  return (
+                    <div key={t.id} style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "8px 10px", background: T.bg0, borderRadius: 6,
+                      border: `1px solid ${t.status === "overdue" ? T.danger + "30" : T.border}`,
+                    }}>
+                      {/* Priority dot */}
+                      <div style={{
+                        width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                        background: t.priority === "high" ? T.danger : t.priority === "medium" ? T.warn : T.textDim,
+                      }} />
+                      <span style={{ fontSize: 12, color: T.text, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {t.task}
+                      </span>
+                      {/* Objective dot */}
+                      {objTag && (
+                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: objTag.color, flexShrink: 0, boxShadow: `0 0 4px ${objTag.color}30` }} title={objTag.label} />
+                      )}
+                      <span style={{
+                        fontSize: 10, color: t.status === "overdue" ? T.danger : T.textDim,
+                        fontWeight: t.status === "overdue" ? 600 : 400, flexShrink: 0,
+                      }}>
+                        {t.due}
+                      </span>
+                    </div>
+                  );
+                })}
+                {openTasks.length > 5 && (
+                  <button onClick={() => onNavigate("focus-tasks")} style={{
+                    background: "none", border: "none", cursor: "pointer", padding: "6px 0",
+                    fontSize: 11, fontWeight: 600, color: vp.color, fontFamily: "inherit",
+                  }}>
+                    + {openTasks.length - 5} more task{openTasks.length - 5 !== 1 ? "s" : ""}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", padding: 16, color: T.green, fontSize: 12 }}>
+                No open tasks. Looking good!
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       {/* ─── Check Engine Lights — alerts relevant to this VP/Exec ─── */}
       {(() => {

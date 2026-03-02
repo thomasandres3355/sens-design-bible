@@ -8,6 +8,7 @@ import { PermissionProvider } from "./contexts/PermissionContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { MobileProvider } from "./contexts/MobileContext";
 import { AgentConfigProvider } from "./contexts/AgentConfigContext";
+import { TaskProvider } from "./contexts/TaskContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -15,6 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <MobileProvider>
       <AuthProvider>
         <SimDateProvider>
+          <TaskProvider>
           <BadgeProvider>
             <AgentConfigProvider>
               <PermissionProvider>
@@ -22,6 +24,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               </PermissionProvider>
             </AgentConfigProvider>
           </BadgeProvider>
+          </TaskProvider>
         </SimDateProvider>
       </AuthProvider>
       </MobileProvider>
