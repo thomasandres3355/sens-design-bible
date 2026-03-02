@@ -1,13 +1,10 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef } from "react";
 import { T } from "@core/theme/theme";
 import { MFA_CONFIG } from "./authData";
 import { BADGE_USERS } from "@core/users/badgeData";
 import { useAuth, LOGIN_STEPS } from "./AuthContext";
 import { isRealAuth } from "./authModeConfig";
 import sensLogo from "../../assets/SENS Logo-White copy.png";
-
-// Import GoogleLogin statically — tree-shaken in mock mode since it's behind isRealAuth guard
-import { GoogleLogin } from "@react-oauth/google";
 
 /* ─────────────────────────────────────────────
    Login View — Full-screen branded login
@@ -107,7 +104,7 @@ export default function LoginView() {
 //  Step 1: Choose Login Method
 // ═══════════════════════════════════════════════
 function ChooseMethodPanel() {
-  const { startSsoLogin, setLoginStep, loginError, handleGoogleCredential } = useAuth();
+  const { startSsoLogin, setLoginStep, loginError } = useAuth();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -120,19 +117,8 @@ function ChooseMethodPanel() {
         onClick={() => startSsoLogin("microsoft")}
       />
 
-      {/* Google SSO — real mode uses Google's component, mock uses our button */}
-      {isRealAuth ? (
-        <div style={{ width: "100%" }}>
-          <GoogleLogin
-            onSuccess={handleGoogleCredential}
-            onError={() => console.error("Google login failed")}
-            theme="outline"
-            size="large"
-            width="348"
-            text="signin_with"
-          />
-        </div>
-      ) : (
+      {/* Google SSO — mock/dev mode only */}
+      {!isRealAuth && (
         <SsoButton
           icon={<GoogleIcon />}
           label="Sign in with Google"

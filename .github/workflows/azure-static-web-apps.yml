@@ -34,7 +34,6 @@ jobs:
           VITE_MICROSOFT_CLIENT_ID: ${{ secrets.VITE_MICROSOFT_CLIENT_ID }}
           VITE_MICROSOFT_TENANT_ID: ${{ secrets.VITE_MICROSOFT_TENANT_ID }}
           VITE_MICROSOFT_REDIRECT_URI: ${{ secrets.VITE_MICROSOFT_REDIRECT_URI }}
-          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           VITE_APP_URL: ${{ secrets.VITE_APP_URL }}
           VITE_APP_ENV: ${{ github.event_name == 'push' && 'production' || 'development' }}
 

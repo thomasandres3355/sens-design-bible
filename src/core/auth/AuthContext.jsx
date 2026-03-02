@@ -104,7 +104,7 @@ export const AuthProvider = ({ children, msalInstance }) => {
   }, []);
 
   // ══════════════════════════════════════════════════
-  //  REAL AUTH FLOWS (production — MSAL + Google)
+  //  REAL AUTH FLOW (production — Microsoft MSAL)
   // ══════════════════════════════════════════════════
 
   const startRealMicrosoftLogin = useCallback(async () => {
@@ -139,25 +139,6 @@ export const AuthProvider = ({ children, msalInstance }) => {
     }
   }, [msalInstance, resolveOrBootstrapUser, completeLogin]);
 
-  // Called by GoogleLogin component's onSuccess callback
-  const handleGoogleCredential = useCallback((credentialResponse) => {
-    setLoginError(null);
-    try {
-      // Decode the JWT ID token to get user info
-      const payload = JSON.parse(atob(credentialResponse.credential.split(".")[1]));
-      const email = payload.email;
-      const user = resolveOrBootstrapUser(email, payload.name);
-      if (user) {
-        completeLogin(user.id, AUTH_METHODS.GOOGLE_SSO);
-      } else {
-        setLoginError(`Account ${email} is not registered in the platform. Contact your administrator.`);
-      }
-    } catch (error) {
-      console.error("Google login error:", error);
-      setLoginError("Google login failed");
-    }
-  }, [resolveOrBootstrapUser, completeLogin]);
-
   // ══════════════════════════════════════════════════
   //  MOCK AUTH FLOWS (development — unchanged)
   // ══════════════════════════════════════════════════
@@ -178,12 +159,9 @@ export const AuthProvider = ({ children, msalInstance }) => {
 
   // ── Router: delegates to real or mock ──
   const startSsoLogin = useCallback((providerId) => {
-    if (isRealAuth) {
-      if (providerId === "microsoft") {
-        startRealMicrosoftLogin();
-      }
-      // Google is handled via the GoogleLogin component, not this function
-    } else {
+    if (isRealAuth && providerId === "microsoft") {
+      startRealMicrosoftLogin();
+    } else if (!isRealAuth) {
       startMockSsoLogin(providerId);
     }
   }, [startRealMicrosoftLogin, startMockSsoLogin]);
@@ -258,13 +236,12 @@ export const AuthProvider = ({ children, msalInstance }) => {
     signOut,
     goBackToLogin,
     setLoginStep,
-    handleGoogleCredential,
     isRealAuth,
   }), [
     isAuthenticated, currentUser, currentUserId, authMethod,
     loginStep, loginError, ssoProvider, pendingEmail,
     startSsoLogin, selectSsoAccount, submitEmailLogin,
-    verifyMfa, signOut, goBackToLogin, handleGoogleCredential,
+    verifyMfa, signOut, goBackToLogin,
   ]);
 
   return (
