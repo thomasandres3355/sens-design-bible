@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
-import { BADGE_USERS } from "@core/users/badgeData";
+import { createContext, useContext, useState, useCallback, useMemo } from "react";
+import { BADGE_USERS, addProductionUser } from "@core/users/badgeData";
 import { SESSION_CONFIG, AUTH_DELAYS, AUTH_METHODS } from "./authData";
+import { isRealAuth } from "./authModeConfig";
+import { loginRequest } from "./msalConfig";
 
 const AuthContext = createContext(null);
 
@@ -14,7 +16,6 @@ function loadSession() {
       localStorage.removeItem(SESSION_CONFIG.storageKey);
       return null;
     }
-    // Verify user still exists
     const user = BADGE_USERS.find((u) => u.id === session.userId);
     if (!user) return null;
     return session;
@@ -48,7 +49,7 @@ export const LOGIN_STEPS = {
 };
 
 // ═══ AUTH PROVIDER ═══════════════════════════════════════════════════════
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children, msalInstance }) => {
   const existingSession = loadSession();
 
   const [isAuthenticated, setIsAuthenticated] = useState(!!existingSession);
@@ -64,12 +65,88 @@ export const AuthProvider = ({ children }) => {
     [currentUserId]
   );
 
-  // ── SSO Login Flow ──
-  const startSsoLogin = useCallback((providerId) => {
+  // ── Shared: resolve OAuth email to BADGE_USERS ──
+  // In production, if no users exist, auto-bootstrap the first SSO user as admin
+  const resolveOrBootstrapUser = useCallback((email, name) => {
+    if (!email) return null;
+    const existing = BADGE_USERS.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (existing) return existing;
+
+    // Production bootstrap: first user becomes CEO/admin
+    if (isRealAuth && BADGE_USERS.length === 0 && name) {
+      const id = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "-");
+      const bootstrapUser = {
+        id,
+        name,
+        role: "CEO",
+        department: "Executive",
+        email,
+        reportsTo: null,
+        overrides: [],
+      };
+      addProductionUser(bootstrapUser);
+      return bootstrapUser;
+    }
+
+    return null;
+  }, []);
+
+  // ── Shared: complete login ──
+  const completeLogin = useCallback((userId, method) => {
+    setCurrentUserId(userId);
+    setAuthMethod(method);
+    setIsAuthenticated(true);
+    setLoginStep(LOGIN_STEPS.CHOOSE_METHOD);
+    setSsoProvider(null);
+    setPendingEmail(null);
+    setLoginError(null);
+    saveSession(userId, method);
+  }, []);
+
+  // ══════════════════════════════════════════════════
+  //  REAL AUTH FLOW (production — Microsoft MSAL)
+  // ══════════════════════════════════════════════════
+
+  const startRealMicrosoftLogin = useCallback(async () => {
+    if (!msalInstance) return;
+    setLoginError(null);
+    setSsoProvider("microsoft");
+    setLoginStep(LOGIN_STEPS.SSO_LOADING);
+
+    try {
+      const response = await msalInstance.loginPopup(loginRequest);
+      if (response?.account) {
+        const email = response.account.username;
+        const user = resolveOrBootstrapUser(email, response.account.name);
+        if (user) {
+          completeLogin(user.id, AUTH_METHODS.MICROSOFT_SSO);
+        } else {
+          setLoginError(`Account ${email} is not registered in the platform. Contact your administrator.`);
+          setLoginStep(LOGIN_STEPS.CHOOSE_METHOD);
+          setSsoProvider(null);
+        }
+      }
+    } catch (error) {
+      if (error.errorCode === "user_cancelled") {
+        setLoginStep(LOGIN_STEPS.CHOOSE_METHOD);
+        setSsoProvider(null);
+      } else {
+        console.error("Microsoft login error:", error);
+        setLoginError(error.message || "Microsoft login failed");
+        setLoginStep(LOGIN_STEPS.CHOOSE_METHOD);
+        setSsoProvider(null);
+      }
+    }
+  }, [msalInstance, resolveOrBootstrapUser, completeLogin]);
+
+  // ══════════════════════════════════════════════════
+  //  MOCK AUTH FLOWS (development — unchanged)
+  // ══════════════════════════════════════════════════
+
+  const startMockSsoLogin = useCallback((providerId) => {
     setLoginError(null);
     setSsoProvider(providerId);
     setLoginStep(LOGIN_STEPS.SSO_LOADING);
-
     setTimeout(() => {
       setLoginStep(LOGIN_STEPS.SSO_ACCOUNT_PICKER);
     }, AUTH_DELAYS.ssoRedirect);
@@ -77,15 +154,19 @@ export const AuthProvider = ({ children }) => {
 
   const selectSsoAccount = useCallback((userId) => {
     const method = ssoProvider === "microsoft" ? AUTH_METHODS.MICROSOFT_SSO : AUTH_METHODS.GOOGLE_SSO;
-    setCurrentUserId(userId);
-    setAuthMethod(method);
-    setIsAuthenticated(true);
-    setLoginStep(LOGIN_STEPS.CHOOSE_METHOD);
-    setSsoProvider(null);
-    saveSession(userId, method);
-  }, [ssoProvider]);
+    completeLogin(userId, method);
+  }, [ssoProvider, completeLogin]);
 
-  // ── Email + Password Flow ──
+  // ── Router: delegates to real or mock ──
+  const startSsoLogin = useCallback((providerId) => {
+    if (isRealAuth && providerId === "microsoft") {
+      startRealMicrosoftLogin();
+    } else if (!isRealAuth) {
+      startMockSsoLogin(providerId);
+    }
+  }, [startRealMicrosoftLogin, startMockSsoLogin]);
+
+  // ── Email + Password Flow (mock only — stays unchanged) ──
   const submitEmailLogin = useCallback((email) => {
     setLoginError(null);
     const user = BADGE_USERS.find((u) => u.email.toLowerCase() === email.toLowerCase());
@@ -97,7 +178,7 @@ export const AuthProvider = ({ children }) => {
     setLoginStep(LOGIN_STEPS.MFA_VERIFY);
   }, []);
 
-  // ── MFA Verification ──
+  // ── MFA Verification (mock only) ──
   const verifyMfa = useCallback((code) => {
     setLoginError(null);
     if (code.length !== 6 || !/^\d{6}$/.test(code)) {
@@ -110,16 +191,17 @@ export const AuthProvider = ({ children }) => {
       setLoginStep(LOGIN_STEPS.CHOOSE_METHOD);
       return;
     }
-    setCurrentUserId(user.id);
-    setAuthMethod(AUTH_METHODS.EMAIL_PASSWORD);
-    setIsAuthenticated(true);
-    setLoginStep(LOGIN_STEPS.CHOOSE_METHOD);
-    setPendingEmail(null);
-    saveSession(user.id, AUTH_METHODS.EMAIL_PASSWORD);
-  }, [pendingEmail]);
+    completeLogin(user.id, AUTH_METHODS.EMAIL_PASSWORD);
+  }, [pendingEmail, completeLogin]);
 
   // ── Sign Out ──
   const signOut = useCallback(() => {
+    if (isRealAuth && msalInstance) {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        msalInstance.logoutPopup({ account: accounts[0] }).catch(() => {});
+      }
+    }
     setIsAuthenticated(false);
     setCurrentUserId(null);
     setAuthMethod(null);
@@ -128,7 +210,7 @@ export const AuthProvider = ({ children }) => {
     setSsoProvider(null);
     setPendingEmail(null);
     clearSession();
-  }, []);
+  }, [msalInstance]);
 
   // ── Go back in login flow ──
   const goBackToLogin = useCallback(() => {
@@ -154,6 +236,7 @@ export const AuthProvider = ({ children }) => {
     signOut,
     goBackToLogin,
     setLoginStep,
+    isRealAuth,
   }), [
     isAuthenticated, currentUser, currentUserId, authMethod,
     loginStep, loginError, ssoProvider, pendingEmail,

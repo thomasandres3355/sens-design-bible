@@ -11,4 +11,12 @@ export default defineConfig({
       "@src": path.resolve(__dirname, "src"),
     },
   },
+  build: {
+    outDir: "dist",
+    sourcemap: false,
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
 });

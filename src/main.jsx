@@ -9,25 +9,60 @@ import { ThemeProvider } from "@core/theme/ThemeContext";
 import { MobileProvider } from "@core/mobile/MobileContext";
 import { AgentConfigProvider } from "@modules/ai-agents/AgentConfigContext";
 import { TaskProvider } from "@core/tasks/TaskContext";
+import { isRealAuth } from "@core/auth/authModeConfig";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalProvider } from "@azure/msal-react";
+import { msalConfig } from "@core/auth/msalConfig";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <ThemeProvider>
-      <MobileProvider>
-      <AuthProvider>
-        <SimDateProvider>
-          <TaskProvider>
-          <BadgeProvider>
-            <AgentConfigProvider>
-              <PermissionProvider>
-                <App />
-              </PermissionProvider>
-            </AgentConfigProvider>
-          </BadgeProvider>
-          </TaskProvider>
-        </SimDateProvider>
-      </AuthProvider>
-      </MobileProvider>
-    </ThemeProvider>
-  </React.StrictMode>
-);
+// ── Initialize MSAL (only creates instance in real auth mode) ──
+let msalInstance = null;
+if (isRealAuth) {
+  msalInstance = new PublicClientApplication(msalConfig);
+}
+
+// ── Conditional wrapper for MSAL provider ──
+function AuthProviderWrapper({ children }) {
+  if (!isRealAuth) return children;
+  return (
+    <MsalProvider instance={msalInstance}>
+      {children}
+    </MsalProvider>
+  );
+}
+
+async function bootstrap() {
+  // Initialize MSAL and handle any pending redirect responses
+  if (msalInstance) {
+    await msalInstance.initialize();
+    const response = await msalInstance.handleRedirectPromise();
+    if (response?.account) {
+      msalInstance.setActiveAccount(response.account);
+    }
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(
+    <React.StrictMode>
+      <AuthProviderWrapper>
+        <ThemeProvider>
+          <MobileProvider>
+          <AuthProvider msalInstance={msalInstance}>
+            <SimDateProvider>
+              <TaskProvider>
+              <BadgeProvider>
+                <AgentConfigProvider>
+                  <PermissionProvider>
+                    <App />
+                  </PermissionProvider>
+                </AgentConfigProvider>
+              </BadgeProvider>
+              </TaskProvider>
+            </SimDateProvider>
+          </AuthProvider>
+          </MobileProvider>
+        </ThemeProvider>
+      </AuthProviderWrapper>
+    </React.StrictMode>
+  );
+}
+
+bootstrap();
