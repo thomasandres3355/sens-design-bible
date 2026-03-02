@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { T } from "./data/theme";
 import { activeSites, constructionSites, totalProcessors } from "./data/sites";
 import { DashboardView, DeliveringView, OperationsView, FinanceView, RiskView, RiskLandingView, RiskDomainDetailView, OrgChartView, VpDashboardView, AgentDetailView, PortfolioMapView, SettingsView, FocusTrackerView, DevelopmentView, PlatformAdminView } from "./views";
+import { Template1, Template2, Template3, Template4, Template5, DashboardTemplateA, DashboardTemplateB, DashboardTemplateC, DeptHomeA, DeptHomeB, DeptHomeC } from "./views/TemplatesView";
 import { WorkforceView } from "./views/WorkforceView";
 import { GenericLandingView } from "./views/GenericLandingView";
 import { vpRegistry, isVpKey, isExecKey, getExecData, isAgentKey, agentIndex, ceoAgentTeam, cooAgentTeam, getAgentDirectory } from "./data/vpData";
@@ -60,6 +61,19 @@ const modules = [
     { key: "admin-platform-config", label: "Platform Config", icon: "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6" },
     { key: "admin-bug-fixes", label: "Bug Fixes", icon: "M8 2l1.88 1.88 M14.12 3.88L16 2 M9 7.13v-1a3.003 3.003 0 116 0v1 M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 014-4h4a4 4 0 014 4v3c0 3.3-2.7 6-6 6 M12 20v-9" },
   ]},
+  { key: "templates", label: "Templates", icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z M4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z M16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z", branch: "TEMPLATES", children: [
+    { key: "template-1", label: "Template One", icon: "M3 3h18v18H3z M3 9h18 M9 9v12" },
+    { key: "template-2", label: "Template Two", icon: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z" },
+    { key: "template-3", label: "Template Three", icon: "M3 3h18v4H3z M3 10h18v4H3z M3 17h18v4H3z" },
+    { key: "template-4", label: "Template Four", icon: "M4 4h4v4H4z M12 4h4v4h-4z M4 12h4v4H4z M12 12h4v4h-4z M20 4h0 M20 12h0" },
+    { key: "template-5", label: "Template Five", icon: "M3 3h18v5H3z M3 11h8v10H3z M14 11h7v4h-7z M14 18h7v3h-7z" },
+    { key: "tpl-dash-1", label: "Dashboard A", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+    { key: "tpl-dash-2", label: "Dashboard B", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+    { key: "tpl-dash-3", label: "Dashboard C", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+    { key: "tpl-dept-1", label: "Dept Home A", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+    { key: "tpl-dept-2", label: "Dept Home B", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+    { key: "tpl-dept-3", label: "Dept Home C", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+  ]},
   { key: "org", label: "Org Chart", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", branch: "CROSS-CUTTING" },
 ];
 
@@ -76,7 +90,7 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
   const [navProjectId, setNavProjectId] = useState(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true });
+  const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true, templates: true });
   useEffect(() => { setMounted(true); }, []);
 
   const { simDate, advanceDay, retreatDay, historyDepth, setHistoryDepth, maxDate } = useSimDate();
@@ -146,8 +160,8 @@ export default function App() {
     return <LoginView />;
   }
 
-  // Filter sidebar modules by permission
-  const visibleSidebar = modules.filter((m) => visibleModules.includes(m.key));
+  // Filter sidebar modules by permission — templates always visible
+  const visibleSidebar = modules.filter((m) => m.key === "templates" || visibleModules.includes(m.key));
 
   // ─── Resolve the active view ───
   const resolveView = () => {
@@ -193,11 +207,13 @@ export default function App() {
       return <GenericLandingView pageKey={active} onNavigate={setActive} />;
     }
 
-    // Permission check for standard modules (including risk children — check parent "risk" permission)
-    const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active.startsWith("tech-") ? "technology" : active.startsWith("ops-") ? "ops" : active;
-    const isStandardModule = modules.find((m) => m.key === active) || modules.some(m => m.children?.some(c => c.key === active));
-    if (!can(permKey, "view") && isStandardModule) {
-      return <AccessDenied module={permKey} action="view" />;
+    // Permission check for standard modules — skip for templates (always accessible)
+    if (!(active === "templates" || active.startsWith("template-") || active.startsWith("tpl-"))) {
+      const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active.startsWith("tech-") ? "technology" : active.startsWith("ops-") ? "ops" : active;
+      const isStandardModule = modules.find((m) => m.key === active) || modules.some(m => m.children?.some(c => c.key === active));
+      if (!can(permKey, "view") && isStandardModule) {
+        return <AccessDenied module={permKey} action="view" />;
+      }
     }
 
     // Standard module views
@@ -244,6 +260,18 @@ export default function App() {
       focus: <FocusTrackerView />,
       sitemap: <PortfolioMapView onNavigateToProject={(siteId) => { setNavProjectId(siteId); setActive("ops-projects"); }} />,
       settings: <PlatformAdminView />,  /* legacy route — redirects to combined view */
+      templates: <Template1 />,
+      "template-1": <Template1 />,
+      "template-2": <Template2 />,
+      "template-3": <Template3 />,
+      "template-4": <Template4 />,
+      "template-5": <Template5 />,
+      "tpl-dash-1": <DashboardTemplateA onNavigate={setActive} />,
+      "tpl-dash-2": <DashboardTemplateB onNavigate={setActive} />,
+      "tpl-dash-3": <DashboardTemplateC onNavigate={setActive} />,
+      "tpl-dept-1": <DeptHomeA onNavigate={setActive} />,
+      "tpl-dept-2": <DeptHomeB onNavigate={setActive} />,
+      "tpl-dept-3": <DeptHomeC onNavigate={setActive} />,
     };
     return standardViews[active] || standardViews.dashboard;
   };

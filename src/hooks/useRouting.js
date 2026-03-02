@@ -43,6 +43,20 @@ const KEY_TO_PATH = {
   "admin-platform-config": "/admin/platform-config",
   "admin-bug-fixes":       "/admin/bug-fixes",
 
+  // Templates
+  templates:               "/templates",
+  "template-1":            "/templates/page/1",
+  "template-2":            "/templates/page/2",
+  "template-3":            "/templates/page/3",
+  "template-4":            "/templates/page/4",
+  "template-5":            "/templates/page/5",
+  "tpl-dash-1":            "/templates/dashboard/a",
+  "tpl-dash-2":            "/templates/dashboard/b",
+  "tpl-dash-3":            "/templates/dashboard/c",
+  "tpl-dept-1":            "/templates/dept/a",
+  "tpl-dept-2":            "/templates/dept/b",
+  "tpl-dept-3":            "/templates/dept/c",
+
   // Exec / VP under /org
   ceo:              "/org/ceo",
   coo:              "/org/coo",
