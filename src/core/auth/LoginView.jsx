@@ -1,13 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { T } from "@core/theme/theme";
-import { SSO_PROVIDERS, MFA_CONFIG } from "./authData";
+import { MFA_CONFIG } from "./authData";
 import { BADGE_USERS } from "@core/users/badgeData";
 import { useAuth, LOGIN_STEPS } from "./AuthContext";
+import { isRealAuth } from "./authModeConfig";
 import sensLogo from "../../assets/SENS Logo-White copy.png";
+
+// Import GoogleLogin statically — tree-shaken in mock mode since it's behind isRealAuth guard
+import { GoogleLogin } from "@react-oauth/google";
 
 /* ─────────────────────────────────────────────
    Login View — Full-screen branded login
-   4 flows: Microsoft SSO, Google SSO, Email+Password, 2FA
+   Dual mode: mock (dev) / real (production)
    ───────────────────────────────────────────── */
 
 // ── Shared input style ──
@@ -80,9 +84,9 @@ export default function LoginView() {
           <div style={{ padding: "28px 36px 36px" }}>
             {loginStep === LOGIN_STEPS.CHOOSE_METHOD && <ChooseMethodPanel />}
             {loginStep === LOGIN_STEPS.SSO_LOADING && <SsoLoadingPanel provider={ssoProvider} />}
-            {loginStep === LOGIN_STEPS.SSO_ACCOUNT_PICKER && <SsoAccountPicker provider={ssoProvider} onSelect={selectSsoAccount} onBack={goBackToLogin} />}
-            {loginStep === LOGIN_STEPS.EMAIL_FORM && <EmailFormPanel onSubmit={submitEmailLogin} onBack={goBackToLogin} error={loginError} />}
-            {loginStep === LOGIN_STEPS.MFA_VERIFY && <MfaVerifyPanel onVerify={verifyMfa} onBack={goBackToLogin} error={loginError} />}
+            {loginStep === LOGIN_STEPS.SSO_ACCOUNT_PICKER && !isRealAuth && <SsoAccountPicker provider={ssoProvider} onSelect={selectSsoAccount} onBack={goBackToLogin} />}
+            {loginStep === LOGIN_STEPS.EMAIL_FORM && !isRealAuth && <EmailFormPanel onSubmit={submitEmailLogin} onBack={goBackToLogin} error={loginError} />}
+            {loginStep === LOGIN_STEPS.MFA_VERIFY && !isRealAuth && <MfaVerifyPanel onVerify={verifyMfa} onBack={goBackToLogin} error={loginError} />}
           </div>
         </div>
       </div>
@@ -103,11 +107,11 @@ export default function LoginView() {
 //  Step 1: Choose Login Method
 // ═══════════════════════════════════════════════
 function ChooseMethodPanel() {
-  const { startSsoLogin, setLoginStep } = useAuth();
+  const { startSsoLogin, setLoginStep, loginError, handleGoogleCredential } = useAuth();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* SSO Buttons */}
+      {/* Microsoft SSO — same button, different behavior in real vs mock */}
       <SsoButton
         icon={<MicrosoftIcon />}
         label="Sign in with Microsoft"
@@ -115,48 +119,77 @@ function ChooseMethodPanel() {
         textColor="#fff"
         onClick={() => startSsoLogin("microsoft")}
       />
-      <SsoButton
-        icon={<GoogleIcon />}
-        label="Sign in with Google"
-        bgColor="#ffffff"
-        textColor="#333"
-        onClick={() => startSsoLogin("google")}
-      />
 
-      {/* Divider */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "8px 0" }}>
-        <div style={{ flex: 1, height: 1, background: T.border }} />
-        <span style={{ fontSize: 11, color: T.textDim, whiteSpace: "nowrap" }}>or sign in with email</span>
-        <div style={{ flex: 1, height: 1, background: T.border }} />
-      </div>
-
-      {/* Email option */}
-      <button
-        onClick={() => setLoginStep(LOGIN_STEPS.EMAIL_FORM)}
-        style={{
-          width: "100%", padding: "12px 16px", borderRadius: 8,
-          border: `1px solid ${T.border}`, background: T.bg2, color: T.text,
-          fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          transition: "border-color .15s",
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.borderColor = T.accent}
-        onMouseLeave={(e) => e.currentTarget.style.borderColor = T.border}
-      >
-        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.textMid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-          <path d="M22 6l-10 7L2 6" />
-        </svg>
-        Sign in with Email
-      </button>
-
-      {/* Demo hint */}
-      <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: T.accent + "08", border: `1px solid ${T.accent}20` }}>
-        <div style={{ fontSize: 11, color: T.accent, fontWeight: 600, marginBottom: 4 }}>Demo Mode</div>
-        <div style={{ fontSize: 11, color: T.textDim, lineHeight: 1.5 }}>
-          SSO will show an account picker with all demo users. Email login accepts any registered email with any password.
+      {/* Google SSO — real mode uses Google's component, mock uses our button */}
+      {isRealAuth ? (
+        <div style={{ width: "100%" }}>
+          <GoogleLogin
+            onSuccess={handleGoogleCredential}
+            onError={() => console.error("Google login failed")}
+            theme="outline"
+            size="large"
+            width="348"
+            text="signin_with"
+          />
         </div>
-      </div>
+      ) : (
+        <SsoButton
+          icon={<GoogleIcon />}
+          label="Sign in with Google"
+          bgColor="#ffffff"
+          textColor="#333"
+          onClick={() => startSsoLogin("google")}
+        />
+      )}
+
+      {/* Email login — only in mock/dev mode */}
+      {!isRealAuth && (
+        <>
+          {/* Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "8px 0" }}>
+            <div style={{ flex: 1, height: 1, background: T.border }} />
+            <span style={{ fontSize: 11, color: T.textDim, whiteSpace: "nowrap" }}>or sign in with email</span>
+            <div style={{ flex: 1, height: 1, background: T.border }} />
+          </div>
+
+          {/* Email option */}
+          <button
+            onClick={() => setLoginStep(LOGIN_STEPS.EMAIL_FORM)}
+            style={{
+              width: "100%", padding: "12px 16px", borderRadius: 8,
+              border: `1px solid ${T.border}`, background: T.bg2, color: T.text,
+              fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              transition: "border-color .15s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.borderColor = T.accent}
+            onMouseLeave={(e) => e.currentTarget.style.borderColor = T.border}
+          >
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.textMid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <path d="M22 6l-10 7L2 6" />
+            </svg>
+            Sign in with Email
+          </button>
+        </>
+      )}
+
+      {/* Error display */}
+      {loginError && (
+        <div style={{ padding: "10px 14px", borderRadius: 8, background: T.danger + "15", border: `1px solid ${T.danger}30`, fontSize: 12, color: T.danger }}>
+          {loginError}
+        </div>
+      )}
+
+      {/* Demo hint — only in mock mode */}
+      {!isRealAuth && (
+        <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: T.accent + "08", border: `1px solid ${T.accent}20` }}>
+          <div style={{ fontSize: 11, color: T.accent, fontWeight: 600, marginBottom: 4 }}>Demo Mode</div>
+          <div style={{ fontSize: 11, color: T.textDim, lineHeight: 1.5 }}>
+            SSO will show an account picker with all demo users. Email login accepts any registered email with any password.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -204,7 +237,7 @@ function SsoLoadingPanel({ provider }) {
         }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       </div>
-      <div style={{ fontSize: 14, color: T.text, fontWeight: 600 }}>Redirecting to {providerLabel}...</div>
+      <div style={{ fontSize: 14, color: T.text, fontWeight: 600 }}>Connecting to {providerLabel}...</div>
       <div style={{ fontSize: 12, color: T.textDim, marginTop: 6 }}>Please wait while we connect to your account</div>
     </div>
   );
@@ -212,7 +245,7 @@ function SsoLoadingPanel({ provider }) {
 
 
 // ═══════════════════════════════════════════════
-//  Step 2b: SSO Account Picker
+//  Step 2b: SSO Account Picker (MOCK MODE ONLY)
 // ═══════════════════════════════════════════════
 function SsoAccountPicker({ provider, onSelect, onBack }) {
   const providerLabel = provider === "microsoft" ? "Microsoft" : "Google";
@@ -281,7 +314,7 @@ function AccountRow({ user, color, onClick }) {
 
 
 // ═══════════════════════════════════════════════
-//  Step 3: Email + Password Form
+//  Step 3: Email + Password Form (MOCK MODE ONLY)
 // ═══════════════════════════════════════════════
 function EmailFormPanel({ onSubmit, onBack, error }) {
   const [email, setEmail] = useState("");
@@ -369,7 +402,7 @@ function EmailFormPanel({ onSubmit, onBack, error }) {
 
 
 // ═══════════════════════════════════════════════
-//  Step 4: MFA / 2FA Verification
+//  Step 4: MFA / 2FA Verification (MOCK MODE ONLY)
 // ═══════════════════════════════════════════════
 function MfaVerifyPanel({ onVerify, onBack, error }) {
   const { pendingEmail } = useAuth();

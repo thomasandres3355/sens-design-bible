@@ -119,8 +119,10 @@ export const getClearanceLabel = (level) => CLEARANCE_LEVELS.find((c) => c.level
 export const getClassification = (domain) => DATA_CLASSIFICATIONS.find((c) => c.domain === domain);
 export const getRoleClearance = (role) => ROLE_CLEARANCE.find((r) => r.role === role) || ROLE_CLEARANCE[ROLE_CLEARANCE.length - 1];
 
-// ═══ USERS (for pilot testing) ═══════════════════════════════════════════
-export const BADGE_USERS = [
+// ═══ USERS ═══════════════════════════════════════════════════════════════
+const isProd = import.meta.env.VITE_APP_ENV === "production";
+
+const DEMO_USERS = [
   { id: "david", name: "David Meunier", role: "CEO", department: "Executive", email: "David@SystemicENVS.com", reportsTo: null, overrides: [] },
   { id: "thomas", name: "Deadelus", role: "COO", department: "Executive", email: "thomas@systemicenvs.com", reportsTo: "david", overrides: [] },
   { id: "sarah", name: "Sarah Mitchell", role: "COO", department: "Executive", email: "sarah@systemicenvs.com", reportsTo: "david", overrides: [] },
@@ -133,6 +135,42 @@ export const BADGE_USERS = [
   { id: "demo-mgr", name: "Demo Manager", role: "Manager", department: "Operations", email: "demo.mgr@systemicenvs.com", reportsTo: "marcus", overrides: [] },
   { id: "demo-op", name: "Demo Operator", role: "Operator", department: "Operations", email: "demo.op@systemicenvs.com", reportsTo: "demo-mgr", overrides: [] },
 ];
+
+// In production, start with an empty user registry (users added via admin panel or SSO bootstrap)
+// In development, use demo users for the full playground experience
+const USERS_STORAGE_KEY = "sens-prod-users";
+
+function loadProdUsers() {
+  try {
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export const BADGE_USERS = isProd ? loadProdUsers() : [...DEMO_USERS];
+
+/**
+ * Bootstrap a new user into the production registry.
+ * Called when an SSO-authenticated user is not found and the registry is empty (first admin)
+ * or when an admin adds a user via Platform Admin.
+ */
+export function addProductionUser(user) {
+  BADGE_USERS.push(user);
+  if (isProd) {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(BADGE_USERS));
+  }
+}
+
+/**
+ * Save the full production user registry (after edits/deletions)
+ */
+export function saveProductionUsers() {
+  if (isProd) {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(BADGE_USERS));
+  }
+}
 
 // ═══ ORG HIERARCHY HELPERS ═══════════════════════════════════════════════
 

@@ -27,7 +27,12 @@
       "Bash(gh pr create:*)",
       "Bash(git fetch:*)",
       "Bash(git merge:*)",
-      "Bash(gh pr view:*)"
+      "Bash(gh pr view:*)",
+      "Bash(npm info @azure/msal-react versions --json)",
+      "Bash(npm info @azure/msal-react@3.0.27 peerDependencies)",
+      "Bash(git stash)",
+      "Bash(git stash pop)",
+      "Bash(git stash drop)"
     ]
   }
 }
