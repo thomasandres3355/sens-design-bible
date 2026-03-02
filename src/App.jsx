@@ -242,6 +242,7 @@ export default function App() {
       "admin-bug-fixes": <PlatformAdminView defaultCategory="bug-fixes" key="admin-bug-fixes" />,
       org: <OrgChartView onNavigate={setActive} />,
       focus: <FocusTrackerView />,
+      "focus-tasks": <FocusTrackerView initialTab="tasks" key="focus-tasks" />,
       sitemap: <PortfolioMapView onNavigateToProject={(siteId) => { setNavProjectId(siteId); setActive("ops-projects"); }} />,
       settings: <PlatformAdminView />,  /* legacy route — redirects to combined view */
     };
