@@ -19,6 +19,7 @@ import { AccessDenied } from "./components/ui/PermissionGate";
 import { useThemeMode } from "./contexts/ThemeContext";
 import { BugReportModal, BugIcon, getBugReportCount } from "./components/ui/BugReportModal";
 import { useRouting, pathToKey } from "./hooks/useRouting";
+import { useViewport } from "./hooks/useViewport";
 
 const modules = [
   { key: "dashboard", label: "Dashboard", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z", branch: null },
@@ -77,6 +78,8 @@ export default function App() {
   const [navProjectId, setNavProjectId] = useState(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isMobile } = useViewport();
   useEffect(() => { setMounted(true); }, []);
 
   const { simDate, advanceDay, retreatDay, historyDepth, setHistoryDepth, maxDate } = useSimDate();
@@ -377,114 +380,188 @@ export default function App() {
     );
   };
 
-  return (
-    <div style={{ display: "flex", height: "100vh", background: T.bg0, color: T.text, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif", opacity: mounted ? 1 : 0, transition: "opacity .4s" }}>
-      <div style={{ width: 3, background: T.accent, flexShrink: 0 }} />
-      <nav style={{ width: collapsed ? 56 : 220, flexShrink: 0, background: T.bg1, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", transition: "width .25s ease", overflow: "hidden" }}>
-        <div style={{ padding: collapsed ? "20px 8px" : "20px 18px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, borderBottom: `1px solid ${T.border}`, minHeight: 64 }}>
-          {collapsed
-            ? <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: "transparent", border: `3px solid ${T.accent}`, boxSizing: "border-box" }} />
-            : <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
-                <img src={sensLogo} alt="SENS" style={{ height: 34, objectFit: "contain", filter: mode === "light" ? "invert(1) brightness(0.3)" : "none" }} />
-              </div>
+  // Close mobile menu on navigation
+  const handleNavClick = (key) => {
+    setNavProjectId(null);
+    setActive(key);
+    if (isMobile) setMobileMenuOpen(false);
+  };
+
+  // ─── Shared nav items renderer ───
+  const renderNavItems = (isDrawer = false) => {
+    const showLabels = isDrawer || !collapsed;
+    return visibleSidebar.map((m) => {
+      const hasChildren = m.children && m.children.length > 0;
+      const isGroupExpanded = expandedGroups[m.key];
+      const isChildActive = hasChildren && m.children.some(c => c.key === active);
+      const isParentActive = active === m.key || isChildActive;
+      return (<div key={m.key}>
+        <button onClick={() => {
+          if (hasChildren) {
+            handleNavClick(m.key);
+            if (!isGroupExpanded) setExpandedGroups(prev => ({ ...prev, [m.key]: true }));
+          } else {
+            const targetKey = m.key === "dashboard" ? getLandingPageKey(currentUser) : m.key;
+            handleNavClick(targetKey);
           }
-        </div>
-        <div style={{ flex: 1, padding: "12px 6px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto" }}>
-          {visibleSidebar.map((m) => {
-            const hasChildren = m.children && m.children.length > 0;
-            const isGroupExpanded = expandedGroups[m.key];
-            const isChildActive = hasChildren && m.children.some(c => c.key === active);
-            const isParentActive = active === m.key || isChildActive;
-            return (<div key={m.key}>
-              {/* Parent nav item */}
-              <button onClick={() => {
-                setNavProjectId(null);
-                if (hasChildren) {
-                  setActive(m.key);
-                  if (!isGroupExpanded) setExpandedGroups(prev => ({ ...prev, [m.key]: true }));
-                } else {
-                  const targetKey = m.key === "dashboard" ? getLandingPageKey(currentUser) : m.key;
-                  setActive(targetKey);
-                }
-              }} style={{ display: "flex", alignItems: "center", gap: 12, padding: collapsed ? "10px 12px" : "10px 14px", borderRadius: 8, border: "none", cursor: "pointer", background: isParentActive ? T.accentDim : "transparent", borderLeft: isParentActive ? `3px solid ${T.accent}` : "3px solid transparent", transition: "all .15s", width: "100%", textAlign: "left" }} onMouseEnter={e => { if (!isParentActive) e.currentTarget.style.background = T.bg3; }} onMouseLeave={e => { if (!isParentActive) e.currentTarget.style.background = "transparent"; }}>
-                <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={isParentActive ? T.accent : T.textMid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
-                {!collapsed && <span style={{ fontSize: 13, fontWeight: isParentActive ? 600 : 400, color: isParentActive ? T.text : T.textMid, whiteSpace: "nowrap", flex: 1 }}>{m.label}</span>}
-                {!collapsed && hasChildren && (
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    onClick={(e) => { e.stopPropagation(); setExpandedGroups(prev => ({ ...prev, [m.key]: !prev[m.key] })); }}
-                    style={{ transform: isGroupExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s", cursor: "pointer", flexShrink: 0 }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                )}
-              </button>
-              {/* Children (indented, collapsible) */}
-              {hasChildren && isGroupExpanded && !collapsed && (
-                <div style={{ paddingLeft: 14, marginTop: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-                  {m.children.map(child => {
-                    const isActive = active === child.key;
-                    return (
-                      <button key={child.key} onClick={() => { setNavProjectId(null); setActive(child.key); }}
-                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", borderRadius: 6, border: "none", cursor: "pointer", background: isActive ? T.accentDim : "transparent", borderLeft: isActive ? `2px solid ${T.accent}` : "2px solid transparent", transition: "all .15s", width: "100%", textAlign: "left" }}
-                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = T.bg3; }}
-                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
-                        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={isActive ? T.accent : T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={child.icon} /></svg>
-                        <span style={{ fontSize: 12, fontWeight: isActive ? 600 : 400, color: isActive ? T.text : T.textDim, whiteSpace: "nowrap" }}>{child.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>);
-          })}
-        </div>
-        <button onClick={toggleTheme} title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"} style={{ padding: collapsed ? "10px 14px" : "10px 14px", border: "none", borderTop: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", color: T.textDim, display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 12, width: "100%", fontFamily: "inherit", fontSize: 13 }}
-          onMouseEnter={e => { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.bg3; }}
-          onMouseLeave={e => { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}>
-          {mode === "dark"
-            ? <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            : <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          }
-          {!collapsed && <span style={{ fontWeight: 400, whiteSpace: "nowrap" }}>{mode === "dark" ? "Light Mode" : "Dark Mode"}</span>}
-        </button>
-        {/* Bug Report button */}
-        <button onClick={() => setBugReportOpen(!bugReportOpen)} title="Report a Bug" style={{ padding: collapsed ? "10px 14px" : "10px 14px", border: "none", borderTop: `1px solid ${T.border}`, background: bugReportOpen ? T.danger + "12" : "transparent", cursor: "pointer", color: bugReportOpen ? T.danger : T.textDim, display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 12, width: "100%", fontFamily: "inherit", fontSize: 13, position: "relative", transition: "all .15s" }}
-          onMouseEnter={e => { if (!bugReportOpen) { e.currentTarget.style.color = T.danger; e.currentTarget.style.background = T.bg3; }}}
-          onMouseLeave={e => { if (!bugReportOpen) { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}}>
-          <BugIcon size={16} />
-          {!collapsed && <span style={{ fontWeight: bugReportOpen ? 600 : 400, whiteSpace: "nowrap" }}>Report Bug</span>}
-          {getBugReportCount() > 0 && (
-            <span style={{ position: collapsed ? "absolute" : "static", top: collapsed ? 6 : undefined, right: collapsed ? 8 : undefined, marginLeft: collapsed ? 0 : "auto", fontSize: 9, fontWeight: 800, background: T.danger, color: "#fff", minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>
-              {getBugReportCount()}
-            </span>
+        }} style={{ display: "flex", alignItems: "center", gap: 12, padding: isDrawer ? "12px 16px" : (collapsed ? "10px 12px" : "10px 14px"), borderRadius: 8, border: "none", cursor: "pointer", background: isParentActive ? T.accentDim : "transparent", borderLeft: isParentActive ? `3px solid ${T.accent}` : "3px solid transparent", transition: "all .15s", width: "100%", textAlign: "left" }} onMouseEnter={e => { if (!isParentActive) e.currentTarget.style.background = T.bg3; }} onMouseLeave={e => { if (!isParentActive) e.currentTarget.style.background = "transparent"; }}>
+          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={isParentActive ? T.accent : T.textMid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
+          {showLabels && <span style={{ fontSize: isDrawer ? 14 : 13, fontWeight: isParentActive ? 600 : 400, color: isParentActive ? T.text : T.textMid, whiteSpace: "nowrap", flex: 1 }}>{m.label}</span>}
+          {showLabels && hasChildren && (
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              onClick={(e) => { e.stopPropagation(); setExpandedGroups(prev => ({ ...prev, [m.key]: !prev[m.key] })); }}
+              style={{ transform: isGroupExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s", cursor: "pointer", flexShrink: 0 }}>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           )}
         </button>
-        <button onClick={() => setCollapsed(!collapsed)} style={{ padding: 14, border: "none", borderTop: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", color: T.textDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: collapsed ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}><path d="M15 18l-6-6 6-6" /></svg>
-        </button>
-      </nav>
-      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-        <header style={{ padding: "14px 28px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.bg1, position: "sticky", top: 0, zIndex: 10 }}>
-          <div>{resolveHeader()}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Badge indicator */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 6, background: T.bg3, border: `1px solid ${badge.color}33` }}>
-              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={badge.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-              <span style={{ fontSize: 11, fontWeight: 600, color: badge.color }}>{badge.label}</span>
+        {hasChildren && isGroupExpanded && showLabels && (
+          <div style={{ paddingLeft: 14, marginTop: 2, display: "flex", flexDirection: "column", gap: 1 }}>
+            {m.children.map(child => {
+              const isActive = active === child.key;
+              return (
+                <button key={child.key} onClick={() => handleNavClick(child.key)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: isDrawer ? "10px 14px" : "7px 12px", borderRadius: 6, border: "none", cursor: "pointer", background: isActive ? T.accentDim : "transparent", borderLeft: isActive ? `2px solid ${T.accent}` : "2px solid transparent", transition: "all .15s", width: "100%", textAlign: "left" }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = T.bg3; }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={isActive ? T.accent : T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={child.icon} /></svg>
+                  <span style={{ fontSize: isDrawer ? 13 : 12, fontWeight: isActive ? 600 : 400, color: isActive ? T.text : T.textDim, whiteSpace: "nowrap" }}>{child.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>);
+    });
+  };
+
+  const renderNavFooter = (isDrawer = false) => (
+    <>
+      <button onClick={toggleTheme} title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"} style={{ padding: isDrawer ? "12px 16px" : "10px 14px", border: "none", borderTop: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", color: T.textDim, display: "flex", alignItems: "center", justifyContent: (!isDrawer && collapsed) ? "center" : "flex-start", gap: 12, width: "100%", fontFamily: "inherit", fontSize: 13 }}
+        onMouseEnter={e => { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.bg3; }}
+        onMouseLeave={e => { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}>
+        {mode === "dark"
+          ? <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          : <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        }
+        {(isDrawer || !collapsed) && <span style={{ fontWeight: 400, whiteSpace: "nowrap" }}>{mode === "dark" ? "Light Mode" : "Dark Mode"}</span>}
+      </button>
+      <button onClick={() => { setBugReportOpen(!bugReportOpen); if (isDrawer) setMobileMenuOpen(false); }} title="Report a Bug" style={{ padding: isDrawer ? "12px 16px" : "10px 14px", border: "none", borderTop: `1px solid ${T.border}`, background: bugReportOpen ? T.danger + "12" : "transparent", cursor: "pointer", color: bugReportOpen ? T.danger : T.textDim, display: "flex", alignItems: "center", justifyContent: (!isDrawer && collapsed) ? "center" : "flex-start", gap: 12, width: "100%", fontFamily: "inherit", fontSize: 13, position: "relative", transition: "all .15s" }}
+        onMouseEnter={e => { if (!bugReportOpen) { e.currentTarget.style.color = T.danger; e.currentTarget.style.background = T.bg3; }}}
+        onMouseLeave={e => { if (!bugReportOpen) { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}}>
+        <BugIcon size={16} />
+        {(isDrawer || !collapsed) && <span style={{ fontWeight: bugReportOpen ? 600 : 400, whiteSpace: "nowrap" }}>Report Bug</span>}
+        {getBugReportCount() > 0 && (
+          <span style={{ position: (!isDrawer && collapsed) ? "absolute" : "static", top: (!isDrawer && collapsed) ? 6 : undefined, right: (!isDrawer && collapsed) ? 8 : undefined, marginLeft: (!isDrawer && collapsed) ? 0 : "auto", fontSize: 9, fontWeight: 800, background: T.danger, color: "#fff", minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>
+            {getBugReportCount()}
+          </span>
+        )}
+      </button>
+    </>
+  );
+
+  return (
+    <div style={{ display: "flex", height: "100vh", background: T.bg0, color: T.text, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif", opacity: mounted ? 1 : 0, transition: "opacity .4s" }}>
+
+      {/* ── Mobile drawer overlay ── */}
+      {isMobile && mobileMenuOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex" }}>
+          <div onClick={() => setMobileMenuOpen(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} />
+          <nav style={{ position: "relative", width: 280, background: T.bg1, height: "100%", boxShadow: "4px 0 24px rgba(0,0,0,0.3)", overflowY: "auto", zIndex: 1, display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "20px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${T.border}`, minHeight: 64 }}>
+              <img src={sensLogo} alt="SENS" style={{ height: 34, objectFit: "contain", filter: mode === "light" ? "invert(1) brightness(0.3)" : "none" }} />
+              <button onClick={() => setMobileMenuOpen(false)} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.textDim, padding: 4 }}>
+                <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
             </div>
-            {/* Authenticated user display */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* User info in drawer */}
+            <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.accent + "20", border: `1.5px solid ${T.accent}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: T.accent }}>
+                {activeUser.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{activeUser.name}</div>
+                <div style={{ fontSize: 11, color: T.textDim }}>{badge.label}</div>
+              </div>
+            </div>
+            {/* Sim date controls in drawer */}
+            <div style={{ padding: "10px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ fontSize: 12, color: T.textDim, fontWeight: 500, flex: 1 }}>
+                {new Date(simDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              </div>
+              <button onClick={retreatDay} style={{ background: T.bg3, border: `1px solid ${T.border}`, borderRadius: 4, cursor: "pointer", color: T.textMid, padding: "4px 8px", fontSize: 12, lineHeight: 1, fontFamily: "inherit" }}>‹</button>
+              <button onClick={advanceDay} disabled={simDate >= maxDate} style={{ background: simDate >= maxDate ? T.bg3 : T.accentDim, border: `1px solid ${simDate >= maxDate ? T.border : T.accent + "55"}`, borderRadius: 6, cursor: simDate >= maxDate ? "not-allowed" : "pointer", color: simDate >= maxDate ? T.textDim : T.accent, padding: "4px 10px", fontSize: 11, fontWeight: 600, fontFamily: "inherit", opacity: simDate >= maxDate ? 0.5 : 1 }}>
+                Catch Up ›
+              </button>
+              <select value={historyDepth} onChange={(e) => setHistoryDepth(e.target.value)} style={{ fontSize: 11, padding: "4px 8px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.bg2, color: T.textMid, cursor: "pointer", fontFamily: "inherit" }}>
+                {HISTORY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div style={{ flex: 1, padding: "12px 6px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto" }}>
+              {renderNavItems(true)}
+            </div>
+            {renderNavFooter(true)}
+          </nav>
+        </div>
+      )}
+
+      {/* ── Desktop sidebar (hidden on mobile) ── */}
+      {!isMobile && <>
+        <div style={{ width: 3, background: T.accent, flexShrink: 0 }} />
+        <nav style={{ width: collapsed ? 56 : 220, flexShrink: 0, background: T.bg1, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", transition: "width .25s ease", overflow: "hidden" }}>
+          <div style={{ padding: collapsed ? "20px 8px" : "20px 18px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, borderBottom: `1px solid ${T.border}`, minHeight: 64 }}>
+            {collapsed
+              ? <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, background: "transparent", border: `3px solid ${T.accent}`, boxSizing: "border-box" }} />
+              : <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                  <img src={sensLogo} alt="SENS" style={{ height: 34, objectFit: "contain", filter: mode === "light" ? "invert(1) brightness(0.3)" : "none" }} />
+                </div>
+            }
+          </div>
+          <div style={{ flex: 1, padding: "12px 6px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto" }}>
+            {renderNavItems(false)}
+          </div>
+          {renderNavFooter(false)}
+          <button onClick={() => setCollapsed(!collapsed)} style={{ padding: 14, border: "none", borderTop: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", color: T.textDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: collapsed ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+        </nav>
+      </>}
+
+      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
+        <header style={{ padding: isMobile ? "10px 14px" : "14px 28px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.bg1, position: "sticky", top: 0, zIndex: 10, gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+            {/* Hamburger on mobile */}
+            {isMobile && (
+              <button onClick={() => setMobileMenuOpen(true)} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.textMid, padding: 4, flexShrink: 0 }}>
+                <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
+              </button>
+            )}
+            <div style={{ minWidth: 0, overflow: "hidden" }}>{resolveHeader()}</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 10, flexShrink: 0 }}>
+            {/* Badge indicator — desktop only */}
+            {!isMobile && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 6, background: T.bg3, border: `1px solid ${badge.color}33` }}>
+                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={badge.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                <span style={{ fontSize: 11, fontWeight: 600, color: badge.color }}>{badge.label}</span>
+              </div>
+            )}
+            {/* User avatar */}
+            <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 4 : 8 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: "50%",
                 background: T.accent + "20", border: `1.5px solid ${T.accent}40`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: T.accent,
+                fontSize: 11, fontWeight: 700, color: T.accent, flexShrink: 0,
               }}>
                 {activeUser.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
               </div>
-              <div style={{ lineHeight: 1.2 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{activeUser.name}</div>
-                <div style={{ fontSize: 10, color: T.textDim }}>{activeUser.role}{authMethod ? ` · ${authMethod === AUTH_METHODS.MICROSOFT_SSO ? "Microsoft" : authMethod === AUTH_METHODS.GOOGLE_SSO ? "Google" : "Email"}` : ""}</div>
-              </div>
+              {!isMobile && (
+                <div style={{ lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: T.text }}>{activeUser.name}</div>
+                  <div style={{ fontSize: 10, color: T.textDim }}>{activeUser.role}{authMethod ? ` · ${authMethod === AUTH_METHODS.MICROSOFT_SSO ? "Microsoft" : authMethod === AUTH_METHODS.GOOGLE_SSO ? "Google" : "Email"}` : ""}</div>
+                </div>
+              )}
             </div>
             {/* Sign out */}
             <button
@@ -495,34 +572,34 @@ export default function App() {
             >
               Sign Out
             </button>
-            {/* Divider */}
-            <div style={{ width: 1, height: 20, background: T.border }} />
-            {/* SimDate display + controls */}
-            <div style={{ fontSize: 12, color: T.textDim, fontWeight: 500 }}>
-              {new Date(simDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
-            </div>
-            <button onClick={retreatDay} title="Go back one day" style={{ background: T.bg3, border: `1px solid ${T.border}`, borderRadius: 4, cursor: "pointer", color: T.textMid, padding: "3px 6px", fontSize: 12, lineHeight: 1, fontFamily: "inherit" }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = T.accent} onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
-              ‹
-            </button>
-            <button onClick={advanceDay} disabled={simDate >= maxDate} title={simDate >= maxDate ? "Already at latest date" : "Advance one day (Catch Up)"} style={{ background: simDate >= maxDate ? T.bg3 : T.accentDim, border: `1px solid ${simDate >= maxDate ? T.border : T.accent + "55"}`, borderRadius: 6, cursor: simDate >= maxDate ? "not-allowed" : "pointer", color: simDate >= maxDate ? T.textDim : T.accent, padding: "4px 10px", fontSize: 11, fontWeight: 600, fontFamily: "inherit", whiteSpace: "nowrap", opacity: simDate >= maxDate ? 0.5 : 1 }}
-              onMouseEnter={e => { if (simDate < maxDate) { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; } }} onMouseLeave={e => { if (simDate < maxDate) { e.currentTarget.style.background = T.accentDim; e.currentTarget.style.color = T.accent; } }}>
-              Catch Up ›
-            </button>
-            {/* History depth dropdown */}
-            <select
-              value={historyDepth}
-              onChange={(e) => setHistoryDepth(e.target.value)}
-              title="How much history to display"
-              style={{ fontSize: 11, padding: "4px 8px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.bg2, color: T.textMid, cursor: "pointer", fontFamily: "inherit" }}
-            >
-              {HISTORY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+            {/* Desktop-only: date controls + history depth */}
+            {!isMobile && <>
+              <div style={{ width: 1, height: 20, background: T.border }} />
+              <div style={{ fontSize: 12, color: T.textDim, fontWeight: 500 }}>
+                {new Date(simDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+              </div>
+              <button onClick={retreatDay} title="Go back one day" style={{ background: T.bg3, border: `1px solid ${T.border}`, borderRadius: 4, cursor: "pointer", color: T.textMid, padding: "3px 6px", fontSize: 12, lineHeight: 1, fontFamily: "inherit" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = T.accent} onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
+                ‹
+              </button>
+              <button onClick={advanceDay} disabled={simDate >= maxDate} title={simDate >= maxDate ? "Already at latest date" : "Advance one day (Catch Up)"} style={{ background: simDate >= maxDate ? T.bg3 : T.accentDim, border: `1px solid ${simDate >= maxDate ? T.border : T.accent + "55"}`, borderRadius: 6, cursor: simDate >= maxDate ? "not-allowed" : "pointer", color: simDate >= maxDate ? T.textDim : T.accent, padding: "4px 10px", fontSize: 11, fontWeight: 600, fontFamily: "inherit", whiteSpace: "nowrap", opacity: simDate >= maxDate ? 0.5 : 1 }}
+                onMouseEnter={e => { if (simDate < maxDate) { e.currentTarget.style.background = T.accent; e.currentTarget.style.color = "#fff"; } }} onMouseLeave={e => { if (simDate < maxDate) { e.currentTarget.style.background = T.accentDim; e.currentTarget.style.color = T.accent; } }}>
+                Catch Up ›
+              </button>
+              <select
+                value={historyDepth}
+                onChange={(e) => setHistoryDepth(e.target.value)}
+                title="How much history to display"
+                style={{ fontSize: 11, padding: "4px 8px", borderRadius: 6, border: `1px solid ${T.border}`, background: T.bg2, color: T.textMid, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                {HISTORY_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </>}
           </div>
         </header>
-        <div style={{ padding: 28, flex: 1 }}>{resolveView()}</div>
+        <div style={{ padding: isMobile ? 14 : 28, flex: 1 }}>{resolveView()}</div>
       </main>
 
       {/* Global agent FAB — visible on all pages with per-page pre-selection */}

@@ -9,6 +9,8 @@ import { useSimDate } from "../contexts/SimDateContext";
 import { useBadge } from "../contexts/BadgeContext";
 import { isLiveMode, buildDataContext } from "../services/claudeService";
 import { containsFactualClaim, checkFacts, isAgentContribEnabled, getAgentContribInterval, getAgentContribSensitivity } from "../services/factCheckService";
+import { useViewport } from "../hooks/useViewport";
+import { VoiceDictationButton } from "../components/ui/VoiceDictationButton";
 
 const C = T.accent;
 
@@ -164,20 +166,21 @@ const TagPicker = ({ selectedTags, onChange, accentColor = C }) => {
 // ═══════════════════════════════════════════════════════════════════
 //  RICH TEXT EDITOR (with toolbar)
 // ═══════════════════════════════════════════════════════════════════
-const RichTextToolbar = ({ exec, accentColor = C }) => {
+const RichTextToolbar = ({ exec, accentColor = C, onVoiceTranscript }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkText, setLinkText] = useState("");
   const colors = [T.text, T.accent, T.green, T.blue, T.purple, T.teal, T.danger, T.warn, "#fff", "#888"];
+  const isMobileToolbar = window.innerWidth < 768;
 
   const btnStyle = (active = false) => ({
     background: active ? accentColor + "20" : "transparent", border: `1px solid ${active ? accentColor + "40" : "transparent"}`,
-    borderRadius: 4, padding: "3px 6px", cursor: "pointer", color: active ? accentColor : T.textMid, fontSize: 12, fontWeight: 600, transition: "all .1s", fontFamily: "inherit", lineHeight: 1,
+    borderRadius: 4, padding: isMobileToolbar ? "6px 8px" : "3px 6px", cursor: "pointer", color: active ? accentColor : T.textMid, fontSize: 12, fontWeight: 600, transition: "all .1s", fontFamily: "inherit", lineHeight: 1, flexShrink: 0,
   });
 
   return (
-    <div style={{ display: "flex", gap: 2, flexWrap: "wrap", padding: "6px 8px", borderBottom: `1px solid ${T.border}`, background: T.bg0, alignItems: "center" }}>
+    <div style={{ display: "flex", gap: 2, flexWrap: isMobileToolbar ? "nowrap" : "wrap", padding: "6px 8px", borderBottom: `1px solid ${T.border}`, background: T.bg0, alignItems: "center", overflowX: isMobileToolbar ? "auto" : "visible", WebkitOverflowScrolling: "touch" }}>
       <button style={btnStyle()} onClick={() => exec("undo")} title="Undo"><Icon d="M3 10h10a5 5 0 0 1 0 10H7" size={12} color={T.textMid} /></button>
       <button style={btnStyle()} onClick={() => exec("redo")} title="Redo"><Icon d="M21 10H11a5 5 0 0 0 0 10h6" size={12} color={T.textMid} /></button>
       <div style={{ width: 1, height: 16, background: T.border, margin: "0 4px" }} />
@@ -226,6 +229,12 @@ const RichTextToolbar = ({ exec, accentColor = C }) => {
       )}
       <button style={btnStyle()} onClick={() => exec("insertHorizontalRule")} title="Horizontal Rule">—</button>
       <button style={btnStyle()} onClick={() => exec("removeFormat")} title="Clear Formatting"><Icon d="M18 6L6 18M6 6l12 12" size={12} color={T.textMid} /></button>
+      {onVoiceTranscript && (
+        <>
+          <div style={{ width: 1, height: 16, background: T.border, margin: "0 4px", flexShrink: 0 }} />
+          <VoiceDictationButton compact onTranscript={onVoiceTranscript} />
+        </>
+      )}
     </div>
   );
 };
@@ -234,19 +243,28 @@ const RichTextEditor = ({ content, onChange, readOnly = false, placeholder = "St
   const editorRef = useRef(null);
   const [focused, setFocused] = useState(false);
   const exec = useCallback((cmd, val) => { document.execCommand(cmd, false, val); editorRef.current?.focus(); }, []);
+  const isMobileEditor = window.innerWidth < 768;
 
   const handleInput = useCallback(() => {
     if (editorRef.current && onChange) onChange(editorRef.current.innerHTML);
   }, [onChange]);
 
+  const handleVoiceTranscript = useCallback((text) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      document.execCommand("insertText", false, text + " ");
+      if (onChange) onChange(editorRef.current.innerHTML);
+    }
+  }, [onChange]);
+
   return (
     <div style={{ border: `1px solid ${focused ? C : T.border}`, borderRadius: 8, overflow: "hidden", transition: "border-color .15s", background: T.bg0 }}>
-      {!readOnly && <RichTextToolbar exec={exec} />}
+      {!readOnly && <RichTextToolbar exec={exec} onVoiceTranscript={handleVoiceTranscript} />}
       <div ref={editorRef} contentEditable={!readOnly} onInput={handleInput} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         dangerouslySetInnerHTML={{ __html: content || "" }}
         onKeyDown={(e) => { if (e.key === "Tab") { e.preventDefault(); exec(e.shiftKey ? "outdent" : "indent"); } }}
         style={{
-          minHeight: readOnly ? 60 : 200, padding: "14px 16px", fontSize: 13, color: T.text, lineHeight: 1.6, outline: "none", fontFamily: "'DM Sans', sans-serif",
+          minHeight: readOnly ? 60 : 200, padding: isMobileEditor ? "16px" : "14px 16px", fontSize: isMobileEditor ? 15 : 13, color: T.text, lineHeight: isMobileEditor ? 1.7 : 1.6, outline: "none", fontFamily: "'DM Sans', sans-serif",
           overflowY: "auto", maxHeight: 500,
         }}
         data-placeholder={placeholder}
@@ -642,7 +660,7 @@ const ExportModal = ({ entry, onClose }) => {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: 680, maxHeight: "80vh", background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 14, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div onClick={(e) => e.stopPropagation()} style={window.innerWidth < 768 ? { position: "fixed", inset: 0, background: T.bg1, display: "flex", flexDirection: "column", overflow: "hidden" } : { width: 680, maxHeight: "80vh", background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 14, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ padding: "16px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Icon d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3" size={18} />
@@ -1187,7 +1205,7 @@ const FeedView = ({ entries, onOpenEntry, onNewEntry, onStartMeeting, simDate: s
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* KPI strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
         <KpiCard label="Total Entries" value={entries.length} sub={`${meetingCount} meetings · ${noteCount} notes`} color={C} />
         <KpiCard label="Showing" value={filtered.length} sub={filtered.length === entries.length ? "all entries" : `of ${entries.length} entries`} color={T.blue} />
         <KpiCard label="With Recordings" value={withRecordings} sub="from ro.am" color={T.green} />
@@ -1318,6 +1336,7 @@ const AgentSelector = ({ selectedAgentIds, onChange, accentColor = C }) => {
 const EntryView = ({ entry, onBack, onUpdate, isLive = false }) => {
   const { simDate } = useSimDate();
   const { activeUser } = useBadge();
+  const { isMobile } = useViewport();
   const [showPanel, setShowPanel] = useState(isLive);
   const [panelTab, setPanelTab] = useState(0);
   const [showExport, setShowExport] = useState(false);
@@ -1394,7 +1413,7 @@ const EntryView = ({ entry, onBack, onUpdate, isLive = false }) => {
       {showExport && <ExportModal entry={entry} onClose={() => setShowExport(false)} />}
 
       {/* Top bar */}
-      <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 12, padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexShrink: 0 }}>
+      <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: isMobile ? 8 : 12, padding: isMobile ? "10px 14px" : "12px 20px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 12, marginBottom: 12, flexShrink: 0, flexWrap: isMobile ? "wrap" : "nowrap" }}>
         <button onClick={onBack} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.textDim, padding: 4, display: "flex" }} onMouseEnter={(e) => (e.currentTarget.style.color = C)} onMouseLeave={(e) => (e.currentTarget.style.color = T.textDim)}>
           <Icon d="M19 12H5M12 19l-7-7 7-7" color="currentColor" size={16} />
         </button>
@@ -1406,14 +1425,14 @@ const EntryView = ({ entry, onBack, onUpdate, isLive = false }) => {
           </div>
         )}
 
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {editingTitle ? (
               <input ref={titleInputRef} value={titleDraft} onChange={(e) => setTitleDraft(e.target.value)}
                 onBlur={commitTitle} onKeyDown={(e) => { if (e.key === "Enter") commitTitle(); if (e.key === "Escape") { setTitleDraft(entry.title); setEditingTitle(false); } }}
-                style={{ fontSize: 16, fontWeight: 700, color: T.text, background: T.bg0, border: `1px solid ${C}`, borderRadius: 6, padding: "2px 8px", outline: "none", fontFamily: "inherit", width: "100%", maxWidth: 400 }} />
+                style={{ fontSize: isMobile ? 14 : 16, fontWeight: 700, color: T.text, background: T.bg0, border: `1px solid ${C}`, borderRadius: 6, padding: "2px 8px", outline: "none", fontFamily: "inherit", width: "100%", maxWidth: 400 }} />
             ) : (
-              <span onClick={() => setEditingTitle(true)} style={{ fontSize: 16, fontWeight: 700, color: T.text, cursor: "pointer", borderBottom: `1px dashed ${T.border}`, paddingBottom: 1 }} title="Click to edit title">{entry.title}</span>
+              <span onClick={() => setEditingTitle(true)} style={{ fontSize: isMobile ? 14 : 16, fontWeight: 700, color: T.text, cursor: "pointer", borderBottom: `1px dashed ${T.border}`, paddingBottom: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title="Click to edit title">{entry.title}</span>
             )}
             <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 4, background: (isMeeting ? C : T.purple) + "15", color: isMeeting ? C : T.purple, fontWeight: 700, textTransform: "uppercase", flexShrink: 0 }}>
               {isMeeting ? "MEETING" : "NOTE"}
@@ -1425,28 +1444,28 @@ const EntryView = ({ entry, onBack, onUpdate, isLive = false }) => {
           </div>
         </div>
 
-        {isLive && <div style={{ fontFamily: "monospace", fontSize: 16, color: C, fontWeight: 600, letterSpacing: 1 }}>{formatTime(elapsed)}</div>}
+        {isLive && <div style={{ fontFamily: "monospace", fontSize: isMobile ? 14 : 16, color: C, fontWeight: 600, letterSpacing: 1 }}>{formatTime(elapsed)}</div>}
 
-        {meetingParticipants.length > 0 && (
+        {!isMobile && meetingParticipants.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             {meetingParticipants.slice(0, 5).map((p) => <Avatar key={p.id} person={p} size={28} />)}
             {meetingParticipants.length > 5 && <span style={{ fontSize: 10, color: T.textDim }}>+{meetingParticipants.length - 5}</span>}
           </div>
         )}
 
-        <InvitePicker selectedIds={entry.participants} onChange={(ids) => onUpdate({ ...entry, participants: ids })} accentColor={isMeeting ? C : T.purple} />
-        <AgentSelector selectedAgentIds={activeAgentIds} onChange={setActiveAgentIds} accentColor={isMeeting ? C : T.purple} />
+        {!isMobile && <InvitePicker selectedIds={entry.participants} onChange={(ids) => onUpdate({ ...entry, participants: ids })} accentColor={isMeeting ? C : T.purple} />}
+        {!isMobile && <AgentSelector selectedAgentIds={activeAgentIds} onChange={setActiveAgentIds} accentColor={isMeeting ? C : T.purple} />}
 
-        {agentContribEnabled && <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", background: T.teal + "15", borderRadius: 6, border: `1px solid ${T.teal}30` }}><div style={{ width: 6, height: 6, borderRadius: "50%", background: T.teal, boxShadow: `0 0 6px ${T.teal}` }} /><span style={{ fontSize: 10, color: T.teal, fontWeight: 600 }}>Agent Contribution</span></div>}
+        {!isMobile && agentContribEnabled && <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", background: T.teal + "15", borderRadius: 6, border: `1px solid ${T.teal}30` }}><div style={{ width: 6, height: 6, borderRadius: "50%", background: T.teal, boxShadow: `0 0 6px ${T.teal}` }} /><span style={{ fontSize: 10, color: T.teal, fontWeight: 600 }}>Agent Contribution</span></div>}
 
         {/* Toggle side panel */}
-        <button onClick={() => setShowPanel(!showPanel)} style={{ background: showPanel ? C + "20" : T.bg3, border: `1px solid ${showPanel ? C + "40" : T.border}`, borderRadius: 8, padding: "6px 12px", color: showPanel ? C : T.textMid, fontSize: 11, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s" }}>
+        <button onClick={() => setShowPanel(!showPanel)} style={{ background: showPanel ? C + "20" : T.bg3, border: `1px solid ${showPanel ? C + "40" : T.border}`, borderRadius: 8, padding: isMobile ? "8px 14px" : "6px 12px", color: showPanel ? C : T.textMid, fontSize: 11, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s", minHeight: isMobile ? 44 : "auto" }}>
           <Icon d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" color="currentColor" size={12} />
           {showPanel ? "Hide Panel" : "Chat & Agents"}
         </button>
 
         {isLive && (
-          <button onClick={onBack} style={{ background: T.danger + "20", border: `1px solid ${T.danger}40`, borderRadius: 8, padding: "8px 16px", color: T.danger, fontSize: 12, fontWeight: 600, cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.background = T.danger; e.currentTarget.style.color = "#fff"; }} onMouseLeave={(e) => { e.currentTarget.style.background = T.danger + "20"; e.currentTarget.style.color = T.danger; }}>End Session</button>
+          <button onClick={onBack} style={{ background: T.danger + "20", border: `1px solid ${T.danger}40`, borderRadius: 8, padding: "8px 16px", color: T.danger, fontSize: 12, fontWeight: 600, cursor: "pointer", minHeight: isMobile ? 44 : "auto" }} onMouseEnter={(e) => { e.currentTarget.style.background = T.danger; e.currentTarget.style.color = "#fff"; }} onMouseLeave={(e) => { e.currentTarget.style.background = T.danger + "20"; e.currentTarget.style.color = T.danger; }}>End Session</button>
         )}
       </div>
 
@@ -1454,7 +1473,7 @@ const EntryView = ({ entry, onBack, onUpdate, isLive = false }) => {
       <div style={{ flex: 1, display: "flex", gap: 12, minHeight: 0 }}>
         {/* Document (full-width or ~60% when panel open) */}
         <div style={{ flex: 1, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <div style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? 14 : 20, display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Tags */}
             <div>
               <div style={{ fontSize: 10, color: T.textDim, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 600, marginBottom: 6 }}>Tags</div>
@@ -1486,9 +1505,9 @@ const EntryView = ({ entry, onBack, onUpdate, isLive = false }) => {
                   <Icon d="M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" size={12} color={C} />
                   Magic Minutes
                 </div>
-                <div style={{ background: T.bg0, border: `1px solid ${T.border}`, borderRadius: 8, padding: 16 }}>
+                <div style={{ background: T.bg0, border: `1px solid ${T.border}`, borderRadius: 8, padding: isMobile ? 12 : 16 }}>
                   <p style={{ fontSize: 13, color: T.textMid, lineHeight: 1.55, margin: "0 0 14px" }}>{mm.summary}</p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
                     <div>
                       <div style={{ fontSize: 10, color: T.textDim, textTransform: "uppercase", letterSpacing: 0.8, fontWeight: 600, marginBottom: 8 }}>Key Decisions</div>
                       {mm.keyDecisions.map((d, i) => (
@@ -1570,12 +1589,15 @@ const EntryView = ({ entry, onBack, onUpdate, isLive = false }) => {
           </div>
         </div>
 
-        {/* Side panel (toggleable) */}
+        {/* Side panel (toggleable) — full-screen overlay on mobile */}
         {showPanel && (
-          <div style={{ width: "38%", minWidth: 320, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", transition: "all .2s" }}>
-            <div style={{ borderBottom: `1px solid ${T.border}`, padding: "0 12px", display: "flex", gap: 0 }}>
+          <div style={isMobile ? { position: "fixed", inset: 0, zIndex: 200, background: T.bg2, display: "flex", flexDirection: "column" } : { width: "38%", minWidth: 320, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", transition: "all .2s" }}>
+            <div style={{ borderBottom: `1px solid ${T.border}`, padding: isMobile ? "0 10px" : "0 12px", display: "flex", gap: 0, alignItems: "center" }}>
+              {isMobile && (
+                <button onClick={() => setShowPanel(false)} style={{ background: "transparent", border: "none", color: T.textDim, cursor: "pointer", padding: "12px 8px 12px 0", display: "flex", fontSize: 20, lineHeight: 1 }}>&times;</button>
+              )}
               {panelTabs.map((tab, i) => (
-                <button key={tab} onClick={() => setPanelTab(i)} style={{ padding: "12px 16px", background: "transparent", border: "none", borderBottom: panelTab === i ? `2px solid ${i === 1 ? T.purple : C}` : "2px solid transparent", color: panelTab === i ? T.text : T.textDim, fontSize: 12, fontWeight: panelTab === i ? 600 : 400, cursor: "pointer", transition: "all .15s", display: "flex", alignItems: "center", gap: 6 }}>
+                <button key={tab} onClick={() => setPanelTab(i)} style={{ padding: isMobile ? "12px 12px" : "12px 16px", background: "transparent", border: "none", borderBottom: panelTab === i ? `2px solid ${i === 1 ? T.purple : C}` : "2px solid transparent", color: panelTab === i ? T.text : T.textDim, fontSize: 12, fontWeight: panelTab === i ? 600 : 400, cursor: "pointer", transition: "all .15s", display: "flex", alignItems: "center", gap: 6 }}>
                   {i === 1 && <Icon d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z M7 11V7a5 5 0 0 1 10 0v4" color={panelTab === 1 ? T.purple : T.textDim} size={10} />}
                   {tab}
                 </button>

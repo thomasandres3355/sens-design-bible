@@ -4,6 +4,7 @@ import { useSimDate } from "../../contexts/SimDateContext";
 import { useBadge } from "../../contexts/BadgeContext";
 import { useAgentConfig } from "../../contexts/AgentConfigContext";
 import { isLiveMode, askAgent } from "../../services/claudeService";
+import { useViewport } from "../../hooks/useViewport";
 
 // ═══════════════════════════════════════════════════════════════════
 //  ICONS
@@ -354,6 +355,7 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
   const { activeUser } = useBadge();
   const { getAgent } = useAgentConfig();
   const liveMode = isLiveMode();
+  const { isMobile } = useViewport();
 
   useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 200); }, [open]);
 
@@ -422,11 +424,11 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
   if (!open) {
     return (
       <button onClick={() => setOpen(true)} style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 1000,
+        position: "fixed", bottom: isMobile ? 16 : 24, right: isMobile ? 16 : 24, zIndex: 1000,
         display: "flex", alignItems: "center", gap: 10,
         background: color, color: "#1A1A1A",
-        border: "none", borderRadius: 14, padding: "14px 22px",
-        cursor: "pointer", fontWeight: 700, fontSize: 13,
+        border: "none", borderRadius: 14, padding: isMobile ? "16px 24px" : "14px 22px",
+        cursor: "pointer", fontWeight: 700, fontSize: isMobile ? 14 : 13,
         boxShadow: `0 4px 24px ${color}40, 0 2px 8px rgba(0,0,0,.3)`,
         transition: "transform .15s, box-shadow .15s", fontFamily: "inherit",
       }}
@@ -441,11 +443,13 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
 
   return (
     <div style={{
-      position: "fixed", bottom: 24, right: 24, zIndex: 1000,
-      width: 520, height: 620, maxHeight: "calc(100vh - 80px)",
-      background: T.bg1, border: `1px solid ${color}40`,
-      borderRadius: 16, display: "flex", flexDirection: "column",
-      boxShadow: `0 8px 40px rgba(0,0,0,.4), 0 0 0 1px ${color}20`,
+      position: "fixed", zIndex: 1000,
+      ...(isMobile
+        ? { inset: 0, borderRadius: 0, maxHeight: "100vh" }
+        : { bottom: 24, right: 24, width: 520, height: 620, maxHeight: "calc(100vh - 80px)", borderRadius: 16 }),
+      background: T.bg1, border: isMobile ? "none" : `1px solid ${color}40`,
+      display: "flex", flexDirection: "column",
+      boxShadow: isMobile ? "none" : `0 8px 40px rgba(0,0,0,.4), 0 0 0 1px ${color}20`,
       overflow: "hidden", fontFamily: "inherit",
     }}>
       {/* Header */}
@@ -533,6 +537,7 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
   const { activeUser } = useBadge();
   const { getAgent } = useAgentConfig();
   const liveMode = isLiveMode();
+  const { isMobile } = useViewport();
 
   // Reset checkedIds when preSelectedIds changes (page navigation)
   useEffect(() => {
@@ -676,11 +681,11 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
     };
     return (
       <button onClick={handleOpen} style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 1000,
+        position: "fixed", bottom: isMobile ? 16 : 24, right: isMobile ? 16 : 24, zIndex: 1000,
         display: "flex", alignItems: "center", gap: 10,
         background: T.accent, color: "#1A1A1A",
-        border: "none", borderRadius: 14, padding: "14px 22px",
-        cursor: "pointer", fontWeight: 700, fontSize: 13,
+        border: "none", borderRadius: 14, padding: isMobile ? "16px 24px" : "14px 22px",
+        cursor: "pointer", fontWeight: 700, fontSize: isMobile ? 14 : 13,
         boxShadow: `0 4px 24px ${T.accent}40, 0 2px 8px rgba(0,0,0,.3)`,
         transition: "transform .15s, box-shadow .15s", fontFamily: "inherit",
       }}
@@ -704,15 +709,17 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
     const totalSpecialists = selectedAgents.reduce((sum, ea) => sum + (ea.agentTeam?.specialists?.length || 0), 0);
     return (
       <div style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 1000,
-        width: 560, height: 640, maxHeight: "calc(100vh - 80px)",
-        background: T.bg1, border: `1px solid ${T.accent}40`,
-        borderRadius: 16, display: "flex", flexDirection: "column",
-        boxShadow: `0 8px 40px rgba(0,0,0,.4), 0 0 0 1px ${T.accent}20`,
+        position: "fixed", zIndex: 1000,
+        ...(isMobile
+          ? { inset: 0, borderRadius: 0, maxHeight: "100vh" }
+          : { bottom: 24, right: 24, width: 560, height: 640, maxHeight: "calc(100vh - 80px)", borderRadius: 16 }),
+        background: T.bg1, border: isMobile ? "none" : `1px solid ${T.accent}40`,
+        display: "flex", flexDirection: "column",
+        boxShadow: isMobile ? "none" : `0 8px 40px rgba(0,0,0,.4), 0 0 0 1px ${T.accent}20`,
         overflow: "hidden", fontFamily: "inherit",
       }}>
         {/* Header */}
-        <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.border}`, background: T.accent + "12" }}>
+        <div style={{ padding: isMobile ? "12px 16px" : "10px 14px", borderBottom: `1px solid ${T.border}`, background: T.accent + "12" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button onClick={backToDirectory} style={{
               background: "transparent", border: "none", cursor: "pointer",
@@ -824,18 +831,20 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
 
   return (
     <div style={{
-      position: "fixed", bottom: 24, right: 24, zIndex: 1000,
-      width: 380, maxHeight: "calc(100vh - 80px)",
-      background: T.bg1, border: `1px solid ${T.accent}40`,
-      borderRadius: 16, display: "flex", flexDirection: "column",
-      boxShadow: `0 8px 40px rgba(0,0,0,.4), 0 0 0 1px ${T.accent}20`,
+      position: "fixed", zIndex: 1000,
+      ...(isMobile
+        ? { inset: 0, borderRadius: 0, maxHeight: "100vh" }
+        : { bottom: 24, right: 24, width: 380, maxHeight: "calc(100vh - 80px)", borderRadius: 16 }),
+      background: T.bg1, border: isMobile ? "none" : `1px solid ${T.accent}40`,
+      display: "flex", flexDirection: "column",
+      boxShadow: isMobile ? "none" : `0 8px 40px rgba(0,0,0,.4), 0 0 0 1px ${T.accent}20`,
       overflow: "hidden", fontFamily: "inherit",
     }}>
       {/* Header */}
-      <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, background: T.accent + "12", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ padding: isMobile ? "16px 18px" : "14px 18px", borderBottom: `1px solid ${T.border}`, background: T.accent + "12", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Agent Directory</div>
-          <div style={{ fontSize: 11, color: T.textMid, marginTop: 2 }}>Select EAs to consult their teams</div>
+          <div style={{ fontSize: isMobile ? 17 : 15, fontWeight: 700, color: T.text }}>Agent Directory</div>
+          <div style={{ fontSize: isMobile ? 12 : 11, color: T.textMid, marginTop: 2 }}>Select EAs to consult their teams</div>
         </div>
         <button onClick={() => setMode("closed")} style={{
           background: "transparent", border: `1px solid ${T.border}`,
