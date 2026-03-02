@@ -318,6 +318,7 @@ export const ACTION_LABELS = {
  * @returns {{ allowed: boolean, reason: string }}
  */
 export function checkModulePermission(user, module, action) {
+  if (!user) return { allowed: false, reason: "No user" };
   const modulePerms = MODULE_PERMISSIONS[module];
   if (!modulePerms) return { allowed: false, reason: `Unknown module: ${module}` };
 
@@ -343,6 +344,7 @@ export function checkModulePermission(user, module, action) {
  * Check if a user can access a VP/Exec dashboard.
  */
 export function checkVpAccess(user, vpKey) {
+  if (!user) return { allowed: false, reason: "No user" };
   const vpPerm = VP_DASHBOARD_ACCESS[vpKey];
   if (!vpPerm) return { allowed: true, reason: "No restriction" }; // Unknown VP keys are allowed
 

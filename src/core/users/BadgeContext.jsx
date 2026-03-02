@@ -14,11 +14,11 @@ export const BadgeProvider = ({ children }) => {
   }, []);
 
   const activeUser = useMemo(
-    () => users.find((u) => u.id === activeUserId) || users[0],
+    () => users.find((u) => u.id === activeUserId) || users[0] || null,
     [activeUserId, users]
   );
 
-  const badge = useMemo(() => getUserBadge(activeUser), [activeUser, configVersion]);
+  const badge = useMemo(() => (activeUser ? getUserBadge(activeUser) : null), [activeUser, configVersion]);
 
   const switchUser = useCallback((userId) => {
     setActiveUserId(userId);
@@ -35,12 +35,12 @@ export const BadgeProvider = ({ children }) => {
   );
 
   const clearanceLevel = useMemo(
-    () => getRoleClearance(activeUser.role).level,
+    () => (activeUser ? getRoleClearance(activeUser.role).level : 0),
     [activeUser, configVersion]
   );
 
   const accessibleDomains = useMemo(
-    () => getAccessibleDomains(activeUser),
+    () => (activeUser ? getAccessibleDomains(activeUser) : []),
     [activeUser, configVersion]
   );
 
