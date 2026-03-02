@@ -4,6 +4,7 @@ import { useSimDate } from "@core/simulation/SimDateContext";
 import { useBadge } from "@core/users/BadgeContext";
 import { useAgentConfig } from "./AgentConfigContext";
 import { isLiveMode, askAgent, askTeam } from "./services/claudeService";
+import { useViewport } from "@core/routing/useViewport";
 
 // ═══════════════════════════════════════════════════════════════════
 //  ICONS
@@ -118,6 +119,14 @@ const getContainerStyle = (viewMode, defaults) => {
     overflow: "hidden", fontFamily: "inherit",
     transition: "all .25s ease",
   };
+  if (viewMode === "mobile") {
+    return {
+      ...base,
+      inset: 0, width: "auto", height: "auto",
+      borderRadius: 0, border: "none", boxShadow: "none",
+      maxHeight: "100vh",
+    };
+  }
   if (viewMode === "tall") {
     return {
       ...base,
@@ -455,6 +464,7 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
   const { activeUser } = useBadge();
   const { getAgent } = useAgentConfig();
   const liveMode = isLiveMode();
+  const { isMobile } = useViewport();
 
   useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 200); }, [open]);
 
@@ -545,11 +555,11 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
   if (!open) {
     return (
       <button onClick={() => setOpen(true)} style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 1000,
+        position: "fixed", bottom: isMobile ? 16 : 24, right: isMobile ? 16 : 24, zIndex: 1000,
         display: "flex", alignItems: "center", gap: 10,
         background: color, color: "#1A1A1A",
-        border: "none", borderRadius: 14, padding: "14px 22px",
-        cursor: "pointer", fontWeight: 700, fontSize: 13,
+        border: "none", borderRadius: 14, padding: isMobile ? "16px 24px" : "14px 22px",
+        cursor: "pointer", fontWeight: 700, fontSize: isMobile ? 14 : 13,
         boxShadow: `0 4px 24px ${color}40, 0 2px 8px rgba(0,0,0,.3)`,
         transition: "transform .15s, box-shadow .15s", fontFamily: "inherit",
       }}
@@ -562,11 +572,12 @@ export const AgentChat = ({ agentTeam, color = T.accent, onAgentClick }) => {
     );
   }
 
-  const containerStyle = getContainerStyle(viewMode, { width: 520, height: 620, borderColor: color + "40" });
+  const effectiveMode = isMobile ? "mobile" : viewMode;
+  const containerStyle = getContainerStyle(effectiveMode, { width: 520, height: 620, borderColor: color + "40" });
 
   return (
     <>
-      {viewMode === "fullscreen" && <Backdrop onClick={() => setViewMode("default")} />}
+      {viewMode === "fullscreen" && !isMobile && <Backdrop onClick={() => setViewMode("default")} />}
       <div style={containerStyle}>
         {/* Header */}
         <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, background: color + "12", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -652,6 +663,8 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
   const { activeUser } = useBadge();
   const { getAgent } = useAgentConfig();
   const liveMode = isLiveMode();
+  const { isMobile } = useViewport();
+  const effectiveMode = isMobile ? "mobile" : viewMode;
 
   // Reset checkedIds when preSelectedIds changes (page navigation)
   useEffect(() => {
@@ -823,11 +836,11 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
     };
     return (
       <button onClick={handleOpen} style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 1000,
+        position: "fixed", bottom: isMobile ? 16 : 24, right: isMobile ? 16 : 24, zIndex: 1000,
         display: "flex", alignItems: "center", gap: 10,
         background: T.accent, color: "#1A1A1A",
-        border: "none", borderRadius: 14, padding: "14px 22px",
-        cursor: "pointer", fontWeight: 700, fontSize: 13,
+        border: "none", borderRadius: 14, padding: isMobile ? "16px 24px" : "14px 22px",
+        cursor: "pointer", fontWeight: 700, fontSize: isMobile ? 14 : 13,
         boxShadow: `0 4px 24px ${T.accent}40, 0 2px 8px rgba(0,0,0,.3)`,
         transition: "transform .15s, box-shadow .15s", fontFamily: "inherit",
       }}
@@ -849,10 +862,10 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
   // ── CHAT MODE ──
   if (mode === "chat" && selectedAgents.length > 0) {
     const totalSpecialists = selectedAgents.reduce((sum, ea) => sum + (ea.agentTeam?.specialists?.length || 0), 0);
-    const chatStyle = getContainerStyle(viewMode, { width: 560, height: 640, borderColor: T.accent + "40" });
+    const chatStyle = getContainerStyle(effectiveMode, { width: 560, height: 640, borderColor: T.accent + "40" });
     return (
       <>
-        {viewMode === "fullscreen" && <Backdrop onClick={() => setViewMode("default")} />}
+        {viewMode === "fullscreen" && !isMobile && <Backdrop onClick={() => setViewMode("default")} />}
         <div style={chatStyle}>
           {/* Header */}
           <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.border}`, background: T.accent + "12" }}>
@@ -963,11 +976,11 @@ export const GlobalAgentFab = ({ directory, onNavigate, preSelectedIds = [], con
   });
   const branchOrder = ["Meeting", "Executive", "Delivering", "Operations", "Finance", "Admin"];
 
-  const dirStyle = getContainerStyle(viewMode, { width: 380, height: 600, borderColor: T.accent + "40" });
+  const dirStyle = getContainerStyle(effectiveMode, { width: 380, height: 600, borderColor: T.accent + "40" });
 
   return (
     <>
-      {viewMode === "fullscreen" && <Backdrop onClick={() => setViewMode("default")} />}
+      {viewMode === "fullscreen" && !isMobile && <Backdrop onClick={() => setViewMode("default")} />}
       <div style={dirStyle}>
         {/* Header */}
         <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, background: T.accent + "12", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

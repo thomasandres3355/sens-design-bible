@@ -15,6 +15,8 @@ import { useBadge } from "@core/users/BadgeContext";
 import { isLiveMode, askAgent, buildDataContext } from "./services/claudeService";
 import { getAgentDirectory } from "./vpData";
 import { containsFactualClaim, checkFacts, isAgentContribEnabled, getAgentContribInterval, getAgentContribSensitivity } from "./services/factCheckService";
+import { useViewport } from "@core/routing/useViewport";
+import { VoiceDictationButton } from "@core/ui/VoiceDictationButton";
 
 const C = T.accent;
 
@@ -399,7 +401,7 @@ const FilesView = ({ notes }) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.5 }}>All files attached across your notes — searchable, filterable, downloadable.</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
         <KpiCard label="Total Files" value={allFiles.length} sub="across all notes" color={C} />
         <KpiCard label="File Types" value={Object.keys(fileTypes).length} sub="unique formats" color={T.purple} />
         <KpiCard label="Total Size" value={fmtSize(totalSize)} color={T.blue} />
@@ -483,7 +485,13 @@ const NotesEditor = ({ meeting, templateSections }) => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, height: "100%", overflowY: "auto", paddingRight: 4 }}>
-      <div style={{ fontSize: 11, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, fontWeight: 600, marginBottom: 4 }}>Meeting Notes</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <div style={{ fontSize: 11, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>Meeting Notes</div>
+        <VoiceDictationButton compact onTranscript={(text) => {
+          setItems((prev) => ({ ...prev, discussion: [...prev.discussion, { id: Date.now(), text, done: false, time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) }] }));
+          setExpanded((e) => ({ ...e, discussion: true }));
+        }} />
+      </div>
       {sections.map((sec) => (
         <div key={sec.key} style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 8, overflow: "hidden" }}>
           <button onClick={() => setExpanded((e) => ({ ...e, [sec.key]: !e[sec.key] }))} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "transparent", border: "none", cursor: "pointer", color: T.text }}>
@@ -912,7 +920,7 @@ const ExportModal = ({ meeting, template, onClose }) => {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: 680, maxHeight: "80vh", background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 14, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...(window.innerWidth < 768 ? { position: "fixed", inset: 0, width: "100%", maxHeight: "100vh", borderRadius: 0 } : { width: 680, maxHeight: "80vh", borderRadius: 14 }), background: T.bg1, border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Header */}
         <div style={{ padding: "16px 20px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1093,8 +1101,10 @@ const useMeetingMonitor = ({ enabled, messages, simDate, user }) => {
 const ActiveMeetingWorkspace = ({ meeting, onClose, template }) => {
   const { simDate } = useSimDate();
   const { activeUser } = useBadge();
+  const { isMobile } = useViewport();
   const [rightTab, setRightTab] = useState(0);
   const rightTabs = ["Team Chat", "Private", "Agents", "Recordings"];
+  const [mobilePanel, setMobilePanel] = useState("notes"); // "notes" | "chat"
   const [elapsed, setElapsed] = useState(0);
   const [showExport, setShowExport] = useState(false);
   const [showTag, setShowTag] = useState(false);
@@ -1122,40 +1132,55 @@ const ActiveMeetingWorkspace = ({ meeting, onClose, template }) => {
       {showTag && <TagModal meeting={meeting} onClose={() => setShowTag(false)} />}
 
       {/* Meeting Header */}
-      <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 20px", display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+      <div style={{ background: T.bg1, border: `1px solid ${T.border}`, borderRadius: 12, padding: isMobile ? "10px 12px" : "14px 20px", display: "flex", alignItems: "center", gap: isMobile ? 8 : 16, marginBottom: 12, flexWrap: isMobile ? "wrap" : "nowrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: "50%", background: T.danger, boxShadow: `0 0 8px ${T.danger}60` }} /><span style={{ fontSize: 11, color: T.danger, fontWeight: 600 }}>REC</span></div>
-        <div style={{ flex: 1 }}><div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>{meeting.title}</div><div style={{ fontSize: 11, color: T.textDim }}>{meeting.room} · {meeting.duration}{template ? ` · ${template.name}` : ""}</div></div>
-        <div style={{ fontFamily: "monospace", fontSize: 16, color: C, fontWeight: 600, letterSpacing: 1 }}>{formatTime(elapsed)}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>{meetingParticipants.map((p) => (<Avatar key={p.id} person={p} size={30} />))}</div>
-        {risks.length > 0 && <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", background: T.warn + "15", borderRadius: 6, border: `1px solid ${T.warn}30` }}><Icon d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 8v4 M12 16h.01" color={T.warn} size={12} /><span style={{ fontSize: 10, color: T.warn, fontWeight: 600 }}>{risks.length} Risk{risks.length > 1 ? "s" : ""}</span></div>}
-        {agentContribEnabled && <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", background: T.teal + "15", borderRadius: 6, border: `1px solid ${T.teal}30` }}><div style={{ width: 6, height: 6, borderRadius: "50%", background: T.teal, boxShadow: `0 0 6px ${T.teal}` }} /><span style={{ fontSize: 10, color: T.teal, fontWeight: 600 }}>Agent Contribution</span></div>}
-        <button onClick={onClose} style={{ background: T.danger + "20", border: `1px solid ${T.danger}40`, borderRadius: 8, padding: "8px 16px", color: T.danger, fontSize: 12, fontWeight: 600, cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.background = T.danger; e.currentTarget.style.color = "#fff"; }} onMouseLeave={(e) => { e.currentTarget.style.background = T.danger + "20"; e.currentTarget.style.color = T.danger; }}>End Meeting</button>
+        <div style={{ flex: 1, minWidth: isMobile ? "60%" : "auto" }}><div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 700, color: T.text }}>{meeting.title}</div><div style={{ fontSize: 11, color: T.textDim }}>{meeting.room} · {meeting.duration}{template ? ` · ${template.name}` : ""}</div></div>
+        <div style={{ fontFamily: "monospace", fontSize: isMobile ? 14 : 16, color: C, fontWeight: 600, letterSpacing: 1 }}>{formatTime(elapsed)}</div>
+        {!isMobile && <div style={{ display: "flex", alignItems: "center", gap: 8 }}>{meetingParticipants.map((p) => (<Avatar key={p.id} person={p} size={30} />))}</div>}
+        {!isMobile && risks.length > 0 && <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", background: T.warn + "15", borderRadius: 6, border: `1px solid ${T.warn}30` }}><Icon d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 8v4 M12 16h.01" color={T.warn} size={12} /><span style={{ fontSize: 10, color: T.warn, fontWeight: 600 }}>{risks.length} Risk{risks.length > 1 ? "s" : ""}</span></div>}
+        {!isMobile && agentContribEnabled && <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", background: T.teal + "15", borderRadius: 6, border: `1px solid ${T.teal}30` }}><div style={{ width: 6, height: 6, borderRadius: "50%", background: T.teal, boxShadow: `0 0 6px ${T.teal}` }} /><span style={{ fontSize: 10, color: T.teal, fontWeight: 600 }}>Agent Contribution</span></div>}
+        <button onClick={onClose} style={{ background: T.danger + "20", border: `1px solid ${T.danger}40`, borderRadius: 8, padding: isMobile ? "6px 12px" : "8px 16px", color: T.danger, fontSize: 12, fontWeight: 600, cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.background = T.danger; e.currentTarget.style.color = "#fff"; }} onMouseLeave={(e) => { e.currentTarget.style.background = T.danger + "20"; e.currentTarget.style.color = T.danger; }}>End Meeting</button>
       </div>
 
+      {/* Mobile panel toggle */}
+      {isMobile && (
+        <div style={{ display: "flex", gap: 0, marginBottom: 8, background: T.bg2, borderRadius: 8, border: `1px solid ${T.border}`, overflow: "hidden" }}>
+          {["notes", "chat"].map(p => (
+            <button key={p} onClick={() => setMobilePanel(p)} style={{ flex: 1, padding: "10px 0", background: mobilePanel === p ? C + "20" : "transparent", border: "none", borderBottom: mobilePanel === p ? `2px solid ${C}` : "2px solid transparent", color: mobilePanel === p ? T.text : T.textDim, fontSize: 13, fontWeight: mobilePanel === p ? 600 : 400, cursor: "pointer", textTransform: "capitalize" }}>
+              {p === "notes" ? "Notes" : "Chat & Agents"}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Main Workspace */}
-      <div style={{ flex: 1, display: "flex", gap: 12, minHeight: 0 }}>
-        <div style={{ width: "45%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 12, padding: 16, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <NotesEditor meeting={meeting} templateSections={template?.sections} />
-        </div>
-        <div style={{ flex: 1, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <div style={{ borderBottom: `1px solid ${T.border}`, padding: "0 12px", display: "flex", gap: 0 }}>
-            {rightTabs.map((tab, i) => (
-              <button key={tab} onClick={() => setRightTab(i)} style={{ padding: "12px 16px", background: "transparent", border: "none", borderBottom: rightTab === i ? `2px solid ${i === 1 ? T.purple : C}` : "2px solid transparent", color: rightTab === i ? T.text : T.textDim, fontSize: 12, fontWeight: rightTab === i ? 600 : 400, cursor: "pointer", transition: "all .15s", display: "flex", alignItems: "center", gap: 6 }}>
-                {i === 1 && <Icon d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z M7 11V7a5 5 0 0 1 10 0v4" color={rightTab === 1 ? T.purple : T.textDim} size={10} />}{tab}
-              </button>
-            ))}
+      <div style={{ flex: 1, display: "flex", gap: 12, minHeight: 0, flexDirection: isMobile ? "column" : "row" }}>
+        {(!isMobile || mobilePanel === "notes") && (
+          <div style={{ width: isMobile ? "100%" : "45%", background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 12, padding: isMobile ? 12 : 16, overflow: "hidden", display: "flex", flexDirection: "column", flex: isMobile ? 1 : undefined }}>
+            <NotesEditor meeting={meeting} templateSections={template?.sections} />
           </div>
-          <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-            {rightTab === 0 && <ChatPanel messages={sampleTeamChat} interjections={interjections} onDismissInterjection={dismissInterjection} agentContribActive={agentContribEnabled} />}
-            {rightTab === 1 && <ChatPanel messages={samplePrivateChat} isPrivate />}
-            {rightTab === 2 && <AgentPanel meeting={meeting} />}
-            {rightTab === 3 && <RecordingsPanel meeting={meeting} />}
+        )}
+        {(!isMobile || mobilePanel === "chat") && (
+          <div style={{ flex: 1, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ borderBottom: `1px solid ${T.border}`, padding: "0 12px", display: "flex", gap: 0, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+              {rightTabs.map((tab, i) => (
+                <button key={tab} onClick={() => setRightTab(i)} style={{ padding: isMobile ? "10px 12px" : "12px 16px", background: "transparent", border: "none", borderBottom: rightTab === i ? `2px solid ${i === 1 ? T.purple : C}` : "2px solid transparent", color: rightTab === i ? T.text : T.textDim, fontSize: 12, fontWeight: rightTab === i ? 600 : 400, cursor: "pointer", transition: "all .15s", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+                  {i === 1 && <Icon d="M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z M7 11V7a5 5 0 0 1 10 0v4" color={rightTab === 1 ? T.purple : T.textDim} size={10} />}{tab}
+                </button>
+              ))}
+            </div>
+            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+              {rightTab === 0 && <ChatPanel messages={sampleTeamChat} interjections={interjections} onDismissInterjection={dismissInterjection} agentContribActive={agentContribEnabled} />}
+              {rightTab === 1 && <ChatPanel messages={samplePrivateChat} isPrivate />}
+              {rightTab === 2 && <AgentPanel meeting={meeting} />}
+              {rightTab === 3 && <RecordingsPanel meeting={meeting} />}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Bar */}
-      <div style={{ display: "flex", gap: 10, marginTop: 12, justifyContent: "flex-end" }}>
+      <div style={{ display: "flex", gap: isMobile ? 6 : 10, marginTop: 12, justifyContent: "flex-end", flexWrap: isMobile ? "wrap" : "nowrap" }}>
         <button onClick={() => setShowExport(true)} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "8px 16px", color: T.textMid, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = C; e.currentTarget.style.color = T.text; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textMid; }}>
           <Icon d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3" color="currentColor" />Export Notes
         </button>
@@ -1174,7 +1199,7 @@ const ActiveMeetingWorkspace = ({ meeting, onClose, template }) => {
 const TemplatesView = ({ onStartFromTemplate }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.5 }}>Start a new meeting from a pre-configured template with suggested agenda items, recommended agents, and default participants.</div>
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "repeat(3, 1fr)", gap: 12 }}>
       {meetingTemplates.map((tpl) => (
         <div key={tpl.id} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: 16, cursor: "pointer", transition: "all .15s" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = tpl.color + "60"; e.currentTarget.style.background = tpl.color + "08"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.bg2; }} onClick={() => onStartFromTemplate(tpl)}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
@@ -1205,7 +1230,7 @@ const AnalyticsView = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Summary KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
         <KpiCard label="Avg Meeting Duration" value={`${ad.avgMeetingDuration}m`} sub="across all types" color={C} />
         <KpiCard label="Action Item Completion" value={`${ad.actionItemCompletion.completionRate}%`} sub={`${ad.actionItemCompletion.completed} of ${ad.actionItemCompletion.total}`} color={T.green} />
         <KpiCard label="Recording Hours" value={ad.totalRecordingHours} sub="total captured" color={T.blue} />
@@ -1244,7 +1269,7 @@ const AnalyticsView = () => {
 
       {/* Action Item Completion */}
       <Card title="ACTION ITEM COMPLETION" titleColor={T.green}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
           {[{ label: "Completed", value: ad.actionItemCompletion.completed, color: T.green }, { label: "Pending", value: ad.actionItemCompletion.pending, color: T.blue }, { label: "Overdue", value: ad.actionItemCompletion.overdue, color: T.danger }, { label: "Completion Rate", value: `${ad.actionItemCompletion.completionRate}%`, color: C }].map((m, i) => (
             <div key={i} style={{ background: T.bg0, borderRadius: 8, padding: 14, textAlign: "center" }}>
               <div style={{ fontSize: 24, fontWeight: 700, color: m.color }}>{m.value}</div>
@@ -1297,7 +1322,7 @@ const ActionItemTracker = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
         <KpiCard label="Total Open" value={openCount} sub={`${overdueCount} overdue`} color={C} />
         <KpiCard label="Overdue" value={overdueCount} sub="need attention" color={T.danger} />
         <KpiCard label="Completed" value={doneCount} sub="this month" color={T.green} />
@@ -1410,7 +1435,7 @@ const CalendarView = ({ onStartMeeting }) => {
 const RiskView = () => (
   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.5 }}>Risks identified during meetings, automatically linked to action items and meeting context.</div>
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "repeat(3, 1fr)", gap: 12 }}>
       {[{ label: "Active Risks", value: meetingRisks.length, color: T.warn }, { label: "Escalated", value: meetingRisks.filter(r => r.status === "escalated").length, color: T.danger }, { label: "Monitoring", value: meetingRisks.filter(r => r.status === "monitoring").length, color: T.blue }].map((k, i) => (
         <div key={i} style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 10, padding: 16, textAlign: "center" }}>
           <div style={{ fontSize: 28, fontWeight: 700, color: k.color }}>{k.value}</div>
@@ -1444,7 +1469,7 @@ const MeetingListView = ({ onJoinMeeting, onViewPastMeeting }) => {
   const [search, setSearch] = useState("");
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
         <KpiCard label="Meetings This Week" value={meetingKpis.meetingsThisWeek} sub="3 remaining" color={C} />
         <KpiCard label="Notes Captured" value={meetingKpis.notesCaptured} sub="across 8 meetings" color={C} />
         <KpiCard label="Action Items Open" value={meetingKpis.actionItemsOpen} sub="2 overdue" color={T.warn} />
@@ -1751,7 +1776,7 @@ const NotepadView = () => {
       )}
 
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "repeat(3, 1fr)", gap: 12 }}>
         <KpiCard label="Total Notes" value={notes.length} sub="in notepad" color={T.purple} />
         <KpiCard label="Drafts" value={draftCount} sub="in progress" color={T.blue} />
         <KpiCard label="Completed" value={completedCount} sub="with High Fives" color={T.green} />
@@ -1888,7 +1913,7 @@ const HighFivesView = ({ onViewPastMeeting }) => {
       )}
 
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 12 }}>
         <KpiCard label="Total" value={entries.length} sub="high fives" color={C} />
         <KpiCard label="From Meetings" value={meetingCount} sub="auto-generated" color={C} />
         <KpiCard label="From Notes" value={notepadCount} sub="auto-summarized" color={T.purple} />
@@ -2069,6 +2094,7 @@ export const MeetingView = () => {
   const [pastMeeting, setPastMeeting] = useState(null);
   const [topTab, setTopTab] = useState(0);
   const topTabs = ["Overview", "Journal", "Calendar", "Templates", "Action Items", "Analytics", "Risks"];
+  const { isMobile } = useViewport();
 
   const handleJoinMeeting = (mtg) => { setActiveMeeting(mtg); setActiveTemplate(null); setMode("active"); };
   const handleStartFromTemplate = (tpl) => {
@@ -2089,9 +2115,9 @@ export const MeetingView = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Top navigation tabs */}
-      <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${T.border}`, marginBottom: -4 }}>
+      <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${T.border}`, marginBottom: -4, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
         {topTabs.map((tab, i) => (
-          <button key={tab} onClick={() => setTopTab(i)} style={{ padding: "10px 20px", background: "transparent", border: "none", borderBottom: topTab === i ? `2px solid ${i === 1 ? T.teal : C}` : "2px solid transparent", color: topTab === i ? T.text : T.textDim, fontSize: 13, fontWeight: topTab === i ? 600 : 400, cursor: "pointer", transition: "all .15s" }}>{tab}
+          <button key={tab} onClick={() => setTopTab(i)} style={{ padding: isMobile ? "10px 14px" : "10px 20px", background: "transparent", border: "none", borderBottom: topTab === i ? `2px solid ${i === 1 ? T.teal : C}` : "2px solid transparent", color: topTab === i ? T.text : T.textDim, fontSize: isMobile ? 12 : 13, fontWeight: topTab === i ? 600 : 400, cursor: "pointer", transition: "all .15s", whiteSpace: "nowrap" }}>{tab}
             {i === 1 && highFives.filter(e => e.pinned).length > 0 && <span style={{ marginLeft: 6, fontSize: 9, padding: "1px 5px", borderRadius: 8, background: T.teal, color: "#fff", fontWeight: 700 }}>{highFives.filter(e => e.pinned).length}</span>}
             {i === 4 && allActionItems.filter(a => a.status === "overdue").length > 0 && <span style={{ marginLeft: 6, fontSize: 9, padding: "1px 5px", borderRadius: 8, background: T.danger, color: "#fff", fontWeight: 700 }}>{allActionItems.filter(a => a.status === "overdue").length}</span>}
             {i === 6 && meetingRisks.filter(r => r.severity === "red").length > 0 && <span style={{ marginLeft: 6, fontSize: 9, padding: "1px 5px", borderRadius: 8, background: T.danger, color: "#fff", fontWeight: 700 }}>{meetingRisks.filter(r => r.severity === "red").length}</span>}
