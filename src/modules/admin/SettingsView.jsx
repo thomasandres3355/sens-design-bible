@@ -4,11 +4,12 @@ import { Card, TabBar, DataTable, StatusPill, KpiCard, EngineLight, DraggableGri
 import { configureRoam, getRoamStatus } from "./roamService";
 import { tagRegistry } from "@modules/ai-agents/meetingData";
 import { CLEARANCE_LEVELS, DATA_CLASSIFICATIONS, ROLE_CLEARANCE, checkAccess, getAccessibleDomains, getUserBadge, saveBadgeConfig, resetBadgeConfig, isBadgeConfigDirty } from "@core/users/badgeData";
+import { isCustomAgent as storeIsCustomAgent, getCustomAgents as storeGetCustomAgents, getCustomTeams as storeGetCustomTeams } from "@modules/ai-agents/agentConfigStore";
 import { useBadge } from "@core/users/BadgeContext";
 import { getApiKey, setApiKey, isLiveMode, setLiveMode, testConnection } from "@modules/ai-agents/services/claudeService";
 import { getUsageSummary, getUsageByUser, getUsageByAgent, getDailyUsage, clearUsageData } from "@modules/ai-agents/services/usageTracker";
 import { isAgentContribEnabled, setAgentContribEnabled, getAgentContribInterval, setAgentContribInterval, getAgentContribSensitivity, setAgentContribSensitivity } from "@modules/ai-agents/services/factCheckService";
-import UserManagementPanel from "@core/users/UserManagementPanel";
+import UserManagementPanel from "./UserManagementPanel";
 import LandingPageEditorPanel from "./LandingPageEditorPanel";
 import { usePermissions } from "@core/permissions/PermissionContext";
 import { MODULE_PERMISSIONS, MODULE_LABELS, VP_DASHBOARD_ACCESS, checkModulePermission, checkVpAccess, savePermissionConfig, resetPermissionConfig, isPermissionConfigDirty } from "@core/permissions/permissionData";
@@ -1169,16 +1170,109 @@ const ConnectorEditor = ({ connectors, onChange }) => {
   );
 };
 
+/** Domain picker — checkbox grid of available internal data domains */
+const DomainPicker = ({ selected, onChange }) => {
+  const domains = DATA_CLASSIFICATIONS.filter(d => d.domain !== "vp_landing_access");
+  const toggle = (domain) => {
+    if (selected.includes(domain)) onChange(selected.filter(d => d !== domain));
+    else onChange([...selected, domain]);
+  };
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 4 }}>
+      {domains.map(d => (
+        <label key={d.domain} style={{
+          display: "flex", alignItems: "center", gap: 8, padding: "6px 10px",
+          borderRadius: 6, cursor: "pointer", fontSize: 11,
+          background: selected.includes(d.domain) ? T.blue + "15" : "transparent",
+          border: `1px solid ${selected.includes(d.domain) ? T.blue + "40" : T.border}`,
+        }}>
+          <input type="checkbox" checked={selected.includes(d.domain)} onChange={() => toggle(d.domain)}
+            style={{ accentColor: T.blue }} />
+          <div>
+            <div style={{ fontWeight: 600, color: T.text }}>{d.label}</div>
+            <div style={{ fontSize: 10, color: T.textDim }}>{d.domain}</div>
+          </div>
+        </label>
+      ))}
+    </div>
+  );
+};
+
+/** Available branches for team creation */
+const BRANCH_OPTIONS = ["Executive", "Delivering", "Operations", "Finance", "Admin", "Custom"];
+
+/** Generate a slug ID from a name */
+const slugify = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
 const AgentConfigPanel = () => {
-  const { getAgent, updateAgent, resetAgent, resetAllAgents, isAgentDirty, getGlobalRules, updateGlobalRules, resetGlobalRules, isGlobalRulesDirty, exportConfig, importConfig } = useAgentConfig();
+  const { getAgent, updateAgent, resetAgent, resetAllAgents, isAgentDirty, getGlobalRules, updateGlobalRules, resetGlobalRules, isGlobalRulesDirty, exportConfig, importConfig, createAgent, deleteAgent, isCustom, getCustomAgents, getCustomTeams, createTeam, updateTeam, deleteTeam, configVersion } = useAgentConfig();
   const [innerTab, setInnerTab] = useState("agents");
   const [selectedId, setSelectedId] = useState(null);
   const [collapsed, setCollapsed] = useState({});
   const [saved, setSaved] = useState(false);
   const [editBuffer, setEditBuffer] = useState(null);
+  // ── Create agent state ──
+  const [creating, setCreating] = useState(false);
+  const [createBuffer, setCreateBuffer] = useState({ id: "", name: "", role: "", description: "", skills: [], dataSources: [], connectors: [], teamKey: "", isLead: false });
+  // ── Team structure state ──
+  const [selectedTeamKey, setSelectedTeamKey] = useState(null);
+  const [creatingTeam, setCreatingTeam] = useState(false);
+  const [teamBuffer, setTeamBuffer] = useState({ key: "", title: "", branch: "Custom", color: T.accent, focusAreas: [], leadAgentId: null, specialistIds: [] });
 
-  // ── Agent tree ──
-  const tree = useMemo(() => buildAgentTree(), []);
+  // ── Agent tree (includes custom agents/teams) ──
+  const tree = useMemo(() => {
+    const base = buildAgentTree();
+    const customAgents = storeGetCustomAgents();
+    const customTeams = storeGetCustomTeams();
+
+    // Build custom team entries
+    const customBranchMap = {};
+    Object.values(customTeams).forEach(t => {
+      const branchLabel = t.branch || "Custom";
+      if (!customBranchMap[branchLabel]) customBranchMap[branchLabel] = [];
+      const lead = t.leadAgentId ? customAgents[t.leadAgentId] : null;
+      const specialists = (t.specialistIds || []).map(id => customAgents[id]).filter(Boolean);
+      customBranchMap[branchLabel].push({
+        key: t.key, title: t.title,
+        agentTeam: { lead: lead || { id: "__empty__", name: "(No lead assigned)", role: "—" }, specialists },
+        color: t.color || T.textMid, _custom: true,
+      });
+    });
+
+    // Add unassigned custom agents to an "Unassigned" section
+    const assignedIds = new Set();
+    Object.values(customTeams).forEach(t => {
+      if (t.leadAgentId) assignedIds.add(t.leadAgentId);
+      (t.specialistIds || []).forEach(id => assignedIds.add(id));
+    });
+    const unassigned = Object.values(customAgents).filter(a => !assignedIds.has(a.id));
+
+    // Merge custom branches into base tree
+    Object.entries(customBranchMap).forEach(([branchLabel, teams]) => {
+      const existingBranch = base.find(b => b.label === branchLabel);
+      if (existingBranch) {
+        existingBranch.teams.push(...teams);
+      } else {
+        base.push({ label: branchLabel, color: teams[0]?.color || T.textMid, teams });
+      }
+    });
+
+    // Show unassigned agents in their own section
+    if (unassigned.length > 0) {
+      base.push({
+        label: "Unassigned",
+        color: T.textDim,
+        teams: [{
+          key: "__unassigned__", title: "Unassigned Agents",
+          agentTeam: { lead: unassigned[0], specialists: unassigned.slice(1) },
+          color: T.textDim, _custom: true,
+        }],
+      });
+    }
+
+    return base;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configVersion]);
 
   // ── Load agent into edit buffer when selected ──
   const selectAgent = useCallback((agentId) => {
@@ -1203,6 +1297,28 @@ const AgentConfigPanel = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }, [selectedId, editBuffer, updateAgent]);
+
+  const handleCreateAgent = useCallback(() => {
+    const id = createBuffer.id || slugify(createBuffer.name);
+    if (!id || !createBuffer.name) return;
+    try {
+      createAgent({ ...createBuffer, id, taskHistory: [] });
+      setCreating(false);
+      setSelectedId(id);
+      selectAgent(id);
+      setCreateBuffer({ id: "", name: "", role: "", description: "", skills: [], dataSources: [], connectors: [], teamKey: "", isLead: false });
+    } catch (e) {
+      alert(e.message);
+    }
+  }, [createBuffer, createAgent, selectAgent]);
+
+  const handleDeleteAgent = useCallback(() => {
+    if (!selectedId || !isCustom(selectedId)) return;
+    if (!confirm(`Delete custom agent "${editBuffer?.name}"?`)) return;
+    deleteAgent(selectedId);
+    setSelectedId(null);
+    setEditBuffer(null);
+  }, [selectedId, editBuffer, isCustom, deleteAgent]);
 
   const handleResetAgent = useCallback(() => {
     if (!selectedId) return;
@@ -1253,6 +1369,7 @@ const AgentConfigPanel = () => {
       <TabBar
         tabs={[
           { key: "agents", label: "Agents" },
+          { key: "teams", label: "Team Structure" },
           { key: "rules", label: "Global Rules" },
         ]}
         active={innerTab}
@@ -1291,14 +1408,21 @@ const AgentConfigPanel = () => {
                 {!collapsed[branch.label] && branch.teams.map(team => (
                   <div key={team.key}>
                     {/* Lead agent */}
-                    <AgentTreeItem
-                      agent={team.agentTeam.lead}
-                      color={team.color}
-                      selected={selectedId === team.agentTeam.lead.id}
-                      dirty={isAgentDirty(team.agentTeam.lead.id)}
-                      onClick={() => selectAgent(team.agentTeam.lead.id)}
-                      isLead
-                    />
+                    {team.agentTeam.lead && team.agentTeam.lead.id !== "__empty__" && (
+                      <AgentTreeItem
+                        agent={team.agentTeam.lead}
+                        color={team.color}
+                        selected={selectedId === team.agentTeam.lead.id}
+                        dirty={isAgentDirty(team.agentTeam.lead.id)}
+                        onClick={() => { setCreating(false); selectAgent(team.agentTeam.lead.id); }}
+                        isLead
+                      />
+                    )}
+                    {team.agentTeam.lead && team.agentTeam.lead.id === "__empty__" && (
+                      <div style={{ padding: "6px 14px 6px 22px", fontSize: 11, color: T.textDim, fontStyle: "italic" }}>
+                        (No lead assigned)
+                      </div>
+                    )}
                     {/* Specialists */}
                     {team.agentTeam.specialists.map(s => (
                       <AgentTreeItem
@@ -1307,23 +1431,108 @@ const AgentConfigPanel = () => {
                         color={team.color}
                         selected={selectedId === s.id}
                         dirty={isAgentDirty(s.id)}
-                        onClick={() => selectAgent(s.id)}
+                        onClick={() => { setCreating(false); selectAgent(s.id); }}
                       />
                     ))}
                   </div>
                 ))}
               </div>
             ))}
+            {/* Create Agent button */}
+            <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.border}` }}>
+              <button onClick={() => { setCreating(true); setSelectedId(null); setEditBuffer(null); }} style={{
+                width: "100%", padding: "8px 12px", borderRadius: 8,
+                border: `1px dashed ${T.accent}40`, background: "transparent",
+                color: T.accent, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+              }}>+ Create Agent</button>
+            </div>
           </div>
 
-          {/* ── Edit Form (right) ── */}
+          {/* ── Edit Form / Create Form (right) ── */}
           <div style={{ flex: 1 }}>
-            {!selectedId ? (
+            {/* ── Create Agent Form ── */}
+            {creating ? (
+              <Card title="Create New Agent">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 640 }}>
+                  <div>
+                    <div style={labelStyle}>Name</div>
+                    <input value={createBuffer.name} onChange={e => { const name = e.target.value; setCreateBuffer(b => ({ ...b, name, id: slugify(name) })); }} placeholder="e.g. Procurement EA" style={inputStyle} />
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Agent ID</div>
+                    <div style={subLabelStyle}>Auto-generated from name. Must be unique.</div>
+                    <input value={createBuffer.id} onChange={e => setCreateBuffer(b => ({ ...b, id: e.target.value }))} style={{ ...inputStyle, fontFamily: "monospace", fontSize: 11 }} />
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Role</div>
+                    <input value={createBuffer.role} onChange={e => setCreateBuffer(b => ({ ...b, role: e.target.value }))} placeholder="e.g. Executive Assistant" style={inputStyle} />
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Description</div>
+                    <textarea value={createBuffer.description} onChange={e => setCreateBuffer(b => ({ ...b, description: e.target.value }))} rows={3} placeholder="What does this agent do?" style={textareaStyle} />
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Team Assignment</div>
+                    <div style={subLabelStyle}>Assign to an existing team or leave unassigned</div>
+                    <select value={createBuffer.teamKey} onChange={e => setCreateBuffer(b => ({ ...b, teamKey: e.target.value }))} style={inputStyle}>
+                      <option value="">(Unassigned)</option>
+                      <optgroup label="Executive">
+                        <option value="ceo">CEO</option>
+                        <option value="coo">COO</option>
+                      </optgroup>
+                      {Object.entries(
+                        Object.values(vpRegistry).reduce((acc, vp) => {
+                          if (!acc[vp.branch]) acc[vp.branch] = [];
+                          acc[vp.branch].push(vp);
+                          return acc;
+                        }, {})
+                      ).map(([branch, vps]) => (
+                        <optgroup key={branch} label={branch}>
+                          {vps.map(vp => <option key={vp.key} value={vp.key}>{vp.title}</option>)}
+                        </optgroup>
+                      ))}
+                      {Object.values(storeGetCustomTeams()).length > 0 && (
+                        <optgroup label="Custom Teams">
+                          {Object.values(storeGetCustomTeams()).map(t => (
+                            <option key={t.key} value={t.key}>{t.title}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Skills</div>
+                    <TagEditor items={createBuffer.skills} onChange={skills => setCreateBuffer(b => ({ ...b, skills }))} placeholder="Add skill..." color={T.accent} />
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Data Sources</div>
+                    <div style={subLabelStyle}>Select internal data domains this agent can access</div>
+                    <DomainPicker selected={createBuffer.dataSources} onChange={dataSources => setCreateBuffer(b => ({ ...b, dataSources }))} />
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Connectors</div>
+                    <ConnectorEditor connectors={createBuffer.connectors} onChange={connectors => setCreateBuffer(b => ({ ...b, connectors }))} />
+                  </div>
+                  <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                    <button onClick={handleCreateAgent} disabled={!createBuffer.name} style={{
+                      padding: "10px 24px", borderRadius: 8, border: "none",
+                      background: createBuffer.name ? T.accent : T.bg3, color: createBuffer.name ? "#1A1A1A" : T.textDim,
+                      fontWeight: 700, fontSize: 12, cursor: createBuffer.name ? "pointer" : "default", fontFamily: "inherit",
+                    }}>Create Agent</button>
+                    <button onClick={() => setCreating(false)} style={{
+                      padding: "10px 24px", borderRadius: 8, border: `1px solid ${T.border}`,
+                      background: "transparent", color: T.textMid, fontWeight: 600, fontSize: 12,
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}>Cancel</button>
+                  </div>
+                </div>
+              </Card>
+            ) : !selectedId ? (
               <div style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 height: 300, color: T.textDim, fontSize: 13,
               }}>
-                Select an agent from the directory to edit their configuration.
+                Select an agent from the directory to edit, or click "+ Create Agent" to add a new one.
               </div>
             ) : editBuffer && (
               <Card title={
@@ -1390,12 +1599,10 @@ const AgentConfigPanel = () => {
                   {/* Data Sources */}
                   <div>
                     <div style={labelStyle}>Data Sources</div>
-                    <div style={subLabelStyle}>Data this agent reads and references in responses</div>
-                    <TagEditor
-                      items={editBuffer.dataSources}
+                    <div style={subLabelStyle}>Internal data domains this agent can access</div>
+                    <DomainPicker
+                      selected={editBuffer.dataSources}
                       onChange={dataSources => setEditBuffer(b => ({ ...b, dataSources }))}
-                      placeholder="Add data source..."
-                      color={T.blue}
                     />
                   </div>
 
@@ -1416,7 +1623,7 @@ const AgentConfigPanel = () => {
                       background: T.accent, color: "#1A1A1A", fontWeight: 700, fontSize: 12,
                       cursor: "pointer", fontFamily: "inherit",
                     }}>Save Changes</button>
-                    {isAgentDirty(selectedId) && (
+                    {isAgentDirty(selectedId) && !isCustom(selectedId) && (
                       <button onClick={handleResetAgent} style={{
                         padding: "10px 24px", borderRadius: 8,
                         border: `1px solid ${T.border}`, background: "transparent",
@@ -1424,10 +1631,249 @@ const AgentConfigPanel = () => {
                         cursor: "pointer", fontFamily: "inherit",
                       }}>Reset to Default</button>
                     )}
+                    {isCustom(selectedId) && (
+                      <button onClick={handleDeleteAgent} style={{
+                        padding: "10px 24px", borderRadius: 8,
+                        border: `1px solid ${T.danger}40`, background: "transparent",
+                        color: T.danger, fontWeight: 600, fontSize: 12,
+                        cursor: "pointer", fontFamily: "inherit",
+                      }}>Delete Agent</button>
+                    )}
                   </div>
                 </div>
               </Card>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ TEAM STRUCTURE SUB-TAB ═══ */}
+      {innerTab === "teams" && (
+        <div style={{ display: "flex", gap: 16, minHeight: 500 }}>
+          {/* ── Team List (left) ── */}
+          <div style={{
+            width: 280, minWidth: 280, background: T.bg1, borderRadius: 10,
+            border: `1px solid ${T.border}`, overflow: "auto", maxHeight: "70vh",
+          }}>
+            <div style={{ padding: "12px 14px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Teams</span>
+            </div>
+
+            {/* Base teams (read-only structure) */}
+            {[
+              { label: "Executive", teams: [
+                { key: "ceo", title: "CEO", team: ceoAgentTeam },
+                { key: "coo", title: "COO", team: cooAgentTeam },
+              ]},
+              ...Object.entries(
+                Object.values(vpRegistry).reduce((acc, vp) => {
+                  if (!acc[vp.branch]) acc[vp.branch] = [];
+                  acc[vp.branch].push(vp);
+                  return acc;
+                }, {})
+              ).map(([branch, vps]) => ({ label: branch, teams: vps.map(vp => ({ key: vp.key, title: vp.title, team: vp })) })),
+            ].map(branch => (
+              <div key={branch.label}>
+                <div style={{ padding: "6px 14px", background: T.bg2, borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textDim, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  {branch.label}
+                </div>
+                {branch.teams.map(t => (
+                  <div key={t.key} onClick={() => { setSelectedTeamKey(t.key); setCreatingTeam(false); }}
+                    style={{
+                      padding: "8px 14px", cursor: "pointer",
+                      background: selectedTeamKey === t.key ? T.accent + "15" : "transparent",
+                      borderLeft: selectedTeamKey === t.key ? `3px solid ${T.accent}` : "3px solid transparent",
+                      borderBottom: `1px solid ${T.border}20`,
+                    }}
+                    onMouseEnter={e => { if (selectedTeamKey !== t.key) e.currentTarget.style.background = T.bg3; }}
+                    onMouseLeave={e => { if (selectedTeamKey !== t.key) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <div style={{ fontSize: 12, fontWeight: 600, color: selectedTeamKey === t.key ? T.accent : T.text }}>{t.title}</div>
+                    <div style={{ fontSize: 10, color: T.textDim }}>
+                      {(t.team.agentTeam || t.team).agentTeam ? `${1 + ((t.team.agentTeam || t.team).agentTeam?.specialists?.length || 0)} agents` : ""}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+
+            {/* Custom teams */}
+            {Object.values(storeGetCustomTeams()).length > 0 && (
+              <div>
+                <div style={{ padding: "6px 14px", background: T.bg2, borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textDim, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  Custom Teams
+                </div>
+                {Object.values(storeGetCustomTeams()).map(t => (
+                  <div key={t.key} onClick={() => { setSelectedTeamKey(t.key); setCreatingTeam(false); }}
+                    style={{
+                      padding: "8px 14px", cursor: "pointer",
+                      background: selectedTeamKey === t.key ? T.accent + "15" : "transparent",
+                      borderLeft: selectedTeamKey === t.key ? `3px solid ${T.accent}` : "3px solid transparent",
+                      borderBottom: `1px solid ${T.border}20`,
+                    }}
+                    onMouseEnter={e => { if (selectedTeamKey !== t.key) e.currentTarget.style.background = T.bg3; }}
+                    onMouseLeave={e => { if (selectedTeamKey !== t.key) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <div style={{ fontSize: 12, fontWeight: 600, color: selectedTeamKey === t.key ? T.accent : T.text }}>{t.title}</div>
+                    <div style={{ fontSize: 10, color: T.textDim }}>{(t.specialistIds?.length || 0) + (t.leadAgentId ? 1 : 0)} agents</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Create team button */}
+            <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.border}` }}>
+              <button onClick={() => { setCreatingTeam(true); setSelectedTeamKey(null); setTeamBuffer({ key: "", title: "", branch: "Custom", color: T.accent, focusAreas: [], leadAgentId: null, specialistIds: [] }); }} style={{
+                width: "100%", padding: "8px 12px", borderRadius: 8,
+                border: `1px dashed ${T.accent}40`, background: "transparent",
+                color: T.accent, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+              }}>+ Create Team</button>
+            </div>
+          </div>
+
+          {/* ── Team Detail (right) ── */}
+          <div style={{ flex: 1 }}>
+            {creatingTeam ? (
+              <Card title="Create New Team">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 640 }}>
+                  <div>
+                    <div style={labelStyle}>Team Name</div>
+                    <input value={teamBuffer.title} onChange={e => { const title = e.target.value; setTeamBuffer(b => ({ ...b, title, key: "team-" + slugify(title) })); }} placeholder="e.g. Supply Chain Operations" style={inputStyle} />
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Branch</div>
+                    <select value={teamBuffer.branch} onChange={e => setTeamBuffer(b => ({ ...b, branch: e.target.value }))} style={inputStyle}>
+                      {BRANCH_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={labelStyle}>Focus Areas</div>
+                    <TagEditor items={teamBuffer.focusAreas} onChange={focusAreas => setTeamBuffer(b => ({ ...b, focusAreas }))} placeholder="Add focus area..." color={T.accent} />
+                  </div>
+                  <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                    <button onClick={() => {
+                      if (!teamBuffer.title) return;
+                      try { createTeam(teamBuffer); setCreatingTeam(false); setSelectedTeamKey(teamBuffer.key); } catch (e) { alert(e.message); }
+                    }} disabled={!teamBuffer.title} style={{
+                      padding: "10px 24px", borderRadius: 8, border: "none",
+                      background: teamBuffer.title ? T.accent : T.bg3, color: teamBuffer.title ? "#1A1A1A" : T.textDim,
+                      fontWeight: 700, fontSize: 12, cursor: teamBuffer.title ? "pointer" : "default", fontFamily: "inherit",
+                    }}>Create Team</button>
+                    <button onClick={() => setCreatingTeam(false)} style={{
+                      padding: "10px 24px", borderRadius: 8, border: `1px solid ${T.border}`,
+                      background: "transparent", color: T.textMid, fontWeight: 600, fontSize: 12,
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}>Cancel</button>
+                  </div>
+                </div>
+              </Card>
+            ) : !selectedTeamKey ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: T.textDim, fontSize: 13 }}>
+                Select a team to view its structure, or click "+ Create Team" to add a new one.
+              </div>
+            ) : (() => {
+              // Resolve team data
+              const customTeams = storeGetCustomTeams();
+              const customAgentsMap = storeGetCustomAgents();
+              const isCustomTeam = selectedTeamKey in customTeams;
+              let teamTitle, leadAgent, specialists, branchLabel, focusAreas;
+
+              if (isCustomTeam) {
+                const t = customTeams[selectedTeamKey];
+                teamTitle = t.title;
+                branchLabel = t.branch;
+                focusAreas = t.focusAreas || [];
+                leadAgent = t.leadAgentId ? (customAgentsMap[t.leadAgentId] || agentIndex[t.leadAgentId]?.agent) : null;
+                specialists = (t.specialistIds || []).map(id => customAgentsMap[id] || agentIndex[id]?.agent).filter(Boolean);
+              } else if (selectedTeamKey === "ceo") {
+                teamTitle = "CEO"; branchLabel = "Executive"; focusAreas = ceoAgentTeam.focusAreas;
+                leadAgent = ceoAgentTeam.agentTeam.lead; specialists = ceoAgentTeam.agentTeam.specialists;
+              } else if (selectedTeamKey === "coo") {
+                teamTitle = "COO"; branchLabel = "Executive"; focusAreas = cooAgentTeam.focusAreas;
+                leadAgent = cooAgentTeam.agentTeam.lead; specialists = cooAgentTeam.agentTeam.specialists;
+              } else {
+                const vp = vpRegistry[selectedTeamKey];
+                if (!vp) return null;
+                teamTitle = vp.title; branchLabel = vp.branch; focusAreas = vp.focusAreas;
+                leadAgent = vp.agentTeam.lead; specialists = vp.agentTeam.specialists;
+              }
+
+              return (
+                <Card title={
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {teamTitle}
+                    {isCustomTeam && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: T.teal + "20", color: T.teal }}>CUSTOM</span>}
+                  </span>
+                }>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 640 }}>
+                    <div style={{ display: "flex", gap: 16 }}>
+                      <div><span style={{ fontSize: 11, color: T.textDim }}>Branch:</span> <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{branchLabel}</span></div>
+                      <div><span style={{ fontSize: 11, color: T.textDim }}>Agents:</span> <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{1 + specialists.length}</span></div>
+                    </div>
+
+                    {focusAreas.length > 0 && (
+                      <div>
+                        <div style={labelStyle}>Focus Areas</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {focusAreas.map((f, i) => (
+                            <span key={i} style={{ padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600, background: T.accent + "20", color: T.accent }}>{f}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Lead agent */}
+                    <div>
+                      <div style={labelStyle}>Lead (EA)</div>
+                      {leadAgent ? (
+                        <div style={{ padding: "10px 14px", borderRadius: 8, background: T.bg2, border: `1px solid ${T.border}` }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{leadAgent.name}</div>
+                          <div style={{ fontSize: 11, color: T.textDim }}>{leadAgent.role}</div>
+                          <div style={{ fontSize: 10, color: T.textDim, marginTop: 4 }}>Skills: {(leadAgent.skills || []).join(", ") || "—"}</div>
+                        </div>
+                      ) : (
+                        <div style={{ padding: "10px 14px", color: T.textDim, fontSize: 12, fontStyle: "italic" }}>No lead assigned</div>
+                      )}
+                    </div>
+
+                    {/* Specialists */}
+                    <div>
+                      <div style={labelStyle}>Specialists ({specialists.length})</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        {specialists.map(s => (
+                          <div key={s.id} style={{ padding: "8px 14px", borderRadius: 8, background: T.bg2, border: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{s.name}</div>
+                              <div style={{ fontSize: 10, color: T.textDim }}>{s.role}</div>
+                            </div>
+                            <StatusPill status={s.status || "green"} />
+                          </div>
+                        ))}
+                        {specialists.length === 0 && (
+                          <div style={{ padding: "8px 14px", color: T.textDim, fontSize: 12, fontStyle: "italic" }}>No specialists assigned yet</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Delete custom team */}
+                    {isCustomTeam && (
+                      <div style={{ marginTop: 8 }}>
+                        <button onClick={() => {
+                          if (!confirm(`Delete custom team "${teamTitle}"?`)) return;
+                          deleteTeam(selectedTeamKey);
+                          setSelectedTeamKey(null);
+                        }} style={{
+                          padding: "10px 24px", borderRadius: 8,
+                          border: `1px solid ${T.danger}40`, background: "transparent",
+                          color: T.danger, fontWeight: 600, fontSize: 12,
+                          cursor: "pointer", fontFamily: "inherit",
+                        }}>Delete Team</button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })()}
           </div>
         </div>
       )}

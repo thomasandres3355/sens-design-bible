@@ -3,7 +3,9 @@ import { T } from "@core/theme/theme";
 import { activeSites, constructionSites, totalProcessors } from "@core/data/sites";
 import { getNavItems, getRouteMap, VpDashboardView, AgentDetailView } from "@core/shell/moduleRegistry";
 import { vpRegistry, isVpKey, isExecKey, getExecData, isAgentKey, agentIndex, ceoAgentTeam, cooAgentTeam, getAgentDirectory } from "@modules/ai-agents/vpData";
+import { getAgentEntry } from "@modules/ai-agents/agentConfigStore";
 import { getLandingPageKey } from "@modules/admin/landingPageData";
+import { useMobile } from "@core/mobile/MobileContext";
 import { Card } from "@core/ui";
 import { GlobalAgentFab } from "@modules/ai-agents/AgentChat";
 import sensLogo from "./assets/SENS Logo-White copy.png";
@@ -34,7 +36,7 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
   const [navProjectId, setNavProjectId] = useState(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true });
+  const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true, templates: true });
   useEffect(() => { setMounted(true); }, []);
 
   const { simDate, advanceDay, retreatDay, historyDepth, setHistoryDepth, maxDate } = useSimDate();
@@ -42,6 +44,15 @@ export default function App() {
   const { isAuthenticated, currentUser, authMethod, signOut } = useAuth();
   const { visibleModules, can, canAccessVp } = usePermissions();
   const { mode, toggleTheme } = useThemeMode();
+  const { isMobile, toggleMobile } = useMobile();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Redirect to mobile-safe route when entering mobile mode
+  useEffect(() => {
+    if (isMobile && active !== "dashboard" && active !== "focus") {
+      setActive("dashboard");
+    }
+  }, [isMobile]);
 
   // All hooks must be before early returns (Rules of Hooks)
   const agentDirectory = useMemo(() => getAgentDirectory(), []);
@@ -55,7 +66,7 @@ export default function App() {
     }
     if (isAgentKey(active)) {
       const agentId = active.replace("agent-", "");
-      const entry = agentIndex[agentId];
+      const entry = getAgentEntry(agentId);
       if (entry) {
         const parentTeam = entry.parentKey === "ceo" ? ceoAgentTeam
           : entry.parentKey === "coo" ? cooAgentTeam
@@ -104,8 +115,8 @@ export default function App() {
     return <LoginView />;
   }
 
-  // Filter sidebar modules by permission
-  const visibleSidebar = navItems.filter((m) => visibleModules.includes(m.key));
+  // Filter sidebar modules by permission — templates always visible
+  const visibleSidebar = navItems.filter((m) => m.key === "templates" || visibleModules.includes(m.key));
 
   // ─── Resolve the active view ───
   const resolveView = () => {
@@ -126,7 +137,7 @@ export default function App() {
     if (isAgentKey(active)) {
       if (!can("org", "agentDetail")) return <AccessDenied module="org" action="view agent details" />;
       const agentId = active.replace("agent-", "");
-      const entry = agentIndex[agentId];
+      const entry = getAgentEntry(agentId);
       if (entry) {
         const parentTeam = entry.parentKey === "ceo"
           ? ceoAgentTeam.agentTeam
@@ -144,11 +155,13 @@ export default function App() {
       }
     }
 
-    // Permission check for standard modules (including risk children — check parent "risk" permission)
-    const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active.startsWith("tech-") ? "technology" : active.startsWith("ops-") ? "ops" : active;
-    const isStandardModule = navItems.find((m) => m.key === active) || navItems.some(m => m.children?.some(c => c.key === active));
-    if (!can(permKey, "view") && isStandardModule) {
-      return <AccessDenied module={permKey} action="view" />;
+    // Permission check for standard modules — skip for templates (always accessible)
+    if (!(active === "templates" || active.startsWith("template-") || active.startsWith("tpl-"))) {
+      const permKey = active.startsWith("risk-") ? "risk" : active.startsWith("admin-") ? "admin" : active.startsWith("tech-") ? "technology" : active.startsWith("ops-") ? "ops" : active;
+      const isStandardModule = navItems.find((m) => m.key === active) || navItems.some(m => m.children?.some(c => c.key === active));
+      if (!can(permKey, "view") && isStandardModule) {
+        return <AccessDenied module={permKey} action="view" />;
+      }
     }
 
     // Registry-driven route resolution
@@ -204,7 +217,7 @@ export default function App() {
     // Agent detail header
     if (isAgentKey(active)) {
       const agentId = active.replace("agent-", "");
-      const entry = agentIndex[agentId];
+      const entry = getAgentEntry(agentId);
       if (entry) {
         return (
           <>
@@ -294,9 +307,22 @@ export default function App() {
     );
   };
 
+  // ─── Mobile bottom tab config ───
+  const mobileNavTabs = [
+    { key: "dashboard", label: "Dashboard", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" },
+    { key: "focus", label: "Focus", icon: "M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" },
+  ];
+
+  const mobilePageTitle = active === "focus" ? "Executive Focus" : "Dashboard";
+
   return (
-    <div style={{ display: "flex", height: "100vh", background: T.bg0, color: T.text, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif", opacity: mounted ? 1 : 0, transition: "opacity .4s" }}>
-      <div style={{ width: 3, background: T.accent, flexShrink: 0 }} />
+    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", height: "100vh", background: T.bg0, color: T.text, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif", opacity: mounted ? 1 : 0, transition: "opacity .4s" }}>
+
+      {/* ─── Accent stripe (desktop only) ─── */}
+      {!isMobile && <div style={{ width: 3, background: T.accent, flexShrink: 0 }} />}
+
+      {/* ─── Desktop Sidebar ─── */}
+      {!isMobile && (
       <nav style={{ width: collapsed ? 56 : 220, flexShrink: 0, background: T.bg1, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", transition: "width .25s ease", overflow: "hidden" }}>
         <div style={{ padding: collapsed ? "20px 8px" : "20px 18px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, borderBottom: `1px solid ${T.border}`, minHeight: 64 }}>
           {collapsed
@@ -354,6 +380,13 @@ export default function App() {
             </div>);
           })}
         </div>
+        {/* Mobile Mode Toggle */}
+        <button onClick={toggleMobile} title="Switch to mobile mode" style={{ padding: collapsed ? "10px 14px" : "10px 14px", border: "none", borderTop: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", color: T.textDim, display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 12, width: "100%", fontFamily: "inherit", fontSize: 13, minHeight: 44, transition: "all .25s ease" }}
+          onMouseEnter={e => { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.bg3; }}
+          onMouseLeave={e => { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}>
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          {!collapsed && <span style={{ fontWeight: 400, whiteSpace: "nowrap" }}>Mobile Mode</span>}
+        </button>
         <button onClick={toggleTheme} title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"} style={{ padding: collapsed ? "10px 14px" : "10px 14px", border: "none", borderTop: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", color: T.textDim, display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 12, width: "100%", fontFamily: "inherit", fontSize: 13 }}
           onMouseEnter={e => { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.bg3; }}
           onMouseLeave={e => { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}>
@@ -379,7 +412,26 @@ export default function App() {
           <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: collapsed ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}><path d="M15 18l-6-6 6-6" /></svg>
         </button>
       </nav>
-      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
+      )}
+
+      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column", paddingBottom: isMobile ? 72 : 0 }}>
+
+        {/* ─── Mobile Header ─── */}
+        {isMobile ? (
+          <header style={{ padding: "10px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.bg1, position: "sticky", top: 0, zIndex: 10, minHeight: 48 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", border: `2.5px solid ${T.accent}`, flexShrink: 0 }} />
+              <span style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{mobilePageTitle}</span>
+            </div>
+            <button onClick={() => setSettingsOpen(true)} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.textDim, padding: 8, minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, transition: "all .15s" }}
+              onMouseEnter={e => { e.currentTarget.style.color = T.accent; e.currentTarget.style.background = T.bg3; }}
+              onMouseLeave={e => { e.currentTarget.style.color = T.textDim; e.currentTarget.style.background = "transparent"; }}>
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/>
+              </svg>
+            </button>
+          </header>
+        ) : (
         <header style={{ padding: "14px 28px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.bg1, position: "sticky", top: 0, zIndex: 10 }}>
           <div>{resolveHeader()}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -439,15 +491,80 @@ export default function App() {
             </select>
           </div>
         </header>
-        <div style={{ padding: 28, flex: 1 }}>
+        )}
+
+        {/* ─── Page content ─── */}
+        <div style={{ padding: isMobile ? 16 : 28, flex: 1 }}>
           <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 200, color: T.textDim, fontSize: 13 }}>Loading module...</div>}>
             {resolveView()}
           </Suspense>
         </div>
       </main>
 
-      {/* Global agent FAB — visible on all pages with per-page pre-selection */}
-      <GlobalAgentFab directory={agentDirectory} onNavigate={setActive} preSelectedIds={preSelectedIds} />
+      {/* ─── Mobile Bottom Tab Bar ─── */}
+      {isMobile && (
+        <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 56, background: T.bg1, borderTop: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-around", zIndex: 20, paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+          {mobileNavTabs.map(tab => {
+            const isActive = active === tab.key;
+            return (
+              <button key={tab.key} onClick={() => setActive(tab.key)} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, background: "transparent", border: "none", cursor: "pointer", color: isActive ? T.accent : T.textDim, padding: "6px 24px", minWidth: 72, minHeight: 44, transition: "color .25s ease", fontFamily: "inherit" }}>
+                <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isActive ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round"><path d={tab.icon} /></svg>
+                <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, letterSpacing: 0.3 }}>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
+
+      {/* ─── Mobile Settings Overlay ─── */}
+      {isMobile && settingsOpen && (
+        <div onClick={() => setSettingsOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 30, display: "flex", justifyContent: "flex-end" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 280, maxWidth: "80vw", height: "100%", background: T.bg1, borderLeft: `1px solid ${T.border}`, padding: 24, display: "flex", flexDirection: "column", gap: 8, transform: "translateX(0)", transition: "transform .25s ease" }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: T.text, marginBottom: 8 }}>Settings</div>
+
+            {/* User info */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 0", borderBottom: `1px solid ${T.border}` }}>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: T.accent + "20", border: `1.5px solid ${T.accent}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: T.accent }}>
+                {activeUser.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{activeUser.name}</div>
+                <div style={{ fontSize: 12, color: T.textDim }}>{activeUser.role}</div>
+              </div>
+            </div>
+
+            {/* Date display */}
+            <div style={{ padding: "12px 0", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span style={{ fontSize: 13, color: T.textMid, fontWeight: 500 }}>{new Date(simDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+            </div>
+
+            {/* Theme toggle */}
+            <button onClick={() => { toggleTheme(); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 0", border: "none", background: "transparent", cursor: "pointer", color: T.text, fontSize: 14, minHeight: 44, width: "100%", textAlign: "left", fontFamily: "inherit" }}>
+              {mode === "dark"
+                ? <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.textMid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                : <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.textMid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              }
+              <span>{mode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}</span>
+            </button>
+
+            {/* Desktop mode toggle */}
+            <button onClick={() => { toggleMobile(); setSettingsOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 0", border: "none", background: "transparent", cursor: "pointer", color: T.text, fontSize: 14, minHeight: 44, width: "100%", textAlign: "left", fontFamily: "inherit" }}>
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.textMid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>Switch to Desktop Mode</span>
+            </button>
+
+            {/* Sign out */}
+            <button onClick={signOut} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 12, padding: "14px 0", border: "none", background: "transparent", cursor: "pointer", color: T.danger, fontSize: 14, minHeight: 44, width: "100%", textAlign: "left", fontFamily: "inherit" }}>
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Global agent FAB — hidden in mobile */}
+      {!isMobile && <GlobalAgentFab directory={agentDirectory} onNavigate={setActive} preSelectedIds={preSelectedIds} />}
 
       {/* Bug Report Modal */}
       <BugReportModal open={bugReportOpen} onClose={() => setBugReportOpen(false)} activeModule={active} />

@@ -30,6 +30,19 @@ const VpDashboardView     = lazy(() => import("@modules/organization/VpDashboard
 const AgentDetailView     = lazy(() => import("@modules/ai-agents/AgentDetailView").then(m => ({ default: m.AgentDetailView })));
 const ModelView           = lazy(() => import("@modules/growth/ModelView").then(m => ({ default: m.ModelView })));
 
+// Templates
+const Template1           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.Template1 })));
+const Template2           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.Template2 })));
+const Template3           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.Template3 })));
+const Template4           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.Template4 })));
+const Template5           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.Template5 })));
+const DashboardTemplateA  = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DashboardTemplateA })));
+const DashboardTemplateB  = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DashboardTemplateB })));
+const DashboardTemplateC  = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DashboardTemplateC })));
+const DeptHomeA           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeA })));
+const DeptHomeB           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeB })));
+const DeptHomeC           = lazy(() => import("@modules/templates/TemplatesView").then(m => ({ default: m.DeptHomeC })));
+
 // ─── Module Definitions ──────────────────────────────────────────────
 
 export const MODULE_PHASES = {
@@ -59,6 +72,7 @@ const modules = [
     nav: { key: "focus", label: "Executive Focus", icon: "M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" },
     routes: {
       focus: () => ({ component: FocusTrackerView, props: {} }),
+      "focus-tasks": () => ({ component: FocusTrackerView, props: { initialTab: "tasks" } }),
     },
   },
   // AI Agents has no top-level nav (accessed via Org Chart + FAB), but is Phase 1
@@ -234,6 +248,45 @@ const modules = [
       viewer: (props) => ({ component: GenericLandingView, props: { pageKey: "viewer", onNavigate: props.setActive } }),
     },
   },
+
+  // ─── Templates (always visible) ───
+  {
+    id: "templates",
+    phase: 1,
+    enabled: true,
+    nav: {
+      key: "templates", label: "Templates",
+      icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z M4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z M16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z",
+      branch: "TEMPLATES",
+      children: [
+        { key: "template-1", label: "Template One", icon: "M3 3h18v18H3z M3 9h18 M9 9v12" },
+        { key: "template-2", label: "Template Two", icon: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z" },
+        { key: "template-3", label: "Template Three", icon: "M3 3h18v4H3z M3 10h18v4H3z M3 17h18v4H3z" },
+        { key: "template-4", label: "Template Four", icon: "M4 4h4v4H4z M12 4h4v4h-4z M4 12h4v4H4z M12 12h4v4h-4z M20 4h0 M20 12h0" },
+        { key: "template-5", label: "Template Five", icon: "M3 3h18v5H3z M3 11h8v10H3z M14 11h7v4h-7z M14 18h7v3h-7z" },
+        { key: "tpl-dash-1", label: "Dashboard A", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+        { key: "tpl-dash-2", label: "Dashboard B", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+        { key: "tpl-dash-3", label: "Dashboard C", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
+        { key: "tpl-dept-1", label: "Dept Home A", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+        { key: "tpl-dept-2", label: "Dept Home B", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+        { key: "tpl-dept-3", label: "Dept Home C", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+      ],
+    },
+    routes: {
+      templates: () => ({ component: Template1, props: {} }),
+      "template-1": () => ({ component: Template1, props: {} }),
+      "template-2": () => ({ component: Template2, props: {} }),
+      "template-3": () => ({ component: Template3, props: {} }),
+      "template-4": () => ({ component: Template4, props: {} }),
+      "template-5": () => ({ component: Template5, props: {} }),
+      "tpl-dash-1": (props) => ({ component: DashboardTemplateA, props: { onNavigate: props.setActive } }),
+      "tpl-dash-2": (props) => ({ component: DashboardTemplateB, props: { onNavigate: props.setActive } }),
+      "tpl-dash-3": (props) => ({ component: DashboardTemplateC, props: { onNavigate: props.setActive } }),
+      "tpl-dept-1": (props) => ({ component: DeptHomeA, props: { onNavigate: props.setActive } }),
+      "tpl-dept-2": (props) => ({ component: DeptHomeB, props: { onNavigate: props.setActive } }),
+      "tpl-dept-3": (props) => ({ component: DeptHomeC, props: { onNavigate: props.setActive } }),
+    },
+  },
 ];
 
 // ─── Public API ──────────────────────────────────────────────────────
@@ -299,4 +352,7 @@ export {
   VpDashboardView,
   AgentDetailView,
   ModelView,
+  Template1, Template2, Template3, Template4, Template5,
+  DashboardTemplateA, DashboardTemplateB, DashboardTemplateC,
+  DeptHomeA, DeptHomeB, DeptHomeC,
 };

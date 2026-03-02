@@ -5,6 +5,7 @@ const KEY_TO_PATH = {
   // Top-level
   dashboard:    "/dashboard",
   focus:        "/focus",
+  "focus-tasks": "/focus/tasks",
   sitemap:      "/sitemap",
   technology:   "/technology",
   ops:          "/ops",
@@ -17,6 +18,20 @@ const KEY_TO_PATH = {
   finance:      "/finance",
   development:  "/development",
   workforce:    "/workforce",
+
+  // Technology children
+  "tech-manufacturing":  "/technology/manufacturing",
+  "tech-maintenance":    "/technology/maintenance",
+  "tech-engineering":    "/technology/engineering",
+  "tech-ip-risk":        "/technology/ip-risk",
+
+  // Operations children
+  "ops-projects":    "/ops/projects",
+  "ops-engineering": "/ops/engineering",
+  "ops-maintenance": "/ops/maintenance",
+  "ops-risk":        "/ops/risk",
+  "ops-logistics":   "/ops/logistics",
+  "ops-plant":       "/ops/plant",
 
   // Risk landing + children
   risk:                "/risk",
@@ -42,6 +57,20 @@ const KEY_TO_PATH = {
   "admin-users-security":  "/admin/users-security",
   "admin-platform-config": "/admin/platform-config",
   "admin-bug-fixes":       "/admin/bug-fixes",
+
+  // Templates
+  templates:               "/templates",
+  "template-1":            "/templates/page/1",
+  "template-2":            "/templates/page/2",
+  "template-3":            "/templates/page/3",
+  "template-4":            "/templates/page/4",
+  "template-5":            "/templates/page/5",
+  "tpl-dash-1":            "/templates/dashboard/a",
+  "tpl-dash-2":            "/templates/dashboard/b",
+  "tpl-dash-3":            "/templates/dashboard/c",
+  "tpl-dept-1":            "/templates/dept/a",
+  "tpl-dept-2":            "/templates/dept/b",
+  "tpl-dept-3":            "/templates/dept/c",
 
   // Exec / VP under /org
   ceo:              "/org/ceo",

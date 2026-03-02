@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { T } from "@core/theme/theme";
 import { StatusPill, Progress } from "@core/ui/indicators";
+import { useMobile } from "@core/mobile/MobileContext";
 
 const sevColor = (s) => s === "critical" ? T.danger : s === "warning" ? T.warn : s === "green" ? T.green : T.blue;
 
@@ -18,6 +19,7 @@ const IntelBullet = ({ item }) => (
 
 export const ObjectiveCard = ({ obj, index, onNavigate }) => {
   const [expanded, setExpanded] = useState(false);
+  const { isMobile } = useMobile();
   const statusColor = obj.status === "red" ? T.danger : obj.status === "yellow" ? T.warn : obj.status === "green" ? T.green : T.blue;
 
   return (
@@ -31,45 +33,60 @@ export const ObjectiveCard = ({ obj, index, onNavigate }) => {
       <div
         onClick={() => setExpanded(!expanded)}
         style={{
-          display: "flex", alignItems: "center", gap: 14,
-          padding: "16px 20px", cursor: "pointer",
+          display: "flex", flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "stretch" : "center", gap: isMobile ? 10 : 14,
+          padding: isMobile ? "14px 16px" : "16px 20px", cursor: "pointer",
           background: expanded ? statusColor + "06" : "transparent",
           transition: "background .2s",
+          minHeight: isMobile ? 44 : undefined,
         }}
       >
-        <div style={{
-          width: 32, height: 32, borderRadius: "50%",
-          background: statusColor + "20", border: `2px solid ${statusColor}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 14, fontWeight: 800, color: statusColor, flexShrink: 0,
-        }}>
-          {index + 1}
+        {/* Top row: badge + title + chevron */}
+        <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 10 : 14, flex: isMobile ? undefined : 1, minWidth: 0 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: statusColor + "20", border: `2px solid ${statusColor}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, fontWeight: 800, color: statusColor, flexShrink: 0,
+          }}>
+            {index + 1}
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: T.text, lineHeight: 1.3 }}>{obj.title}</div>
+            <div style={{ fontSize: 11, color: T.textDim, marginTop: 3 }}>{obj.owner}</div>
+          </div>
+
+          {isMobile && (
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ flexShrink: 0, transform: expanded ? "rotate(180deg)" : "rotate(0)", transition: "transform .2s" }}>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          )}
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: T.text, lineHeight: 1.3 }}>{obj.title}</div>
-          <div style={{ fontSize: 11, color: T.textDim, marginTop: 3 }}>{obj.owner}</div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-          <div style={{ width: 100 }}>
+        {/* Progress row: stacked below on mobile, inline on desktop */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0, paddingLeft: isMobile ? 42 : 0 }}>
+          <div style={{ width: isMobile ? 80 : 100 }}>
             <Progress pct={obj.pct} color={statusColor} target={obj.progressTarget} threshold={obj.progressThreshold} />
           </div>
           <span style={{ fontSize: 13, fontWeight: 700, color: statusColor, minWidth: 36, textAlign: "right" }}>{obj.pct}%</span>
           <StatusPill status={obj.status === "red" ? "red" : obj.status} />
         </div>
 
-        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ flexShrink: 0, transform: expanded ? "rotate(180deg)" : "rotate(0)", transition: "transform .2s" }}>
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        {!isMobile && (
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ flexShrink: 0, transform: expanded ? "rotate(180deg)" : "rotate(0)", transition: "transform .2s" }}>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        )}
       </div>
 
       {expanded && (
-        <div style={{ padding: "0 20px 20px 20px" }}>
+        <div style={{ padding: isMobile ? "0 16px 16px 16px" : "0 20px 20px 20px" }}>
           <p style={{ margin: "0 0 16px 0", fontSize: 12, color: T.textMid, lineHeight: 1.6 }}>{obj.summary}</p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
             {obj.metrics.map((m, i) => (
               <div key={i} style={{ background: T.bg0, borderRadius: 8, padding: "10px 12px" }}>
                 <div style={{ fontSize: 10, color: T.textDim, textTransform: "uppercase", letterSpacing: .8, marginBottom: 3 }}>{m.label}</div>
@@ -93,7 +110,7 @@ export const ObjectiveCard = ({ obj, index, onNavigate }) => {
             style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               fontSize: 12, color: T.accent, cursor: "pointer", fontWeight: 600,
-              padding: "6px 0",
+              padding: "6px 0", minHeight: 44,
             }}
           >
             Drill into details →

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { T } from "@core/theme/theme";
 import { severityColor } from "./alertData";
 import { ceoAgentTeam, cooAgentTeam, vpRegistry } from "@modules/ai-agents/vpData";
+import { useMobile } from "@core/mobile/MobileContext";
 
 /**
  * CheckEngineLightPanel — Prominent alert panel for dashboard & VP anchor pages.
@@ -582,6 +583,7 @@ const AlertRow = ({ alert, onNavigate, expanded, onToggle, alertState, onResolve
 // ═══════════════════════════════════════════════════════════════════════
 
 export const CheckEngineLightPanel = ({ alerts = [], onNavigate, title, color, compact }) => {
+  const { isMobile } = useMobile();
   const [expandedId, setExpandedId] = useState(null);
   const [collapsed, setCollapsed] = useState(true);
   const [filter, setFilter] = useState("active");
@@ -676,11 +678,13 @@ export const CheckEngineLightPanel = ({ alerts = [], onNavigate, title, color, c
       <div
         onClick={() => setCollapsed(!collapsed)}
         style={{
-          display: "flex", alignItems: "center", gap: 12,
-          padding: "14px 20px", cursor: "pointer",
+          display: "flex", alignItems: "center", gap: isMobile ? 8 : 12,
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          padding: isMobile ? "12px 14px" : "14px 20px", cursor: "pointer",
           background: criticalCount > 0 ? T.danger + "08" : T.bg3,
           borderBottom: collapsed ? "none" : `1px solid ${T.border}`,
           transition: "all .2s",
+          minHeight: isMobile ? 44 : undefined,
         }}
       >
         {/* Engine light icon cluster */}
@@ -693,7 +697,7 @@ export const CheckEngineLightPanel = ({ alerts = [], onNavigate, title, color, c
           )}
         </div>
 
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: T.text, textTransform: "uppercase", letterSpacing: .8 }}>
             {title || "System Alerts"}
           </div>
@@ -707,8 +711,14 @@ export const CheckEngineLightPanel = ({ alerts = [], onNavigate, title, color, c
           </div>
         </div>
 
-        {/* Count badges */}
-        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+        {/* Collapse chevron */}
+        <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          style={{ flexShrink: 0, transform: collapsed ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+
+        {/* Count badges — wrap to next line on mobile */}
+        <div style={{ display: "flex", gap: 6, flexShrink: 0, ...(isMobile ? { width: "100%", marginTop: 4, paddingLeft: 18 } : {}) }}>
           {criticalCount > 0 && (
             <span style={{ fontSize: 11, fontWeight: 700, color: T.danger, background: T.dangerDim, padding: "3px 10px", borderRadius: 12 }}>
               {criticalCount} Critical
@@ -725,12 +735,6 @@ export const CheckEngineLightPanel = ({ alerts = [], onNavigate, title, color, c
             </span>
           )}
         </div>
-
-        {/* Collapse chevron */}
-        <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.textDim} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ flexShrink: 0, transform: collapsed ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}>
-          <path d="M6 9l6 6 6-6" />
-        </svg>
       </div>
 
       {/* Filter Tabs + Alert List */}

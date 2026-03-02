@@ -52,12 +52,12 @@ export const ceoAgentTeam = {
       ],
       ...agentDetail({
         skills: ["Cross-department briefing", "Board prep", "Risk escalation routing", "KPI aggregation", "Meeting prep", "Decision memo drafting"],
-        dataSources: ["All VP dashboards", "Portfolio KPIs", "Board deck archive", "Investor pipeline", "Risk register"],
+        dataSources: ["site_kpis", "alerts", "financial_summary", "board_materials", "investor_pipeline", "risk_register", "executive_tasks", "meeting_notes"],
         connectors: [
-          { name: "Oracle Financials", status: "connected" },
-          { name: "Salesforce", status: "connected" },
-          { name: "Slack", status: "connected" },
-          { name: "Google Workspace", status: "connected" },
+          { name: "Oracle Financials", status: "pending" },
+          { name: "Salesforce", status: "pending" },
+          { name: "Slack", status: "pending" },
+          { name: "Google Workspace", status: "pending" },
         ],
         taskHistory: [
           { date: "2026-02-24", action: "Generated weekly company briefing", result: "Delivered to CEO inbox", status: "green" },
@@ -77,11 +77,11 @@ export const ceoAgentTeam = {
         status: "green",
         ...agentDetail({
           skills: ["Calendar optimization", "Initiative tracking", "Decision log maintenance", "Action item follow-up", "Org alignment analysis"],
-          dataSources: ["CEO calendar", "Initiative tracker", "Decision log", "Meeting notes archive"],
+          dataSources: ["executive_tasks", "meeting_notes", "meeting_private"],
           connectors: [
-            { name: "Google Calendar", status: "connected" },
-            { name: "Slack", status: "connected" },
-            { name: "Notion", status: "connected" },
+            { name: "Google Calendar", status: "pending" },
+            { name: "Slack", status: "pending" },
+            { name: "Notion", status: "pending" },
           ],
           taskHistory: [
             { date: "2026-02-24", action: "Prioritized CEO calendar for the week", result: "3 conflicts resolved", status: "green" },
@@ -98,10 +98,10 @@ export const ceoAgentTeam = {
         status: "green",
         ...agentDetail({
           skills: ["Board deck generation", "Data room management", "Investor sentiment tracking", "Competitive intel", "Regulatory watch"],
-          dataSources: ["Investor pipeline", "Data room", "SEC filings", "Market reports", "Competitor tracker"],
+          dataSources: ["investor_pipeline", "board_materials", "mna_strategy", "strategic_negotiations", "financial_summary"],
           connectors: [
-            { name: "Salesforce", status: "connected" },
-            { name: "DocuSign", status: "connected" },
+            { name: "Salesforce", status: "pending" },
+            { name: "DocuSign", status: "pending" },
             { name: "S&P Capital IQ", status: "pending" },
           ],
           taskHistory: [
@@ -119,9 +119,9 @@ export const ceoAgentTeam = {
         status: "green",
         ...agentDetail({
           skills: ["Site economics modeling", "Expansion scenario analysis", "M&A screening", "Portfolio optimization", "IRR/NPV calculations"],
-          dataSources: ["Economic models (all sites)", "Construction budgets", "Market sizing data", "Feedstock pricing", "Offtake contracts"],
+          dataSources: ["financial_detail", "project_budgets", "site_kpis", "mna_strategy"],
           connectors: [
-            { name: "Oracle Financials", status: "connected" },
+            { name: "Oracle Financials", status: "pending" },
             { name: "Bloomberg Terminal", status: "pending" },
           ],
           taskHistory: [
@@ -170,14 +170,14 @@ export const cooAgentTeam = {
       ],
       ...agentDetail({
         skills: ["Cross-branch coordination", "Portfolio operations rollup", "Escalation management", "Operational briefings", "Site performance benchmarking", "Construction oversight"],
-        dataSources: ["All VP dashboards", "Site KPIs", "Construction trackers", "Risk register", "Workforce data", "Financial summaries"],
+        dataSources: ["site_kpis", "alerts", "site_operations", "project_budgets", "risk_register", "hr_records", "financial_summary"],
         connectors: [
-          { name: "Oracle Financials", status: "connected" },
-          { name: "Oracle P6", status: "connected" },
-          { name: "SCADA", status: "connected" },
-          { name: "Procore", status: "connected" },
-          { name: "Veriforce", status: "connected" },
-          { name: "Slack", status: "connected" },
+          { name: "Oracle Financials", status: "pending" },
+          { name: "Oracle P6", status: "pending" },
+          { name: "SCADA", status: "pending" },
+          { name: "Procore", status: "pending" },
+          { name: "Veriforce", status: "pending" },
+          { name: "Slack", status: "pending" },
         ],
         taskHistory: [
           { date: "2026-02-24", action: "Generated daily ops briefing for CEO", result: "5 sites green, Baton Rouge watch", status: "green" },
@@ -199,11 +199,11 @@ export const cooAgentTeam = {
         tasksPerDay: 1800,
         ...agentDetail({
           skills: ["Site benchmarking", "Uptime tracking", "Throughput analysis", "Performance trending", "Intervention recommendations"],
-          dataSources: ["SCADA (all sites)", "Production reports", "Quality metrics", "Maintenance logs", "Weather data"],
+          dataSources: ["site_kpis", "site_operations"],
           connectors: [
-            { name: "SCADA", status: "connected" },
-            { name: "OSIsoft PI", status: "connected" },
-            { name: "Oracle MES", status: "connected" },
+            { name: "SCADA", status: "pending" },
+            { name: "OSIsoft PI", status: "pending" },
+            { name: "Oracle MES", status: "pending" },
           ],
           taskHistory: [
             { date: "2026-02-24", action: "Benchmarked all 5 sites", result: "Tucson best (91%), Baton Rouge worst (79%)", status: "yellow" },
@@ -220,10 +220,10 @@ export const cooAgentTeam = {
         status: "green",
         ...agentDetail({
           skills: ["Alert triage", "Cross-dept routing", "Escalation tracking", "Resolution monitoring", "SLA enforcement"],
-          dataSources: ["All department alerts", "Escalation log", "Resolution tracker", "SLA database"],
+          dataSources: ["alerts", "risk_register"],
           connectors: [
-            { name: "PagerDuty", status: "connected" },
-            { name: "Slack", status: "connected" },
+            { name: "PagerDuty", status: "pending" },
+            { name: "Slack", status: "pending" },
           ],
           taskHistory: [
             { date: "2026-02-24", action: "Triaged 8 cross-functional alerts", result: "3 escalated, 5 auto-resolved", status: "green" },
@@ -239,11 +239,11 @@ export const cooAgentTeam = {
         status: "green",
         ...agentDetail({
           skills: ["Capex tracking", "Schedule variance monitoring", "EPC performance scoring", "Milestone reporting", "Risk flagging"],
-          dataSources: ["Oracle P6 schedules", "Capex budgets", "EPC contracts", "Progress reports", "Change orders"],
+          dataSources: ["project_budgets", "site_operations"],
           connectors: [
-            { name: "Oracle P6", status: "connected" },
-            { name: "Procore", status: "connected" },
-            { name: "WakeCap", status: "connected" },
+            { name: "Oracle P6", status: "pending" },
+            { name: "Procore", status: "pending" },
+            { name: "WakeCap", status: "pending" },
           ],
           taskHistory: [
             { date: "2026-02-24", action: "Compiled construction dashboard", result: "Noble B 18%, Portland OR 10%", status: "green" },
@@ -290,10 +290,10 @@ export const vpRegistry = {
         ],
         ...agentDetail({
           skills: ["Engineering status rollup", "IP portfolio summary", "R&D progress tracking", "Cross-team coordination", "Board prep (engineering)"],
-          dataSources: ["Patent database", "TiPs design repo", "R&D experiment logs", "Engineering budget"],
+          dataSources: ["engineering_ip", "project_budgets", "site_operations"],
           connectors: [
-            { name: "Oracle P6", status: "connected" },
-            { name: "Autodesk Vault", status: "connected" },
+            { name: "Oracle P6", status: "pending" },
+            { name: "Autodesk Vault", status: "pending" },
           ],
           taskHistory: [
             { date: "2026-02-24", action: "Compiled weekly engineering status report", result: "Sent to CEO EA", status: "green" },
@@ -308,8 +308,8 @@ export const vpRegistry = {
           description: "Tracks patent filings, prior art analysis, IP portfolio valuation, and competitive patent landscape.", status: "green",
           ...agentDetail({
             skills: ["Patent filing tracking", "Prior art analysis", "IP valuation", "Competitive patent monitoring", "Freedom-to-operate analysis"],
-            dataSources: ["USPTO database", "Patent portfolio", "Competitor filings", "IP valuation models"],
-            connectors: [{ name: "PatSnap", status: "connected" }, { name: "Google Patents", status: "connected" }],
+            dataSources: ["engineering_ip"],
+            connectors: [{ name: "PatSnap", status: "pending" }, { name: "Google Patents", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Monitored 3 competitor patent filings", result: "No conflicts found", status: "green" },
               { date: "2026-02-21", action: "Updated IP portfolio valuation", result: "$12.4M total value", status: "green" },
@@ -321,8 +321,8 @@ export const vpRegistry = {
           description: "Manages TiPs reactor design iterations, Series A/B/C configurations, and design validation.", status: "green",
           ...agentDetail({
             skills: ["Reactor design tracking", "Configuration management", "Design validation", "Change order processing"],
-            dataSources: ["CAD models", "Design revision history", "Test results", "BOM database"],
-            connectors: [{ name: "Autodesk Vault", status: "connected" }, { name: "SolidWorks PDM", status: "connected" }],
+            dataSources: ["engineering_ip", "site_operations"],
+            connectors: [{ name: "Autodesk Vault", status: "pending" }, { name: "SolidWorks PDM", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Validated Series C reactor design rev 4.2", result: "All checks passed", status: "green" },
               { date: "2026-02-22", action: "Processed design change order #DC-0147", result: "Approved & distributed", status: "green" },
@@ -334,8 +334,8 @@ export const vpRegistry = {
           description: "Tracks grade R&D experiments, carbon black quality optimization, and lab-to-production scaling.", status: "green",
           ...agentDetail({
             skills: ["Experiment tracking", "Grade optimization", "Lab-to-production scaling", "Quality correlation analysis"],
-            dataSources: ["Lab LIMS", "Experiment logs", "Grade spec database", "Production quality data"],
-            connectors: [{ name: "LabWare LIMS", status: "connected" }],
+            dataSources: ["engineering_ip", "site_operations"],
+            connectors: [{ name: "LabWare LIMS", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Analyzed N330 grade consistency across sites", result: "96.2% within spec", status: "green" },
               { date: "2026-02-23", action: "Tracked 4 active experiments", result: "2 showing promise", status: "green" },
@@ -370,8 +370,8 @@ export const vpRegistry = {
         exampleQuestions: ["What's the construction status across all sites?", "Are there any schedule delays I should know about?", "Summarize EPC contractor performance this month"],
         ...agentDetail({
           skills: ["Construction status rollup", "Schedule variance analysis", "EPC performance tracking", "Capex monitoring", "Milestone reporting"],
-          dataSources: ["Oracle P6 schedules", "Construction progress photos", "EPC contracts", "Capex tracker"],
-          connectors: [{ name: "Oracle P6", status: "connected" }, { name: "Procore", status: "connected" }, { name: "WakeCap", status: "connected" }],
+          dataSources: ["project_budgets", "site_operations"],
+          connectors: [{ name: "Oracle P6", status: "pending" }, { name: "Procore", status: "pending" }, { name: "WakeCap", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Generated construction status across Noble B & Portland OR", result: "18% and 10% complete", status: "green" },
             { date: "2026-02-23", action: "Flagged 3-day schedule slip at Portland OR", result: "Escalated to VP", status: "yellow" },
@@ -384,8 +384,8 @@ export const vpRegistry = {
           description: "Monitors construction progress, site milestones, equipment delivery, and installation schedules.", status: "green",
           ...agentDetail({
             skills: ["Milestone tracking", "Equipment delivery monitoring", "Site progress reporting", "Weather impact analysis"],
-            dataSources: ["Site daily reports", "Equipment delivery logs", "Weather feeds", "Progress photos"],
-            connectors: [{ name: "Procore", status: "connected" }, { name: "WakeCap", status: "connected" }],
+            dataSources: ["project_budgets", "site_operations"],
+            connectors: [{ name: "Procore", status: "pending" }, { name: "WakeCap", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Processed 12 daily site reports", result: "Noble B on track, Portland OR 3 days behind", status: "yellow" },
               { date: "2026-02-23", action: "Tracked 8 equipment deliveries", result: "All on schedule", status: "green" },
@@ -397,8 +397,8 @@ export const vpRegistry = {
           description: "Tracks fabrication schedules, procurement lead times, and vendor coordination.", status: "green",
           ...agentDetail({
             skills: ["Fabrication schedule management", "Vendor coordination", "Lead time tracking", "Quality inspection scheduling"],
-            dataSources: ["Fab shop schedules", "Purchase orders", "Vendor performance logs", "QC reports"],
-            connectors: [{ name: "Oracle P6", status: "connected" }, { name: "SAP Ariba", status: "pending" }],
+            dataSources: ["project_budgets"],
+            connectors: [{ name: "Oracle P6", status: "pending" }, { name: "SAP Ariba", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Updated fab schedule for Series C reactors", result: "On track for April delivery", status: "green" },
             ],
@@ -409,8 +409,8 @@ export const vpRegistry = {
           description: "Manages pre-commissioning checklists, startup sequences, and performance testing.", status: "blue",
           ...agentDetail({
             skills: ["Pre-comm checklist management", "Startup sequence planning", "Performance test execution", "Punch list tracking"],
-            dataSources: ["Commissioning checklists", "Test protocols", "Punch lists", "P&ID drawings"],
-            connectors: [{ name: "Oracle P6", status: "connected" }],
+            dataSources: ["project_budgets", "site_operations"],
+            connectors: [{ name: "Oracle P6", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Prepared Noble B pre-commissioning checklist", result: "142 items, 0% complete (not yet started)", status: "blue" },
             ],
@@ -442,8 +442,8 @@ export const vpRegistry = {
         exampleQuestions: ["Which site has the most critical open work orders?", "What does the predictive maintenance model say about Richmond?", "When is the next turnaround and are we on track?"],
         ...agentDetail({
           skills: ["Work order prioritization", "Turnaround planning", "Predictive maintenance oversight", "Maintenance budget tracking"],
-          dataSources: ["CMMS database", "IoT sensor feeds", "Turnaround plans", "Maintenance budgets"],
-          connectors: [{ name: "Oracle EAM", status: "connected" }, { name: "OSIsoft PI", status: "connected" }, { name: "WakeCap", status: "connected" }],
+          dataSources: ["maintenance_details", "site_operations", "project_budgets"],
+          connectors: [{ name: "Oracle EAM", status: "pending" }, { name: "OSIsoft PI", status: "pending" }, { name: "WakeCap", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Prioritized 34 open work orders", result: "12 critical, 22 routine", status: "green" },
             { date: "2026-02-23", action: "Reviewed Noble turnaround plan", result: "On track for Mar 15 start", status: "green" },
@@ -456,8 +456,8 @@ export const vpRegistry = {
           description: "Runs predictive maintenance models, analyzes IoT sensor data, and forecasts equipment failures.", status: "green", accuracy: "85%", tasksPerDay: 560,
           ...agentDetail({
             skills: ["Vibration analysis", "Thermal imaging interpretation", "Failure prediction", "Remaining useful life estimation", "Sensor anomaly detection"],
-            dataSources: ["48 IoT sensors", "Vibration data", "Thermal cameras", "SCADA historian", "Equipment failure logs"],
-            connectors: [{ name: "OSIsoft PI", status: "connected" }, { name: "AWS IoT Core", status: "connected" }],
+            dataSources: ["maintenance_details", "site_operations"],
+            connectors: [{ name: "OSIsoft PI", status: "pending" }, { name: "AWS IoT Core", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Analyzed vibration data for Richmond Processor #2", result: "Bearing wear detected, 30-day window", status: "yellow" },
               { date: "2026-02-23", action: "Processed 560 predictive tasks", result: "2 alerts generated", status: "green" },
@@ -469,8 +469,8 @@ export const vpRegistry = {
           description: "Manages preventive maintenance schedules, work order prioritization, and technician assignments.", status: "green",
           ...agentDetail({
             skills: ["WO creation & routing", "PM schedule management", "Technician assignment", "Parts availability check"],
-            dataSources: ["CMMS work orders", "PM schedules", "Parts inventory", "Technician roster"],
-            connectors: [{ name: "Oracle EAM", status: "connected" }],
+            dataSources: ["maintenance_details"],
+            connectors: [{ name: "Oracle EAM", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Created 8 new work orders", result: "All assigned and scheduled", status: "green" },
               { date: "2026-02-23", action: "Closed 14 completed work orders", result: "100% on time", status: "green" },
@@ -482,8 +482,8 @@ export const vpRegistry = {
           description: "Plans and tracks major turnaround events, resource allocation, and shutdown/startup sequences.", status: "blue",
           ...agentDetail({
             skills: ["Turnaround scheduling", "Resource planning", "Shutdown/startup sequencing", "Cost tracking", "Contractor coordination"],
-            dataSources: ["Turnaround plans", "Resource allocations", "Contractor schedules", "Historical turnaround data"],
-            connectors: [{ name: "Oracle P6", status: "connected" }, { name: "Veriforce", status: "connected" }],
+            dataSources: ["maintenance_details", "project_budgets"],
+            connectors: [{ name: "Oracle P6", status: "pending" }, { name: "Veriforce", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Updated Noble turnaround resource plan", result: "24 contractors confirmed", status: "green" },
               { date: "2026-02-22", action: "Verified all contractor Veriforce compliance", result: "100% cleared", status: "green" },
@@ -515,8 +515,8 @@ export const vpRegistry = {
         exampleQuestions: ["How is throughput trending across all sites this week?", "Are there any process control alerts I need to see?", "What's the quality variance on our latest Tucson run?"],
         ...agentDetail({
           skills: ["Throughput monitoring", "Process alert triage", "Quality reporting", "Shift handover coordination"],
-          dataSources: ["SCADA real-time", "Quality lab results", "Shift logs", "Production reports"],
-          connectors: [{ name: "SCADA", status: "connected" }, { name: "Oracle MES", status: "connected" }],
+          dataSources: ["site_operations", "site_kpis", "alerts"],
+          connectors: [{ name: "SCADA", status: "pending" }, { name: "Oracle MES", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Compiled daily ops report for 5 sites", result: "14 TPH aggregate, 92% yield", status: "green" },
             { date: "2026-02-23", action: "Triaged 3 process alerts", result: "2 resolved, 1 monitoring", status: "yellow" },
@@ -529,8 +529,8 @@ export const vpRegistry = {
           description: "Optimizes processor scheduling, throughput allocation, and shift planning across all sites.", status: "green", accuracy: "91%", tasksPerDay: 1240,
           ...agentDetail({
             skills: ["Throughput optimization", "Shift scheduling", "Processor allocation", "Demand balancing"],
-            dataSources: ["Processor status (real-time)", "Demand forecasts", "Shift rosters", "Maintenance windows"],
-            connectors: [{ name: "SCADA", status: "connected" }, { name: "Oracle MES", status: "connected" }],
+            dataSources: ["site_operations", "maintenance_details"],
+            connectors: [{ name: "SCADA", status: "pending" }, { name: "Oracle MES", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Optimized processor allocation across 5 sites", result: "14 TPH achieved, +0.5 vs yesterday", status: "green" },
             ],
@@ -541,8 +541,8 @@ export const vpRegistry = {
           description: "Monitors carbon black quality parameters, grade optimization, and product consistency.", status: "green", accuracy: "96%", tasksPerDay: 3120,
           ...agentDetail({
             skills: ["Grade consistency monitoring", "Spec compliance checking", "Quality trend analysis", "Off-spec root cause"],
-            dataSources: ["Lab test results", "In-line analyzers", "Customer spec sheets", "Quality history"],
-            connectors: [{ name: "LabWare LIMS", status: "connected" }],
+            dataSources: ["site_operations"],
+            connectors: [{ name: "LabWare LIMS", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Checked 3,120 quality data points", result: "96.2% within N330 spec", status: "green" },
             ],
@@ -553,8 +553,8 @@ export const vpRegistry = {
           description: "Interfaces with SCADA systems, monitors real-time process variables, and triggers alerts.", status: "green",
           ...agentDetail({
             skills: ["Real-time process monitoring", "Alarm management", "Setpoint optimization", "Process historian queries"],
-            dataSources: ["SCADA real-time feeds", "Process historian", "Alarm logs", "Setpoint database"],
-            connectors: [{ name: "SCADA", status: "connected" }, { name: "OSIsoft PI", status: "connected" }],
+            dataSources: ["site_operations", "alerts"],
+            connectors: [{ name: "SCADA", status: "pending" }, { name: "OSIsoft PI", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Monitored 2.4M data points", result: "3 alerts triggered, 2 resolved", status: "yellow" },
             ],
@@ -585,8 +585,8 @@ export const vpRegistry = {
         exampleQuestions: ["What's our safety record this quarter across all sites?", "Any environmental permits coming up for renewal?", "Give me the incident summary for Baton Rouge"],
         ...agentDetail({
           skills: ["Safety metrics rollup", "Incident investigation coordination", "Permit tracking", "Environmental reporting"],
-          dataSources: ["Incident database", "Permit registry", "Environmental monitoring", "Audit findings"],
-          connectors: [{ name: "Veriforce", status: "connected" }, { name: "Enablon", status: "connected" }, { name: "WakeCap", status: "connected" }],
+          dataSources: ["risk_register", "site_operations", "hr_records"],
+          connectors: [{ name: "Veriforce", status: "pending" }, { name: "Enablon", status: "pending" }, { name: "WakeCap", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Compiled Q1 safety metrics", result: "TRIR 0.8, 142 days LTI-free", status: "green" },
             { date: "2026-02-23", action: "Flagged 2 permits due for renewal", result: "Renewal process initiated", status: "yellow" },
@@ -599,8 +599,8 @@ export const vpRegistry = {
           description: "Tracks incident reports, near-misses, safety observations, and TRIR calculations across all sites.", status: "green",
           ...agentDetail({
             skills: ["Incident tracking", "Near-miss analysis", "TRIR calculation", "Safety observation trends", "Leading indicator monitoring"],
-            dataSources: ["Incident reports", "Near-miss logs", "Safety observations", "Contractor safety records"],
-            connectors: [{ name: "Veriforce", status: "connected" }, { name: "WakeCap", status: "connected" }],
+            dataSources: ["risk_register", "hr_records"],
+            connectors: [{ name: "Veriforce", status: "pending" }, { name: "WakeCap", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Processed 12 safety observations", result: "All low-risk, 3 improvement suggestions", status: "green" },
               { date: "2026-02-23", action: "Verified contractor safety certs via Veriforce", result: "148/148 compliant", status: "green" },
@@ -612,8 +612,8 @@ export const vpRegistry = {
           description: "Monitors emissions, waste management, environmental permits, and regulatory compliance.", status: "green",
           ...agentDetail({
             skills: ["Emissions monitoring", "Waste tracking", "Regulatory compliance", "Environmental reporting", "Spill response coordination"],
-            dataSources: ["CEMS data", "Waste manifests", "Environmental permits", "Regulatory filings"],
-            connectors: [{ name: "Enablon", status: "connected" }, { name: "EPA CEDRI", status: "connected" }],
+            dataSources: ["risk_register", "site_operations"],
+            connectors: [{ name: "Enablon", status: "pending" }, { name: "EPA CEDRI", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Reviewed daily emissions data for 5 sites", result: "All within permit limits", status: "green" },
             ],
@@ -624,8 +624,8 @@ export const vpRegistry = {
           description: "Tracks permit status, renewal timelines, regulatory filings, and government correspondence.", status: "green",
           ...agentDetail({
             skills: ["Permit lifecycle tracking", "Renewal scheduling", "Regulatory filing", "Agency correspondence management"],
-            dataSources: ["Permit database", "Filing tracker", "Agency correspondence", "Regulatory calendar"],
-            connectors: [{ name: "Enablon", status: "connected" }],
+            dataSources: ["risk_register", "legal_contracts"],
+            connectors: [{ name: "Enablon", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Tracked 18 active permits", result: "2 renewals due in 30 days", status: "yellow" },
             ],
@@ -656,8 +656,8 @@ export const vpRegistry = {
         exampleQuestions: ["Do we have enough tire feedstock for next week at all sites?", "What's the outbound shipping schedule for this week?", "Which site has the highest inventory days right now?"],
         ...agentDetail({
           skills: ["Supply/demand balancing", "Freight cost analysis", "Inventory optimization oversight", "Supplier performance review"],
-          dataSources: ["Inventory systems", "Shipping logs", "Supplier contracts", "Freight invoices"],
-          connectors: [{ name: "Oracle SCM", status: "connected" }, { name: "FourKites", status: "connected" }],
+          dataSources: ["logistics", "site_operations", "financial_summary"],
+          connectors: [{ name: "Oracle SCM", status: "pending" }, { name: "FourKites", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Reviewed weekly supply/demand balance", result: "All sites covered, Columbus OH tight", status: "yellow" },
           ],
@@ -669,8 +669,8 @@ export const vpRegistry = {
           description: "Optimizes inventory levels, reorder points, and feedstock allocation across all sites.", status: "green", accuracy: "88%", tasksPerDay: 840,
           ...agentDetail({
             skills: ["Reorder point optimization", "Safety stock calculation", "Feedstock allocation", "Demand forecasting"],
-            dataSources: ["Inventory levels (real-time)", "Consumption rates", "Supplier lead times", "Demand forecasts"],
-            connectors: [{ name: "Oracle SCM", status: "connected" }],
+            dataSources: ["logistics", "site_operations"],
+            connectors: [{ name: "Oracle SCM", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Optimized reorder points for 5 sites", result: "Projected inventory days: 10.5", status: "green" },
             ],
@@ -681,8 +681,8 @@ export const vpRegistry = {
           description: "Manages tire supplier relationships, inbound scheduling, and feedstock quality tracking.", status: "green",
           ...agentDetail({
             skills: ["Supplier scheduling", "Feedstock quality grading", "Delivery tracking", "Supplier scorecard"],
-            dataSources: ["Supplier contracts", "Delivery schedules", "Quality grades", "Weighbridge data"],
-            connectors: [{ name: "FourKites", status: "connected" }],
+            dataSources: ["logistics"],
+            connectors: [{ name: "FourKites", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Scheduled 42 inbound tire deliveries", result: "840 tons/week target met", status: "green" },
             ],
@@ -693,8 +693,8 @@ export const vpRegistry = {
           description: "Coordinates product shipping, offtake agreements, and freight logistics.", status: "green",
           ...agentDetail({
             skills: ["Shipment scheduling", "Offtake fulfillment tracking", "Freight optimization", "Bill of lading generation"],
-            dataSources: ["Offtake contracts", "Shipping schedules", "Freight rates", "Customer orders"],
-            connectors: [{ name: "FourKites", status: "connected" }, { name: "Oracle SCM", status: "connected" }],
+            dataSources: ["logistics", "legal_contracts"],
+            connectors: [{ name: "FourKites", status: "pending" }, { name: "Oracle SCM", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Dispatched 620 tons of product", result: "12 shipments, all on time", status: "green" },
             ],
@@ -726,8 +726,8 @@ export const vpRegistry = {
         exampleQuestions: ["Where do we stand on Series C fundraising?", "Summarize upcoming investor meetings and prep notes", "What's the latest on the coal partnership opportunity?"],
         ...agentDetail({
           skills: ["Fundraising tracking", "Investor meeting prep", "Partnership evaluation", "Market sizing"],
-          dataSources: ["Investor pipeline", "Meeting calendar", "Market reports", "Partnership tracker"],
-          connectors: [{ name: "Salesforce", status: "connected" }, { name: "DocuSign", status: "connected" }],
+          dataSources: ["investor_pipeline", "financial_summary", "strategic_negotiations"],
+          connectors: [{ name: "Salesforce", status: "pending" }, { name: "DocuSign", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Updated Series C pipeline", result: "$19.4M committed (12%)", status: "green" },
           ],
@@ -739,8 +739,8 @@ export const vpRegistry = {
           description: "Tracks investor pipeline, manages data room, prepares pitch materials, and monitors commitments.", status: "green",
           ...agentDetail({
             skills: ["Pipeline management", "Data room curation", "Pitch deck updates", "Commitment tracking", "Due diligence coordination"],
-            dataSources: ["Investor CRM", "Data room", "Pitch materials", "Term sheets"],
-            connectors: [{ name: "Salesforce", status: "connected" }, { name: "DocuSign", status: "connected" }, { name: "Box", status: "connected" }],
+            dataSources: ["investor_pipeline", "board_materials", "strategic_negotiations"],
+            connectors: [{ name: "Salesforce", status: "pending" }, { name: "DocuSign", status: "pending" }, { name: "Box", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Updated data room with latest financials", result: "12 documents refreshed", status: "green" },
               { date: "2026-02-23", action: "Prepped materials for 3 investor meetings", result: "Decks sent", status: "green" },
@@ -752,7 +752,7 @@ export const vpRegistry = {
           description: "Monitors tire pyrolysis market, competitor activity, carbon black pricing, and regulatory trends.", status: "green",
           ...agentDetail({
             skills: ["Competitive monitoring", "Market sizing", "Price trend analysis", "Regulatory impact assessment"],
-            dataSources: ["Industry reports", "Competitor filings", "Commodity prices", "Regulatory tracker"],
+            dataSources: ["financial_summary", "mna_strategy"],
             connectors: [{ name: "S&P Capital IQ", status: "pending" }, { name: "Bloomberg", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Published weekly market brief", result: "Carbon black prices up 2.1%", status: "green" },
@@ -784,8 +784,8 @@ export const vpRegistry = {
         exampleQuestions: ["What's our consolidated revenue variance this month?", "Show me Baton Rouge P&L vs budget", "What's our cash position across all entities?"],
         ...agentDetail({
           skills: ["Revenue variance analysis", "P&L consolidation", "Cash flow monitoring", "Budget vs actual reporting"],
-          dataSources: ["General ledger", "Bank feeds", "Budget models", "Site P&Ls"],
-          connectors: [{ name: "Oracle Financials", status: "connected" }, { name: "Bank of America", status: "connected" }, { name: "Stripe", status: "connected" }],
+          dataSources: ["financial_detail", "financial_summary", "site_kpis"],
+          connectors: [{ name: "Oracle Financials", status: "pending" }, { name: "Bank of America", status: "pending" }, { name: "Stripe", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Generated consolidated revenue variance report", result: "$8.9M vs $9.1M budget (-2.2%)", status: "yellow" },
             { date: "2026-02-23", action: "Reconciled 5 site bank accounts", result: "All balanced", status: "green" },
@@ -798,8 +798,8 @@ export const vpRegistry = {
           description: "Runs revenue forecasting models, variance analysis, and financial projections across all sites.", status: "green", accuracy: "94%", tasksPerDay: 2840,
           ...agentDetail({
             skills: ["Revenue forecasting", "Variance analysis", "Scenario modeling", "Site-level P&L projection"],
-            dataSources: ["Revenue actuals", "Pricing data", "Volume data", "Economic models"],
-            connectors: [{ name: "Oracle Financials", status: "connected" }],
+            dataSources: ["financial_detail", "financial_summary"],
+            connectors: [{ name: "Oracle Financials", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Updated 30-day revenue forecast", result: "$9.2M projected (Feb)", status: "green" },
               { date: "2026-02-23", action: "Ran site-level variance analysis", result: "Baton Rouge -$180K vs budget", status: "yellow" },
@@ -811,8 +811,8 @@ export const vpRegistry = {
           description: "Monitors cash positions, manages banking relationships, and tracks AR/AP aging.", status: "green",
           ...agentDetail({
             skills: ["Cash position monitoring", "AR/AP aging analysis", "Wire transfer tracking", "Banking relationship management"],
-            dataSources: ["Bank accounts", "AR aging", "AP aging", "Wire logs"],
-            connectors: [{ name: "Bank of America", status: "connected" }, { name: "Stripe", status: "connected" }],
+            dataSources: ["financial_detail"],
+            connectors: [{ name: "Bank of America", status: "pending" }, { name: "Stripe", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Monitored cash positions across 3 entities", result: "$14.2M total, healthy", status: "green" },
             ],
@@ -823,8 +823,8 @@ export const vpRegistry = {
           description: "Manages tax filings, transfer pricing, state/federal compliance, and tax credit optimization.", status: "green",
           ...agentDetail({
             skills: ["Tax filing preparation", "Transfer pricing", "Tax credit optimization", "Multi-state compliance"],
-            dataSources: ["Tax returns", "Transfer pricing docs", "State filings", "Tax credit applications"],
-            connectors: [{ name: "Oracle Financials", status: "connected" }, { name: "Thomson Reuters", status: "connected" }],
+            dataSources: ["financial_detail", "legal_contracts"],
+            connectors: [{ name: "Oracle Financials", status: "pending" }, { name: "Thomson Reuters", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Reviewed Q1 estimated tax payments", result: "All 5 states on track", status: "green" },
             ],
@@ -855,8 +855,8 @@ export const vpRegistry = {
         exampleQuestions: ["How much of our output is under offtake agreements?", "What's the current market price for pyrolysis oil?", "Which contracts are up for renewal this quarter?"],
         ...agentDetail({
           skills: ["Offtake coverage analysis", "Contract renewal tracking", "Pricing benchmarking", "Sales pipeline review"],
-          dataSources: ["Offtake contracts", "Sales pipeline", "Market pricing feeds", "Customer database"],
-          connectors: [{ name: "Salesforce", status: "connected" }, { name: "Platts", status: "connected" }],
+          dataSources: ["logistics", "financial_summary", "legal_contracts"],
+          connectors: [{ name: "Salesforce", status: "pending" }, { name: "Platts", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Reviewed offtake coverage", result: "78% secured, 22% spot market", status: "green" },
           ],
@@ -868,8 +868,8 @@ export const vpRegistry = {
           description: "Tracks sales pipeline, customer relationships, and revenue by product (oil, carbon black, steel, gas).", status: "green",
           ...agentDetail({
             skills: ["Pipeline management", "Customer relationship tracking", "Revenue by product analysis", "Lead qualification"],
-            dataSources: ["Sales CRM", "Customer orders", "Revenue breakdown", "Lead database"],
-            connectors: [{ name: "Salesforce", status: "connected" }],
+            dataSources: ["financial_summary"],
+            connectors: [{ name: "Salesforce", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Updated sales pipeline", result: "3 new contracts this quarter", status: "green" },
             ],
@@ -880,8 +880,8 @@ export const vpRegistry = {
           description: "Monitors commodity markets, competitor pricing, and optimizes offtake agreement terms.", status: "green",
           ...agentDetail({
             skills: ["Commodity price tracking", "Pricing optimization", "Contract term analysis", "Margin calculation"],
-            dataSources: ["Commodity feeds", "Competitor pricing", "Contract terms", "Margin models"],
-            connectors: [{ name: "Platts", status: "connected" }, { name: "Bloomberg", status: "pending" }],
+            dataSources: ["financial_summary", "logistics"],
+            connectors: [{ name: "Platts", status: "pending" }, { name: "Bloomberg", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Updated commodity price dashboard", result: "Oil +$0.04/gal, Carbon +2.1%", status: "green" },
             ],
@@ -913,8 +913,8 @@ export const vpRegistry = {
         exampleQuestions: ["Any platform incidents or downtime in the last 7 days?", "How is our data pipeline performing?", "What's the cybersecurity status across all systems?"],
         ...agentDetail({
           skills: ["Platform health monitoring", "Incident management", "Data pipeline monitoring", "Cybersecurity oversight"],
-          dataSources: ["Platform metrics", "Incident logs", "Data pipeline stats", "Security event logs"],
-          connectors: [{ name: "AWS CloudWatch", status: "connected" }, { name: "Splunk", status: "connected" }, { name: "PagerDuty", status: "connected" }],
+          dataSources: ["site_kpis", "alerts"],
+          connectors: [{ name: "AWS CloudWatch", status: "pending" }, { name: "Splunk", status: "pending" }, { name: "PagerDuty", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Reviewed platform uptime", result: "99.8% over 7 days", status: "green" },
             { date: "2026-02-23", action: "Resolved Oracle P6 latency spike", result: "Sync restored to < 10 sec", status: "green" },
@@ -927,8 +927,8 @@ export const vpRegistry = {
           description: "Monitors platform health, uptime, deployment pipelines, and user access management.", status: "green",
           ...agentDetail({
             skills: ["Uptime monitoring", "Deployment management", "Access control", "Performance optimization"],
-            dataSources: ["Server metrics", "Deployment logs", "User access logs", "Performance benchmarks"],
-            connectors: [{ name: "AWS CloudWatch", status: "connected" }, { name: "GitHub Actions", status: "connected" }],
+            dataSources: ["site_kpis", "alerts"],
+            connectors: [{ name: "AWS CloudWatch", status: "pending" }, { name: "GitHub Actions", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Deployed Platform v4.0.3 patch", result: "Zero downtime deployment", status: "green" },
             ],
@@ -939,8 +939,8 @@ export const vpRegistry = {
           description: "Manages data pipelines, IoT integrations, SCADA connections, and reporting dashboards.", status: "green",
           ...agentDetail({
             skills: ["Pipeline management", "IoT integration", "Dashboard creation", "Data quality monitoring"],
-            dataSources: ["Data lake", "IoT feeds", "SCADA historian", "Report templates"],
-            connectors: [{ name: "AWS S3", status: "connected" }, { name: "Splunk", status: "connected" }, { name: "Snowflake", status: "connected" }],
+            dataSources: ["site_kpis", "site_operations", "alerts"],
+            connectors: [{ name: "AWS S3", status: "pending" }, { name: "Splunk", status: "pending" }, { name: "Snowflake", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Processed 2.4M data points", result: "18K API calls served", status: "green" },
             ],
@@ -951,8 +951,8 @@ export const vpRegistry = {
           description: "Monitors network security, intrusion detection, patch management, and vulnerability assessments.", status: "green",
           ...agentDetail({
             skills: ["Intrusion detection", "Patch management", "Vulnerability scanning", "SSL certificate tracking", "VPN management"],
-            dataSources: ["Firewall logs", "IDS alerts", "Patch registry", "Vulnerability scans", "SSL certificate store"],
-            connectors: [{ name: "Splunk", status: "connected" }, { name: "CrowdStrike", status: "connected" }],
+            dataSources: ["alerts"],
+            connectors: [{ name: "Splunk", status: "pending" }, { name: "CrowdStrike", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Scanned all systems for vulnerabilities", result: "0 critical, 3 medium patched", status: "green" },
               { date: "2026-02-23", action: "Renewed 4 SSL certificates", result: "All certs valid through 2027", status: "green" },
@@ -984,8 +984,8 @@ export const vpRegistry = {
         exampleQuestions: ["What's the health status of all AI agents right now?", "Which agents have accuracy below 90%?", "Show me the skills registry summary", "What data sources need attention?"],
         ...agentDetail({
           skills: ["Agent fleet oversight", "Skills registry management", "Data source coordination", "ML performance monitoring", "Agent training scheduling"],
-          dataSources: ["Agent health dashboard", "Skills registry", "Data source catalog", "ML experiment tracker", "Agent task logs"],
-          connectors: [{ name: "AWS SageMaker", status: "connected" }, { name: "MLflow", status: "connected" }, { name: "Weights & Biases", status: "connected" }],
+          dataSources: ["site_kpis", "alerts"],
+          connectors: [{ name: "AWS SageMaker", status: "pending" }, { name: "MLflow", status: "pending" }, { name: "Weights & Biases", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Checked all AI agent health", result: "5/6 operational, Compliance building", status: "green" },
             { date: "2026-02-23", action: "Reviewed fleet-wide accuracy metrics", result: "Avg 92%, Supply Chain flagged for retrain", status: "yellow" },
@@ -998,8 +998,8 @@ export const vpRegistry = {
           description: "Oversees all department AI agents, monitors accuracy, task throughput, and agent health. Triggers retraining when performance degrades.", status: "green",
           ...agentDetail({
             skills: ["Agent health monitoring", "Accuracy tracking", "Throughput analysis", "Agent retraining triggers", "SLA enforcement"],
-            dataSources: ["Agent performance logs", "Accuracy metrics", "Task queues", "Training datasets", "SLA definitions"],
-            connectors: [{ name: "AWS SageMaker", status: "connected" }, { name: "MLflow", status: "connected" }],
+            dataSources: ["site_kpis", "alerts"],
+            connectors: [{ name: "AWS SageMaker", status: "pending" }, { name: "MLflow", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Monitored 40+ agents across all departments", result: "All within SLA", status: "green" },
               { date: "2026-02-22", action: "Triggered retrain for Supply Chain Agent", result: "Accuracy improved 88% → 91%", status: "green" },
@@ -1011,8 +1011,8 @@ export const vpRegistry = {
           description: "Manages the centralized skills registry, data source catalog, and connector health across all agent teams.", status: "green",
           ...agentDetail({
             skills: ["Skills catalog management", "Data source health monitoring", "Connector provisioning", "Access control for data sources", "Schema validation"],
-            dataSources: ["Skills registry", "Data source catalog", "Connector status logs", "Access control lists"],
-            connectors: [{ name: "AWS S3", status: "connected" }, { name: "Snowflake", status: "connected" }],
+            dataSources: ["site_kpis"],
+            connectors: [{ name: "AWS S3", status: "pending" }, { name: "Snowflake", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Audited skills registry", result: "184 skills, 12 new this month", status: "green" },
               { date: "2026-02-23", action: "Verified all 28 connectors", result: "26 green, 2 pending setup", status: "yellow" },
@@ -1024,8 +1024,8 @@ export const vpRegistry = {
           description: "Manages ML model training pipelines, experiment tracking, model versioning, and production deployment of AI models.", status: "green",
           ...agentDetail({
             skills: ["Model training orchestration", "Experiment tracking", "Model versioning", "A/B testing", "Production deployment", "Drift detection"],
-            dataSources: ["Training datasets", "Experiment logs", "Model registry", "Production metrics", "Drift reports"],
-            connectors: [{ name: "AWS SageMaker", status: "connected" }, { name: "MLflow", status: "connected" }, { name: "Weights & Biases", status: "connected" }],
+            dataSources: ["site_kpis"],
+            connectors: [{ name: "AWS SageMaker", status: "pending" }, { name: "MLflow", status: "pending" }, { name: "Weights & Biases", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Deployed Finance Agent v2.3 to production", result: "Accuracy +2% vs v2.2", status: "green" },
               { date: "2026-02-23", action: "Ran 4 training experiments", result: "2 models promoted to staging", status: "green" },
@@ -1057,8 +1057,8 @@ export const vpRegistry = {
         exampleQuestions: ["Are all contractor certifications current?", "What change orders are pending approval?", "Show me the procurement pipeline status"],
         ...agentDetail({
           skills: ["Contractor compliance overview", "Change order management", "Procurement tracking", "Audit coordination"],
-          dataSources: ["Contractor database", "Change orders", "Procurement pipeline", "Audit schedules"],
-          connectors: [{ name: "Veriforce", status: "connected" }, { name: "Oracle Procurement", status: "connected" }],
+          dataSources: ["legal_contracts", "risk_register", "hr_records"],
+          connectors: [{ name: "Veriforce", status: "pending" }, { name: "Oracle Procurement", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Verified all contractor compliance", result: "148/148 current via Veriforce", status: "green" },
           ],
@@ -1070,8 +1070,8 @@ export const vpRegistry = {
           description: "Tracks contractor performance, certifications, insurance, and contract compliance.", status: "green",
           ...agentDetail({
             skills: ["Certification tracking", "Insurance verification", "Performance scoring", "Onboarding management"],
-            dataSources: ["Contractor profiles", "Certification database", "Insurance certificates", "Performance reviews"],
-            connectors: [{ name: "Veriforce", status: "connected" }, { name: "WakeCap", status: "connected" }],
+            dataSources: ["hr_records", "risk_register"],
+            connectors: [{ name: "Veriforce", status: "pending" }, { name: "WakeCap", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Verified 148 contractor certifications", result: "100% compliant", status: "green" },
               { date: "2026-02-23", action: "Onboarded 3 new contractors", result: "All Veriforce cleared", status: "green" },
@@ -1083,8 +1083,8 @@ export const vpRegistry = {
           description: "Monitors regulatory requirements, audit schedules, and compliance across all jurisdictions.", status: "construction", accuracy: "99%", tasksPerDay: 12400,
           ...agentDetail({
             skills: ["Regulatory monitoring", "Audit preparation", "Compliance reporting", "Jurisdiction tracking"],
-            dataSources: ["Regulatory database", "Audit findings", "Compliance checklists", "Government publications"],
-            connectors: [{ name: "Enablon", status: "connected" }, { name: "LexisNexis", status: "pending" }],
+            dataSources: ["risk_register", "legal_contracts"],
+            connectors: [{ name: "Enablon", status: "pending" }, { name: "LexisNexis", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Scanned 12,400 regulatory updates", result: "2 relevant changes flagged", status: "green" },
             ],
@@ -1115,8 +1115,8 @@ export const vpRegistry = {
         exampleQuestions: ["What open roles are we hiring for right now?", "Which teams have the lowest training completion?", "What's the latest employee engagement trend?"],
         ...agentDetail({
           skills: ["Hiring pipeline overview", "Training compliance tracking", "Engagement analysis", "Headcount reporting"],
-          dataSources: ["HRIS", "ATS pipeline", "Training records", "Survey results"],
-          connectors: [{ name: "Workday", status: "connected" }, { name: "Greenhouse", status: "connected" }],
+          dataSources: ["hr_records", "compensation"],
+          connectors: [{ name: "Workday", status: "pending" }, { name: "Greenhouse", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Updated hiring dashboard", result: "8 open roles, 1 urgent", status: "yellow" },
           ],
@@ -1128,8 +1128,8 @@ export const vpRegistry = {
           description: "Manages job postings, candidate pipelines, interview scheduling, and offer tracking.", status: "green",
           ...agentDetail({
             skills: ["Job posting management", "Candidate screening", "Interview scheduling", "Offer tracking"],
-            dataSources: ["ATS pipeline", "Job boards", "Interview schedules", "Offer letters"],
-            connectors: [{ name: "Greenhouse", status: "connected" }, { name: "LinkedIn Recruiter", status: "connected" }],
+            dataSources: ["hr_records"],
+            connectors: [{ name: "Greenhouse", status: "pending" }, { name: "LinkedIn Recruiter", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Screened 24 candidates for Process Engineer role", result: "4 advanced to interview", status: "green" },
             ],
@@ -1140,8 +1140,8 @@ export const vpRegistry = {
           description: "Tracks training certifications, compliance training, onboarding programs, and skill development.", status: "green",
           ...agentDetail({
             skills: ["Training completion tracking", "Certification management", "Onboarding coordination", "Skills gap analysis"],
-            dataSources: ["LMS records", "Certification database", "Onboarding checklists", "Skills inventory"],
-            connectors: [{ name: "Workday Learning", status: "connected" }],
+            dataSources: ["hr_records"],
+            connectors: [{ name: "Workday Learning", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Checked training compliance", result: "93% completion rate, 7 overdue", status: "yellow" },
             ],
@@ -1172,8 +1172,8 @@ export const vpRegistry = {
         exampleQuestions: ["Which contracts are expiring in the next 90 days?", "What's the status of our patent applications?", "Summarize our insurance coverage by category"],
         ...agentDetail({
           skills: ["Contract lifecycle overview", "IP portfolio summary", "Insurance coverage analysis", "Regulatory filing tracking"],
-          dataSources: ["Contract database", "Patent portfolio", "Insurance policies", "Filing tracker"],
-          connectors: [{ name: "DocuSign", status: "connected" }, { name: "Ironclad", status: "connected" }],
+          dataSources: ["legal_contracts", "engineering_ip"],
+          connectors: [{ name: "DocuSign", status: "pending" }, { name: "Ironclad", status: "pending" }],
           taskHistory: [
             { date: "2026-02-24", action: "Reviewed contract expiry calendar", result: "5 contracts expiring in 90 days", status: "yellow" },
           ],
@@ -1185,8 +1185,8 @@ export const vpRegistry = {
           description: "Tracks contract lifecycles, renewal dates, obligation management, and negotiation support.", status: "green",
           ...agentDetail({
             skills: ["Contract tracking", "Renewal management", "Obligation monitoring", "Clause library"],
-            dataSources: ["Contract repository", "Renewal calendar", "Obligation register", "Clause library"],
-            connectors: [{ name: "Ironclad", status: "connected" }, { name: "DocuSign", status: "connected" }],
+            dataSources: ["legal_contracts"],
+            connectors: [{ name: "Ironclad", status: "pending" }, { name: "DocuSign", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Tracked 34 active contracts", result: "5 renewals flagged", status: "yellow" },
             ],
@@ -1197,8 +1197,8 @@ export const vpRegistry = {
           description: "Monitors patent portfolio, trademark registrations, trade secret protections, and IP litigation.", status: "green",
           ...agentDetail({
             skills: ["Patent portfolio monitoring", "Trademark management", "Trade secret program", "IP litigation tracking"],
-            dataSources: ["Patent database", "Trademark registry", "Trade secret log", "Litigation tracker"],
-            connectors: [{ name: "PatSnap", status: "connected" }],
+            dataSources: ["engineering_ip"],
+            connectors: [{ name: "PatSnap", status: "pending" }],
             taskHistory: [
               { date: "2026-02-24", action: "Monitored IP portfolio", result: "4 granted, 2 pending, no conflicts", status: "green" },
             ],
