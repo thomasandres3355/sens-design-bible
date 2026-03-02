@@ -14,6 +14,7 @@ import {
 import { allActionItems, participants, pastMeetings, tagRegistry } from "../data/meetingData";
 import { useSimDate } from "../contexts/SimDateContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useTasks } from "../contexts/TaskContext";
 
 // ═══════════════════════════════════════════════════════════════════
 //  EXECUTIVE FOCUS TRACKER
@@ -1657,6 +1658,7 @@ const PostDailyStandupForm = ({ onSave, onCancel, existingPlans, existingPosts, 
 const WeeklyPulseView = () => {
   const { simDate } = useSimDate();
   const { currentUser } = useAuth();
+  const { addTask: addUnifiedTask, tasks: unifiedTasks } = useTasks();
   const userRole = currentUser?.role || "";
   const [weekView, setWeekView] = useState("current"); // "current" | "last"
   const [execFilter, setExecFilter] = useState("all");
@@ -1836,6 +1838,27 @@ const WeeklyPulseView = () => {
     });
     return Object.entries(grouped).sort((a, b) => b[0].localeCompare(a[0]));
   }, [allDailyPosts]);
+
+  // Check if a plan task already exists in unified tasks
+  const unifiedTaskTexts = useMemo(
+    () => new Set(unifiedTasks.map(t => t.task.toLowerCase())),
+    [unifiedTasks]
+  );
+  const isInMyTasks = (taskText) => unifiedTaskTexts.has(taskText.toLowerCase());
+
+  const sendToMyTasks = useCallback((planTask, executive) => {
+    addUnifiedTask({
+      task: planTask.task,
+      executive,
+      objectiveTag: planTask.objectiveTag || null,
+      due: simDate,
+      priority: "medium",
+      cycle: "3d",
+      source: "Weekly Plan",
+      sourceType: "weekly-plan",
+      createdBy: currentUser?.id || "unknown",
+    });
+  }, [addUnifiedTask, simDate, currentUser]);
 
   const fmtTime = (iso) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   const fmtDate = (d) => {
@@ -2273,6 +2296,22 @@ const WeeklyPulseView = () => {
                           )}
                           <SourceBadge source={t.source} />
                           <ObjPill tagId={t.objectiveTag} />
+                          {/* Send to My Tasks — visible when not editing */}
+                          {editingPlanId !== plan.id && t.status !== "done" && !isInMyTasks(t.task) && (
+                            <button onClick={(e) => { e.stopPropagation(); sendToMyTasks(t, plan.executive); }} title="Send to My Tasks" style={{
+                              background: T.accent + "10", border: `1px solid ${T.accent}30`,
+                              borderRadius: 4, padding: "2px 7px", cursor: "pointer",
+                              fontSize: 8, fontWeight: 700, color: T.accent, letterSpacing: .3,
+                              textTransform: "uppercase", whiteSpace: "nowrap",
+                            }}>
+                              → Tasks
+                            </button>
+                          )}
+                          {editingPlanId !== plan.id && t.status !== "done" && isInMyTasks(t.task) && (
+                            <span style={{ fontSize: 8, color: T.green, fontWeight: 600, padding: "2px 6px", background: T.green + "10", borderRadius: 4 }}>
+                              In Tasks ✓
+                            </span>
+                          )}
                           {editingPlanId === plan.id && !isEditing && (
                             <>
                               <button onClick={(e) => { e.stopPropagation(); togglePlanTaskStatus(plan.id, t.id); }} style={{
@@ -2363,14 +2402,507 @@ const WeeklyPulseView = () => {
 
 
 // ═══════════════════════════════════════════════════════════════════
-//  MAIN VIEW — Tabbed: Focus Tracker | Weekly Pulse | Meetings
+//  MY TASKS VIEW — Unified task management
 // ═══════════════════════════════════════════════════════════════════
 
-export const FocusTrackerView = () => {
-  const [topTab, setTopTab] = useState("focus");
+const MyTasksView = () => {
+  const { tasks, addTask, updateTask, deleteTask, completeTask, reopenTask, importFromMeeting, getOpenTasksForExec } = useTasks();
+  const { simDate } = useSimDate();
+  const { currentUser } = useAuth();
+  const userRole = currentUser?.role || "CEO";
+
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [objectiveFilter, setObjectiveFilter] = useState("all");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [showWeeklyPicker, setShowWeeklyPicker] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  // Add task form state
+  const [newTask, setNewTask] = useState("");
+  const [newObj, setNewObj] = useState("");
+  const [newPriority, setNewPriority] = useState("medium");
+  const [newDue, setNewDue] = useState(simDate);
+  const [newCycle, setNewCycle] = useState("3d");
+
+  // Edit form state
+  const [editTask, setEditTask] = useState("");
+  const [editObj, setEditObj] = useState("");
+  const [editPriority, setEditPriority] = useState("medium");
+  const [editDue, setEditDue] = useState("");
+  const [editCycle, setEditCycle] = useState("3d");
+
+  // Filter tasks for current user
+  const myTasks = useMemo(() => {
+    let filtered = tasks.filter(t => t.executive === userRole);
+    if (statusFilter === "active") filtered = filtered.filter(t => t.status === "open" || t.status === "overdue");
+    else if (statusFilter !== "all") filtered = filtered.filter(t => t.status === statusFilter);
+    if (priorityFilter !== "all") filtered = filtered.filter(t => t.priority === priorityFilter);
+    if (objectiveFilter !== "all") {
+      if (objectiveFilter === "none") filtered = filtered.filter(t => !t.objectiveTag);
+      else filtered = filtered.filter(t => t.objectiveTag === objectiveFilter);
+    }
+    return [...filtered].sort((a, b) => {
+      const order = { overdue: 0, open: 1, done: 2 };
+      if ((order[a.status] ?? 1) !== (order[b.status] ?? 1)) return (order[a.status] ?? 1) - (order[b.status] ?? 1);
+      return a.due.localeCompare(b.due);
+    });
+  }, [tasks, userRole, statusFilter, priorityFilter, objectiveFilter]);
+
+  // KPI computations
+  const allMyTasks = useMemo(() => tasks.filter(t => t.executive === userRole), [tasks, userRole]);
+  const openCount = allMyTasks.filter(t => t.status === "open" || t.status === "overdue").length;
+  const overdueCount = allMyTasks.filter(t => t.status === "overdue").length;
+  const doneCount = allMyTasks.filter(t => t.status === "done").length;
+  const alignedCount = allMyTasks.filter(t => t.objectiveTag && t.objectiveTag.startsWith("obj-")).length;
+  const focusPct = allMyTasks.length > 0 ? Math.round((alignedCount / allMyTasks.length) * 100) : 0;
+
+  // Already-imported meeting item IDs
+  const importedMeetingIds = useMemo(
+    () => tasks.filter(t => t.sourceType === "meeting" && t.meetingId).map(t => t.meetingId),
+    [tasks]
+  );
+
+  // Weekly plan tasks for import
+  const weeklyPlanTasks = useMemo(() => {
+    const myPlan = weeklyPlans.find(p => p.executive === userRole);
+    if (!myPlan) return [];
+    const existingTaskTexts = new Set(tasks.filter(t => t.executive === userRole).map(t => t.task.toLowerCase()));
+    return myPlan.tasks.filter(t => t.status !== "done" && !existingTaskTexts.has(t.task.toLowerCase()));
+  }, [userRole, tasks]);
+
+  const handleAddTask = () => {
+    if (!newTask.trim()) return;
+    addTask({
+      task: newTask.trim(),
+      executive: userRole,
+      objectiveTag: newObj || null,
+      due: newDue,
+      priority: newPriority,
+      cycle: newCycle,
+      source: "Manual entry",
+      sourceType: "manual",
+      createdBy: currentUser?.id || "unknown",
+    });
+    setNewTask(""); setNewObj(""); setNewPriority("medium"); setNewDue(simDate); setNewCycle("3d");
+    setShowAddForm(false);
+  };
+
+  const startEdit = (t) => {
+    setEditingId(t.id);
+    setEditTask(t.task);
+    setEditObj(t.objectiveTag || "");
+    setEditPriority(t.priority);
+    setEditDue(t.due);
+    setEditCycle(t.cycle);
+  };
+
+  const saveEdit = (taskId) => {
+    updateTask(taskId, {
+      task: editTask,
+      objectiveTag: editObj || null,
+      priority: editPriority,
+      due: editDue,
+      cycle: editCycle,
+    });
+    setEditingId(null);
+  };
+
+  const handleToggleComplete = (t) => {
+    if (t.status === "done") reopenTask(t.id);
+    else completeTask(t.id, simDate);
+  };
+
+  const handleImportWeeklyTask = (wt) => {
+    addTask({
+      task: wt.task,
+      executive: userRole,
+      objectiveTag: wt.objectiveTag || null,
+      due: simDate,
+      priority: "medium",
+      cycle: "3d",
+      source: "Weekly Plan",
+      sourceType: "weekly-plan",
+      createdBy: currentUser?.id || "unknown",
+    });
+  };
+
+  // ─── Select styling helpers ─────
+  const selectStyle = {
+    padding: "6px 8px", borderRadius: 6, border: `1px solid ${T.border}`,
+    background: T.bg0, color: T.textMid, fontSize: 11, outline: "none",
+    fontFamily: "inherit", cursor: "pointer",
+  };
+
+  const filterBtnStyle = (active) => ({
+    padding: "4px 10px", borderRadius: 4, border: "none", cursor: "pointer",
+    fontSize: 10, fontWeight: 600,
+    background: active ? T.accent : "transparent",
+    color: active ? "#1A1A1A" : T.textDim,
+  });
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* ─── KPI Row ─── */}
+      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+        <KpiCard label="Open Tasks" value={openCount} sub={`${allMyTasks.length} total`} color={T.blue} />
+        <KpiCard label="Overdue" value={overdueCount} sub={overdueCount > 0 ? "needs attention" : "none"} color={overdueCount > 0 ? T.danger : T.green} />
+        <KpiCard label="Completed" value={doneCount} sub="this period" color={T.green} />
+        <KpiCard label="Focus %" value={`${focusPct}%`} sub={`${alignedCount} aligned tasks`} color={focusColor(focusPct)} />
+      </div>
+
+      {/* ─── Toolbar ─── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        {/* Status filter */}
+        <div style={{ display: "flex", gap: 2, background: T.bg0, borderRadius: 6, padding: 2 }}>
+          {[
+            { key: "active", label: "Active" },
+            { key: "all", label: "All" },
+            { key: "done", label: "Done" },
+            { key: "overdue", label: "Overdue" },
+          ].map(f => (
+            <button key={f.key} onClick={() => setStatusFilter(f.key)} style={filterBtnStyle(statusFilter === f.key)}>{f.label}</button>
+          ))}
+        </div>
+
+        <div style={{ width: 1, height: 20, background: T.border }} />
+
+        {/* Priority filter */}
+        <div style={{ display: "flex", gap: 2, background: T.bg0, borderRadius: 6, padding: 2 }}>
+          {[
+            { key: "all", label: "All Priority" },
+            { key: "high", label: "High" },
+            { key: "medium", label: "Med" },
+            { key: "low", label: "Low" },
+          ].map(f => (
+            <button key={f.key} onClick={() => setPriorityFilter(f.key)} style={filterBtnStyle(priorityFilter === f.key)}>{f.label}</button>
+          ))}
+        </div>
+
+        <div style={{ width: 1, height: 20, background: T.border }} />
+
+        {/* Objective filter */}
+        <div style={{ display: "flex", gap: 2, background: T.bg0, borderRadius: 6, padding: 2 }}>
+          <button onClick={() => setObjectiveFilter("all")} style={filterBtnStyle(objectiveFilter === "all")}>All Obj</button>
+          {OBJECTIVE_TAGS.map(o => (
+            <button key={o.id} onClick={() => setObjectiveFilter(o.id)} style={{
+              ...filterBtnStyle(objectiveFilter === o.id),
+              background: objectiveFilter === o.id ? o.color : "transparent",
+              color: objectiveFilter === o.id ? "#1A1A1A" : T.textDim,
+            }}>{o.short}</button>
+          ))}
+          <button onClick={() => setObjectiveFilter("none")} style={filterBtnStyle(objectiveFilter === "none")}>Untagged</button>
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Action buttons */}
+        <button onClick={() => { setShowAddForm(!showAddForm); setShowWeeklyPicker(false); }} style={{
+          padding: "7px 14px", borderRadius: 6, border: `1px solid ${showAddForm ? T.teal : T.border}`,
+          background: showAddForm ? T.teal + "15" : T.bg2, color: showAddForm ? T.teal : T.text,
+          fontSize: 11, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+        }}>
+          <span style={{ fontSize: 14, lineHeight: 1 }}>+</span> Add Task
+        </button>
+        <button onClick={() => setShowPicker(true)} style={{
+          padding: "7px 14px", borderRadius: 6, border: `1px dashed ${T.blue}`,
+          background: T.blue + "08", color: T.blue,
+          fontSize: 11, fontWeight: 600, cursor: "pointer",
+        }}>
+          Import from Meeting
+        </button>
+        {weeklyPlanTasks.length > 0 && (
+          <button onClick={() => { setShowWeeklyPicker(!showWeeklyPicker); setShowAddForm(false); }} style={{
+            padding: "7px 14px", borderRadius: 6, border: `1px dashed ${T.purple}`,
+            background: T.purple + "08", color: T.purple,
+            fontSize: 11, fontWeight: 600, cursor: "pointer",
+          }}>
+            From Weekly Plan ({weeklyPlanTasks.length})
+          </button>
+        )}
+      </div>
+
+      {/* ─── Add Task Form ─── */}
+      {showAddForm && (
+        <Card>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4 }}>New Task</div>
+            <input
+              value={newTask}
+              onChange={e => setNewTask(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && newTask.trim()) handleAddTask(); }}
+              placeholder="What needs to be done?"
+              autoFocus
+              style={{
+                width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${T.border}`,
+                background: T.bg0, color: T.text, fontSize: 13, outline: "none", fontFamily: "inherit",
+                boxSizing: "border-box",
+              }}
+            />
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Objective</span>
+                <select value={newObj} onChange={e => setNewObj(e.target.value)} style={selectStyle}>
+                  <option value="">No objective</option>
+                  {OBJECTIVE_TAGS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Priority</span>
+                <select value={newPriority} onChange={e => setNewPriority(e.target.value)} style={selectStyle}>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Due Date</span>
+                <input type="date" value={newDue} onChange={e => setNewDue(e.target.value)} style={selectStyle} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Cycle</span>
+                <select value={newCycle} onChange={e => setNewCycle(e.target.value)} style={selectStyle}>
+                  <option value="24h">24 hours</option>
+                  <option value="3d">3 days</option>
+                  <option value="1w">1 week</option>
+                </select>
+              </div>
+              <div style={{ flex: 1 }} />
+              <button onClick={() => setShowAddForm(false)} style={{
+                padding: "8px 16px", borderRadius: 6, border: `1px solid ${T.border}`,
+                background: "transparent", color: T.textDim, fontSize: 11, cursor: "pointer",
+              }}>Cancel</button>
+              <button onClick={handleAddTask} disabled={!newTask.trim()} style={{
+                padding: "8px 20px", borderRadius: 6, border: "none",
+                background: newTask.trim() ? T.teal : T.textDim + "30",
+                color: newTask.trim() ? "#1A1A1A" : T.textDim,
+                fontSize: 11, fontWeight: 700, cursor: newTask.trim() ? "pointer" : "default",
+              }}>Create Task</button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ─── Weekly Plan Picker (inline) ─── */}
+      {showWeeklyPicker && weeklyPlanTasks.length > 0 && (
+        <Card>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Import from Weekly Plan</div>
+            <button onClick={() => setShowWeeklyPicker(false)} style={{ background: "none", border: "none", color: T.textDim, cursor: "pointer", fontSize: 16 }}>×</button>
+          </div>
+          <div style={{ fontSize: 11, color: T.textDim, marginBottom: 10 }}>Planned tasks not yet in your task list:</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {weeklyPlanTasks.map((wt, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+                background: T.bg0, border: `1px solid ${T.border}`, borderRadius: 6,
+                cursor: "pointer", transition: "all .15s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = T.purple; e.currentTarget.style.background = T.purple + "08"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.bg0; }}
+                onClick={() => handleImportWeeklyTask(wt)}
+              >
+                <span style={{ fontSize: 12, color: T.text, flex: 1 }}>{wt.task}</span>
+                {wt.objectiveTag && <ObjPill tagId={wt.objectiveTag} />}
+                <span style={{ fontSize: 10, fontWeight: 600, color: T.purple, padding: "3px 8px", background: T.purple + "12", borderRadius: 4 }}>+ Add</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* ─── Task List ─── */}
+      <Card>
+        {myTasks.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 40, color: T.textDim, fontSize: 12 }}>
+            {statusFilter === "active" ? "No active tasks. Add one above or import from a meeting." : "No tasks match the current filters."}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {myTasks.map(t => {
+              const isEditing = editingId === t.id;
+              const objTag = getObjectiveTag(t.objectiveTag);
+
+              return (
+                <div key={t.id}>
+                  {/* Task row */}
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
+                    background: t.status === "done" ? T.green + "06" : t.status === "overdue" ? T.danger + "04" : T.bg0,
+                    border: `1px solid ${isEditing ? T.accent + "60" : t.status === "overdue" ? T.danger + "30" : T.border}`,
+                    borderRadius: 8, transition: "all .15s",
+                  }}>
+                    {/* Checkbox */}
+                    <button
+                      onClick={() => handleToggleComplete(t)}
+                      style={{
+                        width: 20, height: 20, borderRadius: 4, border: `2px solid ${t.status === "done" ? T.green : T.textDim + "60"}`,
+                        background: t.status === "done" ? T.green : "transparent",
+                        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0, transition: "all .15s",
+                      }}
+                    >
+                      {t.status === "done" && <span style={{ color: "#fff", fontSize: 12, fontWeight: 700, lineHeight: 1 }}>✓</span>}
+                    </button>
+
+                    {/* Task text */}
+                    <span style={{
+                      fontSize: 12, color: t.status === "done" ? T.textDim : T.text, flex: 1,
+                      textDecoration: t.status === "done" ? "line-through" : "none",
+                      opacity: t.status === "done" ? 0.7 : 1,
+                      fontWeight: t.status === "overdue" ? 600 : 400,
+                    }}>
+                      {t.task}
+                    </span>
+
+                    {/* Badges */}
+                    <ObjTagPill tagId={t.objectiveTag} />
+                    <PriorityBadge priority={t.priority} />
+                    <CycleBadge cycle={t.cycle} />
+                    <span style={{
+                      fontSize: 10, color: t.status === "overdue" ? T.danger : T.textDim,
+                      fontWeight: t.status === "overdue" ? 600 : 400, minWidth: 64,
+                    }}>
+                      {t.due}
+                    </span>
+
+                    {/* Source type indicator */}
+                    {t.sourceType && t.sourceType !== "executive" && (
+                      <span style={{
+                        fontSize: 8, fontWeight: 600, letterSpacing: .4, textTransform: "uppercase",
+                        padding: "1px 5px", borderRadius: 3,
+                        color: t.sourceType === "meeting" ? T.blue : t.sourceType === "weekly-plan" ? T.purple : T.textDim,
+                        background: (t.sourceType === "meeting" ? T.blue : t.sourceType === "weekly-plan" ? T.purple : T.textDim) + "12",
+                      }}>
+                        {t.sourceType === "meeting" ? "MTG" : t.sourceType === "weekly-plan" ? "PLAN" : "NEW"}
+                      </span>
+                    )}
+
+                    {/* Edit button */}
+                    <button
+                      onClick={() => isEditing ? setEditingId(null) : startEdit(t)}
+                      style={{
+                        background: "none", border: "none", cursor: "pointer", padding: "2px 4px",
+                        color: isEditing ? T.accent : T.textDim, fontSize: 11,
+                      }}
+                    >
+                      {isEditing ? "×" : "✎"}
+                    </button>
+                  </div>
+
+                  {/* Inline edit panel */}
+                  {isEditing && (
+                    <div style={{
+                      background: T.bg1, border: `1px solid ${T.accent}40`, borderTop: "none",
+                      borderRadius: "0 0 8px 8px", padding: 14,
+                      borderLeft: `3px solid ${objTag?.color || T.accent}`,
+                    }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        <input
+                          value={editTask}
+                          onChange={e => setEditTask(e.target.value)}
+                          style={{
+                            width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${T.border}`,
+                            background: T.bg0, color: T.text, fontSize: 12, outline: "none", fontFamily: "inherit",
+                            boxSizing: "border-box",
+                          }}
+                        />
+                        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                            <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Objective</span>
+                            <select value={editObj} onChange={e => setEditObj(e.target.value)} style={selectStyle}>
+                              <option value="">No objective</option>
+                              {OBJECTIVE_TAGS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                            </select>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                            <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Priority</span>
+                            <select value={editPriority} onChange={e => setEditPriority(e.target.value)} style={selectStyle}>
+                              <option value="high">High</option>
+                              <option value="medium">Medium</option>
+                              <option value="low">Low</option>
+                            </select>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                            <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Due Date</span>
+                            <input type="date" value={editDue} onChange={e => setEditDue(e.target.value)} style={selectStyle} />
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                            <span style={{ fontSize: 9, color: T.textDim, fontWeight: 600, textTransform: "uppercase", letterSpacing: .5 }}>Cycle</span>
+                            <select value={editCycle} onChange={e => setEditCycle(e.target.value)} style={selectStyle}>
+                              <option value="24h">24 hours</option>
+                              <option value="3d">3 days</option>
+                              <option value="1w">1 week</option>
+                            </select>
+                          </div>
+                          <div style={{ flex: 1 }} />
+                          {confirmDeleteId === t.id ? (
+                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                              <span style={{ fontSize: 11, color: T.danger }}>Delete?</span>
+                              <button onClick={() => { deleteTask(t.id); setEditingId(null); setConfirmDeleteId(null); }} style={{
+                                padding: "5px 12px", borderRadius: 4, border: "none",
+                                background: T.danger, color: "#fff", fontSize: 10, fontWeight: 700, cursor: "pointer",
+                              }}>Yes</button>
+                              <button onClick={() => setConfirmDeleteId(null)} style={{
+                                padding: "5px 12px", borderRadius: 4, border: `1px solid ${T.border}`,
+                                background: "transparent", color: T.textDim, fontSize: 10, cursor: "pointer",
+                              }}>No</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setConfirmDeleteId(t.id)} style={{
+                              padding: "5px 12px", borderRadius: 4, border: `1px solid ${T.danger}30`,
+                              background: T.danger + "08", color: T.danger, fontSize: 10, fontWeight: 600, cursor: "pointer",
+                            }}>Delete</button>
+                          )}
+                          <button onClick={() => saveEdit(t.id)} style={{
+                            padding: "6px 18px", borderRadius: 6, border: "none",
+                            background: T.teal, color: "#1A1A1A", fontSize: 11, fontWeight: 700, cursor: "pointer",
+                          }}>Save</button>
+                        </div>
+                        {/* Source info */}
+                        <div style={{ fontSize: 10, color: T.textDim, borderTop: `1px solid ${T.border}`, paddingTop: 8, marginTop: 2 }}>
+                          Source: {t.source || "—"} {t.sourceType && ` · Type: ${t.sourceType}`}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+
+      {/* ─── Action Item Picker Modal ─── */}
+      {showPicker && (
+        <ActionItemPicker
+          execKey={userRole}
+          excludeIds={importedMeetingIds}
+          onSelect={(ai) => {
+            importFromMeeting(ai, userRole, currentUser?.id || "unknown");
+            setShowPicker(false);
+          }}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  MAIN VIEW — Tabbed: Focus Tracker | My Tasks | Weekly Pulse | Journal
+// ═══════════════════════════════════════════════════════════════════
+
+export const FocusTrackerView = ({ initialTab }) => {
+  const [topTab, setTopTab] = useState(initialTab || "focus");
 
   const topTabs = [
     { key: "focus", label: "Focus Tracker" },
+    { key: "tasks", label: "My Tasks" },
     { key: "pulse", label: "Weekly Pulse" },
     { key: "journal", label: "Journal" },
   ];
@@ -2399,6 +2931,7 @@ export const FocusTrackerView = () => {
 
       {/* ─── Tab Content ─── */}
       {topTab === "focus" && <FocusTrackerContent />}
+      {topTab === "tasks" && <MyTasksView />}
       {topTab === "pulse" && <WeeklyPulseView />}
       {topTab === "journal" && <JournalView />}
     </div>
