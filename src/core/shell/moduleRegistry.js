@@ -87,34 +87,6 @@ const modules = [
     nav: null, // no sidebar entry — agents are accessed through org chart and FAB
     routes: {}, // agent routes are dynamic (agent-{id}) — handled by shell
   },
-  {
-    id: "platform",
-    phase: 1,
-    enabled: true,
-    nav: {
-      key: "admin", label: "Platform",
-      icon: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
-      branch: "ADMINISTRATION",
-      children: [
-        { key: "admin-it-infra", label: "IT & Infrastructure", icon: "M22 12H2 M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z M6 16h.01 M10 16h.01" },
-        { key: "admin-ai-agents", label: "AI & Agents", icon: "M18 12h2 M4 12h2 M12 4v2 M12 18v2 M7 7l1.5 1.5 M15.5 15.5L17 17 M17 7l-1.5 1.5 M8.5 15.5L7 17 M9 2h6 M9 22h6 M2 9v6 M22 9v6 M12 12m-3 0a3 3 0 106 0 3 3 0 00-6 0" },
-        { key: "admin-operations", label: "Operations", icon: "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" },
-        { key: "admin-users-security", label: "Users & Security", icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 7a4 4 0 100-8 4 4 0 000 8z M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75" },
-        { key: "admin-platform-config", label: "Platform Config", icon: "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6" },
-        { key: "admin-bug-fixes", label: "Bug Fixes", icon: "M8 2l1.88 1.88 M14.12 3.88L16 2 M9 7.13v-1a3.003 3.003 0 116 0v1 M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 014-4h4a4 4 0 014 4v3c0 3.3-2.7 6-6 6 M12 20v-9" },
-      ],
-    },
-    routes: {
-      admin: () => ({ component: PlatformAdminView, props: {} }),
-      "admin-it-infra": () => ({ component: PlatformAdminView, props: { defaultCategory: "it-infra" } }),
-      "admin-ai-agents": () => ({ component: PlatformAdminView, props: { defaultCategory: "ai-agents" } }),
-      "admin-operations": () => ({ component: PlatformAdminView, props: { defaultCategory: "operations" } }),
-      "admin-users-security": () => ({ component: PlatformAdminView, props: { defaultCategory: "users-security" } }),
-      "admin-platform-config": () => ({ component: PlatformAdminView, props: { defaultCategory: "platform-config" } }),
-      "admin-bug-fixes": () => ({ component: PlatformAdminView, props: { defaultCategory: "bug-fixes" } }),
-      settings: () => ({ component: PlatformAdminView, props: {} }), // legacy route
-    },
-  },
 
   // ─── Phase 2 ───
   {
@@ -124,6 +96,29 @@ const modules = [
     nav: { key: "sitemap", label: "Site Map", icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-.61.08-1.21.21-1.78L8.99 15v1c0 1.1.9 2 2 2v1.93C7.06 19.43 4 16.07 4 12zm13.89 5.4c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41C18.92 5.77 20 8.65 20 12c0 2.08-.67 4-1.11 5.4z" },
     routes: {
       sitemap: (props) => ({ component: PortfolioMapView, props: { onNavigateToProject: (siteId) => { props.setNavProjectId(siteId); props.setActive("ops-projects"); } } }),
+    },
+  },
+  {
+    id: "technology",
+    phase: 3,
+    enabled: true,
+    nav: {
+      key: "technology", label: "Technology",
+      icon: "M4 4h16v16H4z M9 9h6v6H9z M9 1v3 M15 1v3 M9 20v3 M15 20v3 M20 9h3 M20 15h3 M1 9h3 M1 15h3",
+      branch: "TECHNOLOGY",
+      children: [
+        { key: "tech-manufacturing", label: "Manufacturing", icon: "M2 20h20 M5 20V8l5-6 5 6v12 M19 20V12l-2-2-2 2v8 M9 12h2 M9 16h2" },
+        { key: "tech-maintenance", label: "Maintenance", icon: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" },
+        { key: "tech-engineering", label: "Engineering", icon: "M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" },
+        { key: "tech-ip-risk", label: "IP Risk", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4" },
+      ],
+    },
+    routes: {
+      technology: () => ({ component: DeliveringView, props: { fixedTab: "manufacturing" } }),
+      "tech-manufacturing": () => ({ component: DeliveringView, props: { fixedTab: "manufacturing" } }),
+      "tech-maintenance": () => ({ component: OperationsView, props: { fixedTab: "maintenance", maintenanceScope: "machines" } }),
+      "tech-engineering": () => ({ component: DeliveringView, props: { fixedTab: "engineering", engineeringScope: "technology" } }),
+      "tech-ip-risk": () => ({ component: null, props: {} }), // placeholder — rendered inline by shell
     },
   },
   {
@@ -151,31 +146,6 @@ const modules = [
       "ops-risk": () => ({ component: OperationsView, props: { fixedTab: "hse" } }),
       "ops-logistics": () => ({ component: OperationsView, props: { fixedTab: "logistics" } }),
       "ops-plant": () => ({ component: OperationsView, props: { fixedTab: "plant" } }),
-    },
-  },
-
-  // ─── Phase 3 ───
-  {
-    id: "technology",
-    phase: 3,
-    enabled: true,
-    nav: {
-      key: "technology", label: "Technology",
-      icon: "M4 4h16v16H4z M9 9h6v6H9z M9 1v3 M15 1v3 M9 20v3 M15 20v3 M20 9h3 M20 15h3 M1 9h3 M1 15h3",
-      branch: "TECHNOLOGY",
-      children: [
-        { key: "tech-manufacturing", label: "Manufacturing", icon: "M2 20h20 M5 20V8l5-6 5 6v12 M19 20V12l-2-2-2 2v8 M9 12h2 M9 16h2" },
-        { key: "tech-maintenance", label: "Maintenance", icon: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" },
-        { key: "tech-engineering", label: "Engineering", icon: "M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" },
-        { key: "tech-ip-risk", label: "IP Risk", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4" },
-      ],
-    },
-    routes: {
-      technology: () => ({ component: DeliveringView, props: { fixedTab: "manufacturing" } }),
-      "tech-manufacturing": () => ({ component: DeliveringView, props: { fixedTab: "manufacturing" } }),
-      "tech-maintenance": () => ({ component: OperationsView, props: { fixedTab: "maintenance", maintenanceScope: "machines" } }),
-      "tech-engineering": () => ({ component: DeliveringView, props: { fixedTab: "engineering", engineeringScope: "technology" } }),
-      "tech-ip-risk": () => ({ component: null, props: {} }), // placeholder — rendered inline by shell
     },
   },
 
@@ -239,17 +209,33 @@ const modules = [
     },
   },
 
-  // ─── Phase 6 ───
+  // ─── Platform (admin) ───
   {
-    id: "organization",
-    phase: 6,
+    id: "platform",
+    phase: 1,
     enabled: true,
-    nav: { key: "org", label: "Org Chart", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", branch: "CROSS-CUTTING" },
+    nav: {
+      key: "admin", label: "Platform",
+      icon: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+      branch: "ADMINISTRATION",
+      children: [
+        { key: "admin-it-infra", label: "IT & Infrastructure", icon: "M22 12H2 M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z M6 16h.01 M10 16h.01" },
+        { key: "admin-ai-agents", label: "AI & Agents", icon: "M18 12h2 M4 12h2 M12 4v2 M12 18v2 M7 7l1.5 1.5 M15.5 15.5L17 17 M17 7l-1.5 1.5 M8.5 15.5L7 17 M9 2h6 M9 22h6 M2 9v6 M22 9v6 M12 12m-3 0a3 3 0 106 0 3 3 0 00-6 0" },
+        { key: "admin-operations", label: "Operations", icon: "M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" },
+        { key: "admin-users-security", label: "Users & Security", icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 7a4 4 0 100-8 4 4 0 000 8z M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75" },
+        { key: "admin-platform-config", label: "Platform Config", icon: "M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6" },
+        { key: "admin-bug-fixes", label: "Bug Fixes", icon: "M8 2l1.88 1.88 M14.12 3.88L16 2 M9 7.13v-1a3.003 3.003 0 116 0v1 M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 014-4h4a4 4 0 014 4v3c0 3.3-2.7 6-6 6 M12 20v-9" },
+      ],
+    },
     routes: {
-      org: (props) => ({ component: OrgChartView, props: { onNavigate: props.setActive } }),
-      manager: (props) => ({ component: GenericLandingView, props: { pageKey: "manager", onNavigate: props.setActive } }),
-      operator: (props) => ({ component: GenericLandingView, props: { pageKey: "operator", onNavigate: props.setActive } }),
-      viewer: (props) => ({ component: GenericLandingView, props: { pageKey: "viewer", onNavigate: props.setActive } }),
+      admin: () => ({ component: PlatformAdminView, props: {} }),
+      "admin-it-infra": () => ({ component: PlatformAdminView, props: { defaultCategory: "it-infra" } }),
+      "admin-ai-agents": () => ({ component: PlatformAdminView, props: { defaultCategory: "ai-agents" } }),
+      "admin-operations": () => ({ component: PlatformAdminView, props: { defaultCategory: "operations" } }),
+      "admin-users-security": () => ({ component: PlatformAdminView, props: { defaultCategory: "users-security" } }),
+      "admin-platform-config": () => ({ component: PlatformAdminView, props: { defaultCategory: "platform-config" } }),
+      "admin-bug-fixes": () => ({ component: PlatformAdminView, props: { defaultCategory: "bug-fixes" } }),
+      settings: () => ({ component: PlatformAdminView, props: {} }), // legacy route
     },
   },
 
@@ -274,10 +260,10 @@ const modules = [
         { key: "tpl-dept-1", label: "Dept Home A", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
         { key: "tpl-dept-2", label: "Dept Home B", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
         { key: "tpl-dept-3", label: "Dept Home C", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
-        { key: "tpl-dash-4", label: "Dashboard D", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
-        { key: "tpl-dash-5", label: "Dashboard E", icon: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 18a6 6 0 100-12 6 6 0 000 12z" },
-        { key: "tpl-dept-4", label: "Dept Home D", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
-        { key: "tpl-dept-5", label: "Dept Home E", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10" },
+        { key: "tpl-dash-4", label: "Dash + News", icon: "M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z M4 10h16 M10 4v16" },
+        { key: "tpl-dash-5", label: "Dash + Split", icon: "M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z M14 4v16 M4 10h10" },
+        { key: "tpl-dept-4", label: "Dept + News", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 14h6 M9 18h6" },
+        { key: "tpl-dept-5", label: "Dept + Intel", icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M7 13h10 M7 17h10" },
       ],
     },
     routes: {
@@ -297,6 +283,20 @@ const modules = [
       "tpl-dash-5": (props) => ({ component: DashboardTemplateE, props: { onNavigate: props.setActive } }),
       "tpl-dept-4": (props) => ({ component: DeptHomeD, props: { onNavigate: props.setActive } }),
       "tpl-dept-5": (props) => ({ component: DeptHomeE, props: { onNavigate: props.setActive } }),
+    },
+  },
+
+  // ─── Phase 6 ───
+  {
+    id: "organization",
+    phase: 6,
+    enabled: true,
+    nav: { key: "org", label: "Org Chart", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", branch: "CROSS-CUTTING" },
+    routes: {
+      org: (props) => ({ component: OrgChartView, props: { onNavigate: props.setActive } }),
+      manager: (props) => ({ component: GenericLandingView, props: { pageKey: "manager", onNavigate: props.setActive } }),
+      operator: (props) => ({ component: GenericLandingView, props: { pageKey: "operator", onNavigate: props.setActive } }),
+      viewer: (props) => ({ component: GenericLandingView, props: { pageKey: "viewer", onNavigate: props.setActive } }),
     },
   },
 ];
