@@ -264,20 +264,43 @@ export const BugReportModal = ({ open, onClose, activeModule }) => {
   const { simDate } = useSimDate();
   const canReview = can("admin", "edit");
 
+  // Reload reports from localStorage when modal opens (picks up deletions from BugFixPortal)
+  useEffect(() => {
+    if (open) setReports(loadReports());
+  }, [open]);
+
+  // Sync with external localStorage changes (storage events from other tabs + polling for same-tab)
+  useEffect(() => {
+    const handler = () => setReports(loadReports());
+    window.addEventListener("storage", handler);
+    const interval = setInterval(() => {
+      const fresh = loadReports();
+      setReports(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(fresh)) return fresh;
+        return prev;
+      });
+    }, 2000);
+    return () => { window.removeEventListener("storage", handler); clearInterval(interval); };
+  }, []);
+
   // Focus title input when opening form
   useEffect(() => {
     if (open && view === "form") setTimeout(() => titleRef.current?.focus(), 200);
   }, [open, view]);
 
-  // Persist reports whenever they change
-  useEffect(() => { saveReports(reports); }, [reports]);
+  // NOTE: No generic persist effect — saves happen synchronously in updateReport/handleSubmit
+  // to avoid overwriting deletions made by BugFixPortal.
 
   if (!open) return null;
 
   const moduleName = activeModule?.charAt(0).toUpperCase() + activeModule?.slice(1) || "Unknown";
 
   const updateReport = (id, updates) => {
-    setReports(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+    setReports(prev => {
+      const next = prev.map(r => r.id === id ? { ...r, ...updates } : r);
+      saveReports(next);
+      return next;
+    });
   };
 
   const handleSubmit = async () => {
@@ -298,7 +321,11 @@ export const BugReportModal = ({ open, onClose, activeModule }) => {
       streamText: "",
     };
 
-    setReports(prev => [report, ...prev]);
+    setReports(prev => {
+      const next = [report, ...prev];
+      saveReports(next);
+      return next;
+    });
     setTitle("");
     setDescription("");
     setSeverity("medium");
