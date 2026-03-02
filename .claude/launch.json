@@ -4,10 +4,9 @@
     {
       "name": "dev",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--host", "0.0.0.0"],
-      "port": 5173,
-      "autoPort": true,
-      "cwd": "/Users/thomasandres/Claude Testing/sens-master-project"
+      "runtimeArgs": ["vite", "--host", "0.0.0.0", "--port", "5190"],
+      "port": 5190,
+      "cwd": "/Users/thomasandres/Claude Testing/sens-master-project/.claude/worktrees/suspicious-khorana"
     }
   ]
 }
