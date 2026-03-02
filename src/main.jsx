@@ -11,7 +11,6 @@ import { AgentConfigProvider } from "@modules/ai-agents/AgentConfigContext";
 import { TaskProvider } from "@core/tasks/TaskContext";
 import { isRealAuth } from "@core/auth/authModeConfig";
 import { PublicClientApplication } from "@azure/msal-browser";
-import { MsalProvider } from "@azure/msal-react";
 import { msalConfig } from "@core/auth/msalConfig";
 
 // ── Initialize MSAL (only creates instance in real auth mode) ──
@@ -20,49 +19,47 @@ if (isRealAuth) {
   msalInstance = new PublicClientApplication(msalConfig);
 }
 
-// ── Conditional wrapper for MSAL provider ──
-function AuthProviderWrapper({ children }) {
-  if (!isRealAuth) return children;
-  return (
-    <MsalProvider instance={msalInstance}>
-      {children}
-    </MsalProvider>
-  );
-}
-
 async function bootstrap() {
-  // Initialize MSAL and handle any pending redirect responses
+  // Initialize MSAL — catch errors so the app still renders
   if (msalInstance) {
-    await msalInstance.initialize();
-    const response = await msalInstance.handleRedirectPromise();
-    if (response?.account) {
-      msalInstance.setActiveAccount(response.account);
+    try {
+      await msalInstance.initialize();
+      const response = await msalInstance.handleRedirectPromise();
+      if (response?.account) {
+        msalInstance.setActiveAccount(response.account);
+      }
+    } catch (err) {
+      console.error("[MSAL] Initialization failed:", err);
     }
   }
 
   ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-      <AuthProviderWrapper>
-        <ThemeProvider>
-          <MobileProvider>
-          <AuthProvider msalInstance={msalInstance}>
-            <SimDateProvider>
-              <TaskProvider>
-              <BadgeProvider>
-                <AgentConfigProvider>
-                  <PermissionProvider>
-                    <App />
-                  </PermissionProvider>
-                </AgentConfigProvider>
-              </BadgeProvider>
-              </TaskProvider>
-            </SimDateProvider>
-          </AuthProvider>
-          </MobileProvider>
-        </ThemeProvider>
-      </AuthProviderWrapper>
+      <ThemeProvider>
+        <MobileProvider>
+        <AuthProvider msalInstance={msalInstance}>
+          <SimDateProvider>
+            <TaskProvider>
+            <BadgeProvider>
+              <AgentConfigProvider>
+                <PermissionProvider>
+                  <App />
+                </PermissionProvider>
+              </AgentConfigProvider>
+            </BadgeProvider>
+            </TaskProvider>
+          </SimDateProvider>
+        </AuthProvider>
+        </MobileProvider>
+      </ThemeProvider>
     </React.StrictMode>
   );
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error("[App] Bootstrap failed:", err);
+  document.getElementById("root").innerHTML =
+    '<div style="color:#fff;padding:40px;font-family:system-ui">' +
+    '<h2>Failed to load application</h2>' +
+    '<p style="color:#aaa;margin-top:8px">' + err.message + '</p></div>';
+});
