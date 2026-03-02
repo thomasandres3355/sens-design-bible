@@ -4,9 +4,10 @@
     {
       "name": "dev",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--host", "0.0.0.0", "--port", "5191"],
-      "port": 5191,
-      "cwd": "/Users/thomasandres/Claude Testing/sens-master-project/.claude/worktrees/clever-joliot"
+      "runtimeArgs": ["vite", "--host", "0.0.0.0"],
+      "port": 5173,
+      "autoPort": true,
+      "cwd": "."
     }
   ]
 }
