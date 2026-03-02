@@ -14,6 +14,7 @@ import {
 import { allActionItems, participants, pastMeetings, tagRegistry } from "../data/meetingData";
 import { useSimDate } from "../contexts/SimDateContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useMobile } from "../contexts/MobileContext";
 import { useTasks } from "../contexts/TaskContext";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -930,6 +931,7 @@ const TaskTable = ({ filter }) => {
 // ═══════════════════════════════════════════════════════════════════
 
 const FocusTrackerContent = () => {
+  const { isMobile } = useMobile();
   const { simDate } = useSimDate();
   const [execFilter, setExecFilter] = useState("all");
   const [layoutLocked, setLayoutLocked] = useState(true);
@@ -1098,8 +1100,14 @@ const FocusTrackerContent = () => {
     },
   ], [cSuiteMetrics, vpMetrics, execFilter, tabs, layoutLocked]);
 
+  // Mobile: only show the tasks widget
+  const visibleWidgets = useMemo(() => {
+    if (isMobile) return widgets.filter(w => w.id === "tasks");
+    return widgets;
+  }, [widgets, isMobile]);
+
   return (
-    <DraggableGrid widgets={widgets} storageKey="sens-focus-layout" locked={layoutLocked} onLockedChange={setLayoutLocked} />
+    <DraggableGrid widgets={visibleWidgets} storageKey="sens-focus-layout" locked={layoutLocked} onLockedChange={setLayoutLocked} />
   );
 };
 
@@ -2898,19 +2906,21 @@ const MyTasksView = () => {
 // ═══════════════════════════════════════════════════════════════════
 
 export const FocusTrackerView = ({ initialTab }) => {
+  const { isMobile } = useMobile();
   const [topTab, setTopTab] = useState(initialTab || "focus");
 
   const topTabs = [
-    { key: "focus", label: "Focus Tracker" },
+    { key: "focus", label: isMobile ? "Tasks" : "Focus Tracker" },
     { key: "tasks", label: "My Tasks" },
     { key: "pulse", label: "Weekly Pulse" },
     { key: "journal", label: "Journal" },
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 16 : 24 }}>
 
-      {/* ─── Header ─── */}
+      {/* ─── Header (hidden in mobile — App header shows title) ─── */}
+      {!isMobile && (
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
           <div style={{
@@ -2925,6 +2935,7 @@ export const FocusTrackerView = ({ initialTab }) => {
           Executive alignment to company objectives, meetings, and action tracking.
         </div>
       </div>
+      )}
 
       {/* ─── Top Tabs ─── */}
       <TabBar tabs={topTabs} active={topTab} onChange={setTopTab} />

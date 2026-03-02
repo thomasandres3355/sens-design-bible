@@ -10,6 +10,7 @@ import {
 import { ObjectiveCard } from "../components/ui/ObjectiveCard";
 import { getDashboardAlerts } from "../data/alertData";
 import { useSimDate } from "../contexts/SimDateContext";
+import { useMobile } from "../contexts/MobileContext";
 import { getSiteMetrics, getPortfolioMetrics } from "../data/timeEngine";
 import { buildObjectives } from "../data/objectivesData";
 
@@ -190,6 +191,7 @@ const SiteOperationalPerformance = ({ activeSites, portfolio }) => {
 
 export const DashboardView = ({ onNavigate }) => {
   const { simDate } = useSimDate();
+  const { isMobile } = useMobile();
   const alerts = getDashboardAlerts("COO", simDate);
   const [layoutLocked, setLayoutLocked] = useState(true);
 
@@ -199,7 +201,7 @@ export const DashboardView = ({ onNavigate }) => {
   const portfolio = useMemo(() => getPortfolioMetrics(simDate), [simDate]);
   const objectives = useMemo(() => buildObjectives(activeSites, portfolio), [activeSites, portfolio]);
 
-  const widgets = useMemo(() => [
+  const allWidgets = useMemo(() => [
     {
       id: "dash-alerts",
       label: "System Alerts",
@@ -233,6 +235,12 @@ export const DashboardView = ({ onNavigate }) => {
       render: () => <SiteOperationalPerformance activeSites={activeSites} portfolio={portfolio} />,
     },
   ], [alerts, layoutLocked, objectives, activeSites, portfolio]);
+
+  // Mobile: only alerts + objectives
+  const widgets = useMemo(() => {
+    if (isMobile) return allWidgets.filter(w => w.id !== "dash-site-performance");
+    return allWidgets;
+  }, [allWidgets, isMobile]);
 
   return (
     <DraggableGrid
