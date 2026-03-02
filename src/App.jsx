@@ -36,7 +36,7 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
   const [navProjectId, setNavProjectId] = useState(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState({ risk: true, admin: true, technology: true, ops: true, growth: true, learning: true, templates: true });
+  const [expandedGroups, setExpandedGroups] = useState({ risk: false, admin: false, technology: false, ops: false, growth: false, learning: false, templates: false });
   useEffect(() => { setMounted(true); }, []);
 
   const { simDate, advanceDay, retreatDay, historyDepth, setHistoryDepth, maxDate } = useSimDate();
