@@ -12,13 +12,22 @@ const CUSTOM_TEAMS_KEY = "sens_custom_teams";
 // ─── Default Global Rules (extracted from claudeService.js hardcoded text) ────
 export const DEFAULT_ACCESS_CONTROL_RULES = `- Only discuss data that has been provided to you below. If the user asks about data not in your context, explain that you don't have access to that information or that it requires higher clearance.
 - If asked about compensation, HR records, or other restricted data that isn't in your context, respond: "That information requires higher clearance than currently available."
-- Never fabricate data. Only reference the specific numbers provided below.`;
+- Never fabricate data. Only reference the specific numbers provided below.
+- Never speculate about data you do not have. If a question requires information outside your data context, say so explicitly.
+- Do not reference external sources, URLs, or documents not provided in your context.`;
 
-export const DEFAULT_RESPONSE_GUIDELINES = `- Be concise and specific. Reference actual numbers.
+export const DEFAULT_RESPONSE_GUIDELINES = `- Start every response with a 1-2 sentence executive summary of your key finding or recommendation.
+- After the summary, provide your full analysis with supporting data.
+- Be concise and specific. Reference actual numbers from the data provided.
 - Use the executive's name when relevant.
-- Flag risks and recommend actions.
+- Flag risks and recommend concrete actions with owners and timelines.
 - If you see concerning trends, proactively mention them.
-- Format with bullet points for readability.`;
+- Format with bullet points for readability. Use markdown headers (##) to separate sections.
+- Keep total response under 300 words unless the question requires detailed analysis.
+- NEVER use emojis, emoticons, or decorative unicode symbols.
+- NEVER include images, image links, or decorative elements.
+- Use plain text formatting only: bullet points, numbered lists, bold (**text**), headers.
+- When presenting numbers, use consistent formatting: $X.XM for dollars, X.X% for percentages.`;
 
 // ─── Agent Overrides ──────────────────────────────────────────────────────────
 

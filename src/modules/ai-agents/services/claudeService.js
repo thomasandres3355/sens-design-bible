@@ -146,8 +146,28 @@ export function buildDataContext(agent, simDate, user, historyDepth = "1y") {
 }
 
 // ─── System Prompt Builder ───────────────────────────────────────────
-function buildSystemPrompt(agent, simDate, user, dataContext) {
+function buildSystemPrompt(agent, simDate, user, dataContext, roleHint = null) {
   const rules = getGlobalRules();
+
+  // Role-specific behavioral instructions
+  let roleInstructions = "";
+  if (roleHint === "specialist") {
+    roleInstructions = `\n\nROLE INSTRUCTIONS:
+You are answering as a domain specialist. Your response MUST follow this format:
+1. First line: A single sentence summarizing your key finding or insight.
+2. Then a blank line.
+3. Then your full analysis with supporting data and reasoning.
+Keep your response focused on your area of expertise (${agent.role}). Be specific and data-driven. Do not attempt to synthesize across other domains — that is your team lead's job.`;
+  } else if (roleHint === "lead") {
+    roleInstructions = `\n\nROLE INSTRUCTIONS:
+You are the team lead synthesizing input from your specialist team. Your team's analysis has been appended to the user's question.
+Your response MUST:
+1. Weigh each specialist's perspective fairly.
+2. Identify points of consensus and any disagreements between specialists.
+3. Provide a brief, actionable recommendation (2-4 sentences) that an executive can act on immediately.
+4. If specialists flagged conflicting data or risks, highlight those tensions.
+Do not repeat the specialists' full analysis. Focus on synthesis and your recommendation.`;
+  }
 
   return `You are ${agent.name}, a ${agent.role} at SENS (Systemic Environmental Solutions), a company that operates tire pyrolysis and coal gasification facilities.
 
@@ -165,7 +185,7 @@ CURRENT DATA (as of ${simDate}):
 ${dataContext}
 
 RESPONSE GUIDELINES:
-${rules.responseGuidelines}`;
+${rules.responseGuidelines}${roleInstructions}`;
 }
 
 // ─── Main Ask Agent Function ─────────────────────────────────────────
@@ -181,12 +201,12 @@ ${rules.responseGuidelines}`;
  * @param {string} params.source — usage source label ("chat", "agent-contribution", "meeting")
  * @returns {Promise<string>} — full response text
  */
-export async function askAgent({ agent, question, history = [], simDate, user, onChunk, source = "chat", historyDepth = "1y" }) {
+export async function askAgent({ agent, question, history = [], simDate, user, onChunk, source = "chat", historyDepth = "1y", roleHint = null }) {
   const key = getApiKey();
   if (!key) throw new Error("No API key configured");
 
   const dataContext = buildDataContext(agent, simDate, user, historyDepth);
-  const systemPrompt = buildSystemPrompt(agent, simDate, user, dataContext);
+  const systemPrompt = buildSystemPrompt(agent, simDate, user, dataContext, roleHint);
 
   const messages = [
     ...history.slice(-10), // Keep last 10 messages for context
@@ -285,4 +305,139 @@ export async function askAgent({ agent, question, history = [], simDate, user, o
     source,
   });
   return json.content?.[0]?.text || "No response generated.";
+}
+
+// ─── Response Parser ─────────────────────────────────────────────────
+/**
+ * Parse an AI response into summary + fullResponse.
+ * Strategy: first blank line split, then first sentence, then character fallback.
+ */
+export function parseAgentResponse(text) {
+  if (!text || typeof text !== "string") {
+    return { summary: "No response", fullResponse: "" };
+  }
+
+  const trimmed = text.trim();
+
+  // Strategy 1: Split on first double-newline (blank line separator)
+  const doubleNewlineIdx = trimmed.indexOf("\n\n");
+  if (doubleNewlineIdx > 0 && doubleNewlineIdx <= 300) {
+    const summary = trimmed.slice(0, doubleNewlineIdx).trim();
+    const fullResponse = trimmed.slice(doubleNewlineIdx + 2).trim();
+    if (summary.length <= 300 && fullResponse.length > 0) {
+      return { summary, fullResponse };
+    }
+  }
+
+  // Strategy 2: First sentence (ending with period followed by space or newline)
+  const sentenceMatch = trimmed.match(/^(.+?[.!?])\s/);
+  if (sentenceMatch && sentenceMatch[1].length <= 200) {
+    return {
+      summary: sentenceMatch[1],
+      fullResponse: trimmed.slice(sentenceMatch[1].length).trim(),
+    };
+  }
+
+  // Strategy 3: Fallback — first 150 chars with word boundary
+  const cutoff = Math.min(150, trimmed.length);
+  const wordBound = trimmed.lastIndexOf(" ", cutoff);
+  const splitAt = wordBound > 50 ? wordBound : cutoff;
+  return {
+    summary: trimmed.slice(0, splitAt) + (trimmed.length > splitAt ? "..." : ""),
+    fullResponse: trimmed,
+  };
+}
+
+// ─── Team Delegation Orchestrator ────────────────────────────────────
+/**
+ * Ask a full agent team — specialists in parallel, then lead with context.
+ * Returns a delegation object compatible with ManagerDelegationCard.
+ */
+export async function askTeam({
+  agentTeam, question, history = [], simDate, user,
+  eaId, department, color, onProgress, getAgent, historyDepth = "1y"
+}) {
+  const specs = agentTeam.specialists || [];
+  const lead = agentTeam.lead;
+
+  // PHASE 1: Ask all specialists in parallel
+  if (onProgress) onProgress("specialists", { total: specs.length, completed: 0 });
+
+  const specialistResults = await Promise.allSettled(
+    specs.map(async (spec) => {
+      const effectiveSpec = getAgent?.(spec.id) || spec;
+      const response = await askAgent({
+        agent: effectiveSpec,
+        question,
+        history: [],
+        simDate,
+        user,
+        source: "team-specialist",
+        historyDepth,
+        roleHint: "specialist",
+      });
+      return { spec, response };
+    })
+  );
+
+  let completedCount = 0;
+  const specialistResponses = specialistResults.map((result, i) => {
+    const spec = specs[i];
+    if (result.status === "fulfilled") {
+      completedCount++;
+      if (onProgress) onProgress("specialists", { total: specs.length, completed: completedCount });
+      const parsed = parseAgentResponse(result.value.response);
+      return {
+        id: spec.id,
+        name: spec.name,
+        role: spec.role,
+        summary: parsed.summary,
+        fullResponse: parsed.fullResponse,
+      };
+    } else {
+      return {
+        id: spec.id,
+        name: spec.name,
+        role: spec.role,
+        summary: `Could not get response from ${spec.name}`,
+        fullResponse: `Error: ${result.reason?.message || "Unknown error"}`,
+      };
+    }
+  });
+
+  // PHASE 2: Ask lead with specialist context
+  if (onProgress) onProgress("lead", { specialistCount: specialistResponses.length });
+
+  const specialistContext = specialistResponses.map(sr =>
+    `### ${sr.name} (${sr.role}):\n${sr.summary}`
+  ).join("\n\n");
+
+  const leadQuestion = `${question}\n\n---\nYour team has provided the following analysis:\n\n${specialistContext}\n\n---\nPlease synthesize these perspectives and provide your recommendation.`;
+
+  let recommendation;
+  try {
+    const effectiveLead = getAgent?.(lead.id) || lead;
+    recommendation = await askAgent({
+      agent: effectiveLead,
+      question: leadQuestion,
+      history,
+      simDate,
+      user,
+      source: "team-lead",
+      historyDepth,
+      roleHint: "lead",
+    });
+  } catch (err) {
+    recommendation = `Error synthesizing team input: ${err.message}`;
+  }
+
+  return {
+    lead,
+    color,
+    eaId,
+    department,
+    specialists: specialistResponses,
+    recommendation,
+    isLive: true,
+  };
 }
